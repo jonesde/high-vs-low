@@ -125,7 +125,7 @@ Follow these steps in order:
    - **Multiple Perspectives**: The Author's stance on someone's actions/beliefs is separate from a person's own statements about their actions/beliefs; if both are present split into separate stances
    - **Extract**
       1. **Stance Quote**: The minimum text needed for the complete normative claim (statement or description of a stance/opinion); **never** truncate moral framing (e.g., removing "for fear of the law" changes coercive compliance into protective obedience); length from 1 phrase if stated explicitly to a few phrases for descriptions and narratives
-      2. **Location**: Use existing references (verse/paragaph numbering) if present, if not use line numbers in the file
+      2. **Location**: *If* existing references (like verse numbers) are present in the source text then use them, otherwise *always* use file line numbers for location
 2. **Verify Stances**
    1. **Data Complete**: Verify that all stances found have a *Stance Quote* and *Location*
    2. **All Stances Found**: Re-evaluate all text not already referenced by location in the stances found, add ALL missing stances
