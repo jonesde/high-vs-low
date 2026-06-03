@@ -2,7 +2,7 @@
 name: "high-vs-low"
 title: "High Law vs Low Law Alignment Evaluation and Scoring Agent Skill"
 description: "Evaluate and score articles, speeches, books (by chapter), etc for alignment against a High Law vs Low Law framework"
-updated: 2026-05-30 (dej)
+updated: 2026-06-02
 type: skill
 tags: [law, framework, morality, values, ethics, religion, justice, mercy, judgment, community, progress, authority, democracy, good/evil]
 ---
