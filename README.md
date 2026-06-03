@@ -17,7 +17,7 @@ One thing this does NOT try to answer is what **God** is like, or what the ultim
 
 This is also NOT about **truth**, LLMs don't know truth for $#!+, but they are pretty good at recognizing patterns, interpreting actions, and picking out intent. The truth of the output depends on the truth of the input.
 
-**The distinction** between High and Low Law can be broken down into two distinct sets of correlated but opposite principles. There is a single line separating the two and it is a straight line, but it is not a single point (it is represented as 42 points in this skill). The principles and behaviors in the High Law set tend to lead to outcomes as well as other principles and behaviors within the High Law set, and not to those in the Low Law set (and vice-versa).
+**The distinction** between High and Low Law can be broken down with two distinct sets of correlated but opposite principles. There is a single line separating the two and it is a straight line, but it is not a single point (it is represented as 42 points in this skill). The principles and behaviors in the High Law set tend to lead to outcomes as well as other principles and behaviors within the High Law set, and not to those in the Low Law set (and vice-versa).
 
 That the core definition, with disinctions for various topics and questions taken from a wide variety of sources. Some language or jargon from those sources is present in the wording and this may be *expanded* over time rather than reduced in order to engage more concept spaces as LLMs operate.
 

@@ -13,7 +13,7 @@ Evaluate and Score Text for Alignment with High Law or Low Law
 
 # Distinction Rules - High Law vs Low Law
 
-The distinction between High and Low Law can be broken down into two distinct sets of correlated but opposite principles. There is a single line separating the two and it is a simple, straight line, but it is not a single point. The principles and behaviors in the High Law set tend to lead to outcomes as well as other principles and behaviors within the High Law set, and not to those in the Low Law set (and vice-versa).
+The distinction between High and Low Law can be broken down with two distinct sets of correlated but opposite principles. There is a single line separating the two and it is a simple, straight line, but it is not a single point. The principles and behaviors in the High Law set tend to lead to outcomes as well as other principles and behaviors within the High Law set, and not to those in the Low Law set (and vice-versa).
 
 This section is a reference for distinctions on various topics to help determine whether a normative statement is about a High Law or Low Law principle. The alignment of a text is determined by its **stances** on stated or described **principles**. The alignment of a text that describes High Law principles and supports them is High Law aligned, but if the text opposes those High Law principles then the text is Low Law aligned.
 
