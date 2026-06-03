@@ -72,7 +72,7 @@ def main():
     for row in hl_rows + ll_rows:
         parts = [p.strip() for p in row.split('|') if p.strip()]
         if len(parts) >= 7:
-            for t in parts[6].split(';'):
+            for t in parts[6].split(','):
                 t = t.strip()
                 if t:
                     all_topic_refs.add(t)
@@ -111,7 +111,7 @@ def main():
     for row in hl_rows:
         parts = [p.strip() for p in row.split('|') if p.strip()]
         if len(parts) >= 7:
-            for t in parts[6].split(';'):
+            for t in parts[6].split(','):
                 t = t.strip()
                 if t:
                     topic_actual.setdefault(t, {'HL': 0, 'LL': 0})
@@ -119,7 +119,7 @@ def main():
     for row in ll_rows:
         parts = [p.strip() for p in row.split('|') if p.strip()]
         if len(parts) >= 7:
-            for t in parts[6].split(';'):
+            for t in parts[6].split(','):
                 t = t.strip()
                 if t:
                     topic_actual.setdefault(t, {'HL': 0, 'LL': 0})

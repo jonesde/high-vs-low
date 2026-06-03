@@ -126,7 +126,7 @@ Validate global template compliance and holistic consistency.
 ## Common Pitfalls During Review
 
 - **LL header says 30 but table has 32 rows**: Header count can lag behind actual table rows. Always count rows manually.
-- **Renumbering regex corrupts table data**: Use `re.sub(r'^(\|\s*)\d+(\s*\|)', rf'\g<1>{i}\2', row)` per data row, NOT a broad `re.sub(r'\|\s*(\d+)\s*\|', ...)` that matches all pipe-delimited numbers.
 - **Per-topic scores go stale after moves**: Moving a statement changes topic-level HL/LL counts AND scores. Recalculate ALL affected topics.
+- **Dual-topic Score Table impact on reclassification**: When a statement is reclassified (moved from HL to LL or vice versa) AND reassigned to a different Key Topic, TWO topics are affected: the topic losing the statement (decrement its HL or LL count) AND the topic gaining it (increment the other). It is easy to update only one side. Always verify both affected topics' Score Table entries after any reclassification + topic change.
 - **Evaluation Table bullets diverge from Score Table**: After statement changes, update both Score Table numbers AND Evaluation Table bullet points.
 - **Narrative score mentions survive edits**: Search for old score value across entire document after any count change.
