@@ -141,7 +141,7 @@ Follow these steps in order:
 
 > **Rule**: Mentioning High/Low principles does not imply alignment. Stance from commentary determines alignment.
 
-**Alignment 2x2 Map**
+**Author Alignment 2x2 Map**
 
 |                        | Text/Author Supports | Text/Author Opposes |
 | ---------------------- | -------------------- | ------------------- |
@@ -165,7 +165,7 @@ For each extracted statement, apply these exact steps **in order**:
       3. Are there more High Law or Low Law distinction rule matches? If equal matches, exclude the rule match that is least strongly related to the principle and note the tie-breaker exclusion
    2. **Stance**: Does the text *support* (praise/promote) or *oppose* (criticize/condemn) the principle?
    3. **Speaker**: Is the speaker a character or person who other than the author/narrator, AND the speaker is a villain, adversary, or portrayed as evil? If so, invert the alignment (support to oppose, or oppose to support)
-   4. **Author Alignment**: Map using Principle + Stance = Alignment (HL+support=HL | HL+oppose=LL | LL+support=LL | LL+oppose=HL)
+   4. **Author Alignment**: Apple 2x2 Map using Principle + Stance = Alignment (HL+support=HL | HL+oppose=LL | LL+support=LL | LL+oppose=HL)
 4. **Keep Track**: Along with the *Speaker*, *Stance*, and *Principle* for each *Statement*, also remember the *Rules* list and *Decision Notes* about the rules used to classify the principle, the interpreted stance, the alignment mapping, and if there is a villain speaker stance inversion
 
 ## Step 3: Assign Key Topics
