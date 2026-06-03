@@ -3,7 +3,7 @@
 - Execute each validation in order.
 - Execute ALL validations unless the report does not include the DETAILED section, then skip the validations of report elements in the DETAILED section.
 - If one or more *Statements* is added, removed, or moved during a review pass, then re-execute starting at Section 0 (rebuild inventories first, then re-verify).
-- If no iteration or depth limit is specified, limit re-execute iterations to 7
+- If no iteration or depth limit is specified, limit re-execute iterations to 3
 
 ---
 
