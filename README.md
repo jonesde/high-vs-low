@@ -2,7 +2,10 @@
 
 Evaluate and score articles, emails, speeches, web pages, books (by chapter), etc for alignment against a High Law vs Low Law framework.
 
-**Easy Install** agent prompt: `Install the skill at github.com/jonesde/high-vs-low`
+**Easy Install** agent prompt:
+```text
+Install the latest version of the skill at github.com/jonesde/high-vs-low
+```
 
 **Use Cases**
 - Why do I feel funny when I read this, but can't quite place it?
@@ -41,10 +44,19 @@ For a really trippy vibe, try having it evaluate stuff in other languages... eve
 ## Recommendations
 
 - This is an AI Agent Skill, built and tested primarily with Hermes Agent
-- Easiest install, prompt your agent: `Install the skill at github.com/jonesde/high-vs-low`
+- Easiest install, prompt your agent:
+    ```text
+    Install the latest version of the skill at github.com/jonesde/high-vs-low
+    ```
 - To manually install the skill go to your `skills` directory (like `/opt/data/skills/`) and either:
-    - clone the repo: `git clone https://github.com/jonesde/high-vs-low.git`
-    - OR download & unzip the archive: `wget https://github.com/jonesde/high-vs-low/archive/refs/heads/master.zip && unzip master.zip && mv high-vs-low-master high-vs-low && rm master.zip`
+    - clone the repo:
+    ```bash
+    git clone https://github.com/jonesde/high-vs-low.git
+    ```
+    - OR download & unzip the archive:
+    ```bash
+    wget https://github.com/jonesde/high-vs-low/archive/refs/heads/master.zip && unzip master.zip && mv high-vs-low-master high-vs-low && rm master.zip
+    ```
 - To use it outside an AI Agent, like in a chat interface, upload or include the SKILL.md file and use a prompt like:
     - `Follow the instructions in the SKILL.md file to evaluate the text below and generate a DETAILED report:` (or "basic/score report" if that's what you're up to)
 - LLMs have limited context, and you have limited patience, so do analysis one chapter/article/whatever at a time instead of trying to run this on a whole book or magazine; you will also get VERY different results, even if the full book fits in your fancy 1M token context window, or maybe not if the model is WAY more thorough than even the best LLMs available now (June 2026)
