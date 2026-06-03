@@ -2,6 +2,8 @@
 
 Evaluate and score articles, emails, speeches, web pages, books (by chapter), etc for alignment against a High Law vs Low Law framework.
 
+**Easy Install** agent prompt: `Install the skill at github.com/jonesde/high-vs-low`
+
 **Use Cases**
 - Why do I feel funny when I read this, but can't quite place it?
 - Am I being controlled (manipulated or coerced) in some way? If so, which patterns are they using?
@@ -39,7 +41,12 @@ For a really trippy vibe, try having it evaluate stuff in other languages... eve
 ## Recommendations
 
 - This is an AI Agent Skill, built and tested primarily with Hermes Agent
-- To use it outside an AI Agent, like in a chat interface, upload or include the SKILL.md file and use a prompt like: `Follow the instructions in the SKILL.md file to evaluate the text below and generate a DETAILED report:` (or "basic/score report" if that's what you're up to)
+- Easiest install, prompt your agent: `Install the skill at github.com/jonesde/high-vs-low`
+- To manually install the skill go to your `skills` directory (like `/opt/data/skills/`) and either:
+    - clone the repo: `git clone https://github.com/jonesde/high-vs-low.git`
+    - OR download & unzip the archive: `wget https://github.com/jonesde/high-vs-low/archive/refs/heads/master.zip && unzip master.zip && mv high-vs-low-master high-vs-low && rm master.zip`
+- To use it outside an AI Agent, like in a chat interface, upload or include the SKILL.md file and use a prompt like:
+    - `Follow the instructions in the SKILL.md file to evaluate the text below and generate a DETAILED report:` (or "basic/score report" if that's what you're up to)
 - LLMs have limited context, and you have limited patience, so do analysis one chapter/article/whatever at a time instead of trying to run this on a whole book or magazine; you will also get VERY different results, even if the full book fits in your fancy 1M token context window, or maybe not if the model is WAY more thorough than even the best LLMs available now (June 2026)
 - In the `references/batch-handling.md` file there are additional instructions for handling batches of documents in a database such as SQLite, which is a good option for this sort of work due to common availability and ease of handling sets of documents with a single-file DB, CLI, python libs, GUIs (ie DB Browser), etc
 - In the `references/report-review.md` file there is a checklist for reviewing evaluation documents that have already been generated, and this is used by default in the batch-handling instructions (if you don't want it to review after writing, ask it not to); this uses the `script/verify_report.py` Python3 script to do automated verification, but can be used without it (LLM does all validations)
@@ -50,9 +57,11 @@ This prompt is for Hermes Agent running in a Docker Container with a SQLite db f
 
 ```
 /high-vs-low
-Use the Database Delegation Workflow (db has recommended schema): evaluate and write a DETAILED report for each record in the `documents` table in the `/opt/data/home/docs/documents.db` sqlite3 database where `id` is between 598 and 602.
+Use the Database Delegation Workflow (db has recommended schema): evaluate and
+write a DETAILED report for each record in the `documents` table in the
+`/opt/data/home/docs/documents.db` sqlite3 database where `id` is between 598 and 602.
 Note that sqlite3 cli is not available, use a python script with import sqlite3.
-Run each delegated task one at a time and check its results before continuing to the next one.
+Run each delegated task one at a time and check its output before continuing to the next one.
 ```
 
 To create a database file from other sources, ask your agent to do it using the schema in the `high-vs-low/references/batch-handling.md` file. Even using current local models like Qwen3.6 (35B or 27B), I've had little trouble when asking them to do this from CSV files, large HTML documents over a thousand sections (ie the Bible in one big HTML page), web scraping results, and other databases.
