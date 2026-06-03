@@ -15,7 +15,7 @@ Install the latest version of the skill at github.com/jonesde/high-vs-low
 
 One thing this does NOT try to answer is what **God** is like, or what the ultimate definition of **good** is. In fact, consistency and accuracy improved dramatically with the various instructions to interpret statements about God and good (or the inverse) as indicators of the stance or perspective of the speaker, and *not* use them to distinguish between High Law and Low Law.
 
-This is also NOT about **truth**, LLMs don't know truth for $#!+, but they are pretty good at recognizing patterns, interpreting actions, and picking out intent. The truth of the output depends on the truth of the input.
+This is also NOT about **truth**, LLMs are pure GIGO when it comes to the truth (garbage in => garbage out), but they are pretty good at recognizing patterns, interpreting actions, and picking out intent. The truth of the output depends on the truth of the input.
 
 **The distinction** between High and Low Law can be broken down with two distinct sets of correlated but opposite principles. There is a single line separating the two and it is a straight line, but it is not a single point (it is represented as 42 points in this skill). The principles and behaviors in the High Law set tend to lead to outcomes as well as other principles and behaviors within the High Law set, and not to those in the Low Law set (and vice-versa).
 
