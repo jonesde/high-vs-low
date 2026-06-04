@@ -208,23 +208,18 @@ def build_evaluation_system_prompt(report_type="basic"):
     if report_type == "detailed":
         extra = (
             "\n\n## Report Type: DETAILED\n\n"
-            "Produce a **detailed** evaluation report. Include ALL sections from the Report Specification:\n"
-            "Overview, Key Topics, Statement Quotes, Scoring Summary, Key Topic Score Table,\n"
-            "Evaluation Highlights, Key Topic Evaluation Table, Key Topic Details (one per topic),\n"
-            "and Conclusions."
+            "Produce a **DETAILED** evaluation report. Include ALL sections from the Report Specification."
         )
     else:
         extra = (
             "\n\n## Report Type: BASIC\n\n"
-            "Produce a **basic** evaluation report. Include only the mandatory sections:\n"
-            "Overview, Key Topics, Statement Quotes, Scoring Summary, Key Topic Score Table.\n"
-            "Do NOT include Evaluation Highlights, Key Topic Evaluation Table, Key Topic Details, or Conclusions."
+            "Produce a **basic** evaluation report. Do *not* include the DETAILED sections."
         )
 
     instructions = (
         "\n\n# Task\n\n"
         "You are a High Law vs Low Law alignment evaluator.\n\n"
-        "Evaluate the provided document text. Follow the Evaluation Protocol (Steps 1-5) "
+        "Evaluate the provided document text by following the Evaluation Protocol (Steps 1-5) "
         "and Report Specification from the skill file above.\n"
         f"{extra}\n\n"
         "Execute the Self-Verification and Post-Report Self-Check before emitting the final report."
@@ -242,7 +237,7 @@ def build_review_system_prompt():
         "\n\n# Task\n\n"
         "You are a High Law vs Low Law evaluation report reviewer.\n\n"
         "Review the provided evaluation report against the original document text.\n"
-        "Execute the review checklist from the reference file above, in order.\n"
+        "Execute the review checklist from the reference file above, all included instructions in exact order.\n"
         "If changes are needed, describe them clearly with original and updated counts.\n"
         "If no changes are needed, state that explicitly.\n\n"
         "Return your review result with:\n"

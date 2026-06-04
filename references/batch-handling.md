@@ -97,13 +97,4 @@ Common Patterns:
 
 The script does NOT reset evaluation columns by default — pass `--reset` to clear them before starting. Use `--where` to target a subset of records for reset or evaluation. It uses `urllib` only (no external dependencies).
 
-## Dynamic Prompt Loading
-
-The script loads the full SKILL.md file (and `references/report-review.md` for reviews) at runtime and includes them in the system prompt sent to the AI endpoint. This means:
-
-- **Evaluation system prompt**: Full SKILL.md + minimal task instructions specifying BASIC or DETAILED report type
-- **Review system prompt**: Full SKILL.md + full `references/report-review.md` + minimal task instructions
-
-Because SKILL.md is included verbatim, updates to the skill are automatically reflected in batch runs without script changes. The minimal instructions layer on top tells the model which report type to produce and what to do with the provided document text.
-
-**Pitfall**: The StubClient distinguishes evaluation from review by checking `user_prompt.lower().startswith("review")`, not by searching for "review" in the system prompt — because SKILL.md contains the word "review" in many places.
+The script loads the full SKILL.md file (and `references/report-review.md` for reviews) at runtime and includes them in the system prompt sent to the AI endpoint. Because SKILL.md is included verbatim, updates to the skill are automatically reflected in batch runs without script changes. The minimal instructions layer on top tells the model which report type to produce and what to do with the provided document text.
