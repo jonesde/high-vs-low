@@ -18,13 +18,16 @@ Usage:
 Options:
   --limit N          Process only the first N records (default: all)
   --start-id ID      Start from this record ID (default: minimum ID)
-  --endpoint URL     OpenAI-compatible endpoint URL (default: env OPENAI_ENDPOINT)
+  --endpoint URL     OpenAI-compatible endpoint URL (default: env OPENAI_ENDPOINT or http://127.0.0.1:1234/v1)
   --api-key KEY      API key (default: env OPENAI_API_KEY)
-  --model MODEL      Model name (default: gpt-4o)
+  --model MODEL      Model name (default: qwen3.6-27b-mtp)
   --stub             Use a stub AI that returns a constant response
   --skip-review      Skip the review phase
+  --skip-evaluation  Skip the evaluation phase
   --dry-run          Print what would be done without modifying the database
+  --reset            Clean out evaluation/count/score columns before processing
   --reset-only       Only clean out evaluation/count/score columns and exit
+  --where CLAUSE     SQL WHERE clause (without 'WHERE') to filter records
   --report-type TYPE basic or detailed (default: basic)
 """
 
@@ -354,7 +357,7 @@ def discover_schema(conn):
     return schema
 
 
-def preview_records(conn, limit=None, start_id=None):
+def preview_records(conn, limit=None, start_id=None, where_clause=None):
     """Step 2: Preview records - check id range, text lengths, evaluation state."""
     cursor = conn.cursor()
 
@@ -378,9 +381,17 @@ def preview_records(conn, limit=None, start_id=None):
     print(f"  Unevaluated: {unevaluated}")
 
     # Determine which records to process
+    conditions = []
+    params = []
+    if where_clause is not None:
+        conditions.append(where_clause)
     if start_id is not None:
+        conditions.append("id >= ?")
+        params.append(start_id)
+
+    if conditions:
         cursor.execute(
-            "SELECT COUNT(*) FROM documents WHERE id >= ?", (start_id,)
+            "SELECT COUNT(*) FROM documents WHERE " + " AND ".join(conditions), params
         )
     else:
         cursor.execute("SELECT COUNT(*) FROM documents")
@@ -395,36 +406,40 @@ def preview_records(conn, limit=None, start_id=None):
     return min_id, max_id, total
 
 
-def reset_evaluations(conn):
+def reset_evaluations(conn, where_clause=None):
     """Clean out evaluation, count_hl, count_ll, and score columns."""
     cursor = conn.cursor()
-    cursor.execute(
-        "UPDATE documents SET evaluation = NULL, count_hl = NULL, count_ll = NULL, score = NULL"
-    )
+    query = "UPDATE documents SET evaluation = NULL, count_hl = NULL, count_ll = NULL, score = NULL"
+    if where_clause is not None:
+        query += f" WHERE {where_clause}"
+    cursor.execute(query)
     conn.commit()
     print(f"[Reset] Cleared evaluations for {cursor.rowcount} records.")
     print()
 
 
-def get_records_to_process(conn, limit=None, start_id=None):
+def get_records_to_process(conn, limit=None, start_id=None, where_clause=None):
     """Get the list of (id, doc_title, doc_text) to process."""
     cursor = conn.cursor()
     query = "SELECT id, doc_title, doc_text FROM documents"
+
+    # Build WHERE clause from all filters
+    conditions = []
+    params = []
+    if where_clause is not None:
+        conditions.append(where_clause)
     if start_id is not None:
-        query += " WHERE id >= ?"
+        conditions.append("id >= ?")
+        params.append(start_id)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
     query += " ORDER BY id"
     if limit is not None:
         query += " LIMIT ?"
+        params.append(limit)
 
-    if start_id is not None and limit is not None:
-        cursor.execute(query, (start_id, limit))
-    elif start_id is not None:
-        cursor.execute(query, (start_id,))
-    elif limit is not None:
-        cursor.execute(query, (limit,))
-    else:
-        cursor.execute(query)
-
+    cursor.execute(query, params)
     return cursor.fetchall()
 
 
@@ -623,16 +638,25 @@ def main():
     parser.add_argument("db_path", help="Path to SQLite database")
     parser.add_argument("--limit", type=int, default=None, help="Process only first N records")
     parser.add_argument("--start-id", type=int, default=None, help="Start from this record ID")
-    parser.add_argument("--endpoint", default=os.environ.get("OPENAI_ENDPOINT"), help="OpenAI-compatible endpoint URL")
-    parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY"), help="API key")
-    parser.add_argument("--model", default="gpt-4o", help="Model name")
+    parser.add_argument("--endpoint", default=os.environ.get("OPENAI_ENDPOINT", "http://127.0.0.1:1234/v1"), help="OpenAI-compatible endpoint URL")
+    parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", ""), help="API key")
+    parser.add_argument("--model", default="qwen3.6-27b-mtp", help="Model name")
     parser.add_argument("--stub", action="store_true", help="Use stub AI client (constant response)")
     parser.add_argument("--skip-review", action="store_true", help="Skip the review phase")
+    parser.add_argument("--skip-evaluation", action="store_true", help="Skip the evaluation phase")
     parser.add_argument("--dry-run", action="store_true", help="Print actions without modifying database")
-    parser.add_argument("--reset-only", action="store_true", help="Only reset evaluations and exit")
+    parser.add_argument("--reset", action="store_true", help="Reset evaluation data before processing")
+    parser.add_argument("--reset-only", action="store_true", help="Only reset evaluation data and exit (no eval)")
+    parser.add_argument("--where", default=None, help="SQL WHERE clause (without 'WHERE') to filter records")
     parser.add_argument("--report-type", choices=["basic", "detailed"], default="basic", help="Report type")
 
     args = parser.parse_args()
+
+    # Normalize --endpoint: if it's just an IP/host, build a full URL
+    DEFAULT_ENDPOINT = "http://127.0.0.1:1234/v1"
+    if not args.endpoint.startswith("http://") and not args.endpoint.startswith("https://"):
+        args.endpoint = f"http://{args.endpoint}:1234/v1"
+        print(f"[Config] Normalized endpoint to: {args.endpoint}")
 
     # Validate database path
     if not os.path.exists(args.db_path):
@@ -648,36 +672,37 @@ def main():
         discover_schema(conn)
 
         # Step 2: Preview records
-        preview_records(conn, limit=args.limit, start_id=args.start_id)
+        preview_records(conn, limit=args.limit, start_id=args.start_id, where_clause=args.where)
 
-        # Reset evaluations (clean slate)
-        if not args.dry_run:
-            reset_evaluations(conn)
-        else:
-            print("[Dry-run] Would reset evaluations.")
-            print()
+        # Reset evaluations (if --reset or --reset-only is passed)
+        if args.reset or args.reset_only:
+            if not args.dry_run:
+                reset_evaluations(conn, where_clause=args.where)
+            else:
+                print("[Dry-run] Would reset evaluations.")
+                print()
 
-        if args.reset_only:
-            print("Reset complete. Exiting.")
-            return
+            if args.reset_only:
+                print("Reset complete. Exiting.")
+                return
 
-        # Initialize client (only needed if processing records)
-        if args.stub:
+        # Initialize client (only needed if not skipping both phases)
+        if args.skip_evaluation and args.skip_review:
+            client = None
+            print("[Config] Skipping both evaluation and review — no client needed")
+        elif args.stub:
             client = StubClient()
             print(f"[Config] Using STUB client (constant responses)")
         else:
             if not args.endpoint:
-                print("ERROR: --endpoint is required (or set OPENAI_ENDPOINT env var)")
-                sys.exit(1)
-            if not args.api_key:
-                print("ERROR: --api-key is required (or set OPENAI_API_KEY env var)")
+                print("ERROR: --endpoint is required")
                 sys.exit(1)
             client = OpenAIClient(args.endpoint, args.api_key, args.model)
             print(f"[Config] Endpoint: {args.endpoint}, Model: {args.model}")
         print()
 
         # Get records to process
-        records = get_records_to_process(conn, limit=args.limit, start_id=args.start_id)
+        records = get_records_to_process(conn, limit=args.limit, start_id=args.start_id, where_clause=args.where)
         if not records:
             print("No records to process.")
             return
@@ -686,9 +711,13 @@ def main():
         print()
 
         # Step 3: Evaluate each record
-        eval_results = step3_evaluate(
-            conn, client, records, dry_run=args.dry_run, report_type=args.report_type
-        )
+        if args.skip_evaluation:
+            print("[Skipped] Evaluation phase skipped by --skip-evaluation")
+            eval_results = []
+        else:
+            eval_results = step3_evaluate(
+                conn, client, records, dry_run=args.dry_run, report_type=args.report_type
+            )
 
         # Step 4: Review each record (unless skipped)
         if args.skip_review:

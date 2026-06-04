@@ -72,13 +72,18 @@ python3 high-vs-low/scripts/batch-sqlite.py <db_path> [options]
 ```
 
 Key options:
-- `--endpoint URL` / `--api-key KEY`: OpenAI-compatible endpoint (or set `OPENAI_ENDPOINT` / `OPENAI_API_KEY` env vars)
-- `--model MODEL`: Model name override
-- `--stub`: Use a stub client that returns constant responses (`STUB_EVALUATION_RESPONSE` / `STUB_REVIEW_RESPONSE`) — useful for testing
+- `--endpoint URL`: OpenAI-compatible endpoint (default: `http://127.0.0.1:1234/v1`)
+- `--api-key KEY`: API key (optional; defaults to empty string, or `OPENAI_API_KEY` env var if set)
+- `--model MODEL`: Model name (default: `qwen3.6-27b-mtp`)
 - `--limit N`: Process only the first N records
+- `--where CLAUSE`: SQL WHERE clause (without the word `WHERE`) to filter which records are reset or evaluated. Combines with `--start-id` using AND. 
 - `--start-id ID`: Start from a specific record ID
-- `--skip-review`: Skip the review phase
+- `--skip-evaluation`: Skip the evaluation phase (step 3)
+- `--skip-review`: Skip the review phase (step 4)
 - `--dry-run`: Preview without modifying the database
-- `--reset-only`: Only clean out evaluation/count/score columns and exit
+- `--stub`: Use a stub client that returns constant responses (`STUB_EVALUATION_RESPONSE` / `STUB_REVIEW_RESPONSE`) — useful for testing
+- `--reset`: Clean out evaluation/count/score columns before processing (opt-in; without this flag, existing evaluations are preserved)
+- `--reset-only`: Clean out evaluation/count/score columns and exit immediately — does not run evaluation or review phases
+Examples: `--where "year = 1975"`, `--where "evaluation IS NOT NULL"`, `--where "score < -3"`
 
-The script automatically resets evaluation columns before each run. It uses `urllib` only (no external dependencies).
+The script does NOT reset evaluation columns by default — pass `--reset` to clear them before starting. Use `--where` to target a subset of records for reset or evaluation. It uses `urllib` only (no external dependencies).
