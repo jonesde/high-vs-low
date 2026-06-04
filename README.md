@@ -2,6 +2,12 @@
 
 Evaluate and score articles, emails, speeches, web pages, books (by chapter), etc for alignment against a High Law vs Low Law framework.
 
+**Easy Run** chat prompt:
+```text
+Follow the instructions in the https://git.new/high-vs-low file to evaluate the text below and generate a DETAILED report:
+
+```
+
 **Easy Install** agent prompt:
 ```text
 Install the latest version of the skill at github.com/jonesde/high-vs-low
