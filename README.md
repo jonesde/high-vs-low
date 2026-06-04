@@ -9,6 +9,8 @@ evaluate the text below and generate a DETAILED report:
 
 ```
 
+If your chat interface can't reach a URL but you can upload a file attachment (or just paste it in): [[https://raw.githubusercontent.com/jonesde/high-vs-low/refs/heads/master/SKILL.md|Download SKILL.md File]].
+
 **Easy Install** agent prompt:
 ```text
 Install the latest version of the skill at github.com/jonesde/high-vs-low
