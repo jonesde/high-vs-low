@@ -7,6 +7,11 @@ Evaluate and score articles, emails, speeches, web pages, books (by chapter), et
 Install the latest version of the skill at github.com/jonesde/high-vs-low
 ```
 
+**Easy Usage** chat prompt:
+```text
+Use the latest version of the skill at at github.com/jonesde/high-vs-low to analyze the following:
+```
+
 **Use Cases**
 - Why do I feel funny when I read this, but can't quite place it?
 - Am I being controlled (manipulated or coerced) in some way? If so, which patterns are they using?
