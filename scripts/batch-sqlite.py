@@ -30,7 +30,7 @@ Options:
   --where CLAUSE     SQL WHERE clause (without 'WHERE') to filter records
   --table TABLE_NAME Table name to use (default: auto-detect if DB has exactly one table)
   --document-column COLUMN_NAME Column containing the document text (default: doc_text)
-  --report-type TYPE basic or detailed (default: basic)
+  --detailed           produce detailed evaluation reports (default: basic)
 """
 
 import argparse
@@ -529,13 +529,13 @@ def load_record(conn, table_name, doc_column, doc_id):
 # Workflow steps
 # ---------------------------------------------------------------------------
 
-def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False, report_type="basic"):
+def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False, detailed=False):
     """Step 3: Delegate evaluation per-record."""
     print("=" * 60)
     print("[Step 3] Evaluation Phase")
     print("=" * 60)
     print(f"  Records: {len(records)}")
-    print(f"  Report type: {report_type}")
+    print(f"  Report type: {'detailed' if detailed else 'basic'}")
     print()
 
     results = []
@@ -549,7 +549,7 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
         print(f"[{idx}/{len(records)}] Evaluating ID={doc_id}: {doc_title}")
 
         # Build prompts
-        system_prompt = build_evaluation_system_prompt(report_type)
+        system_prompt = build_evaluation_system_prompt("detailed" if detailed else "basic")
         user_prompt = build_evaluation_user_prompt(doc_text, doc_title)
 
         # Call AI endpoint
@@ -764,7 +764,7 @@ def main():
     parser.add_argument("--where", default=None, help="SQL WHERE clause (without 'WHERE') to filter records")
     parser.add_argument("--table", default=None, help="Table name to use (default: auto-detect if DB has exactly one table)")
     parser.add_argument("--document-column", default="doc_text", help="Column containing the document text (default: doc_text)")
-    parser.add_argument("--report-type", choices=["basic", "detailed"], default="basic", help="Report type")
+    parser.add_argument("--detailed", action="store_true", help="Produce detailed evaluation reports (default: basic)")
 
     args = parser.parse_args()
 
@@ -851,7 +851,7 @@ def main():
             eval_results = []
         else:
             eval_results = step3_evaluate(
-                conn, table_name, doc_column, client, records, dry_run=args.dry_run, report_type=args.report_type
+                conn, table_name, doc_column, client, records, dry_run=args.dry_run, detailed=args.detailed
             )
 
         # Step 4: Review each record (unless skipped)
