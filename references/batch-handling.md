@@ -42,9 +42,9 @@ Follow these steps *in order*:
       1. Read the `high-vs-low` skill (via skill like `skill_view(name='high-vs-low')` or path like `/opt/data/skills/high-vs-low/SKILL.md`)
       2. Read `doc_text` for the designated `id` from the `documents` table in the specified *database* (include database location and access details)
       3. Evaluate the text: follow skill instructions and reason through the full text as an AI
-      4. Generate the full evaluation report as per specification in the high-vs-low skill and any additional user instructions (default to basic report unless user requests detailed)
+      4. Generate the full evaluation report as per specification in the high-vs-low skill and any additional user instructions (default to basic report unless user requests detailed); use a temporary file for initial output, and use patches to modify as needed before finalizing (to avoid regenerating entire report)
       5. Write the markdown report into the `evaluation` column
-      6. Populate `count_hl`, `count_ll`, and `score`
+      6. Populate `count_hl`, `count_ll`, and `score` using values from the report
       7. Return `id` and final counts for verification
    - **Verify after each**: Confirm counts, score, and evaluation are populated; remember these to report at the end
 4. **Delegate review per-record**
