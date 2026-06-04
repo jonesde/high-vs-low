@@ -214,7 +214,8 @@ Before emitting the report, verify:
 
 # Report Specification
 
-Generate all output in Markdown unless the user requests another format.
+- Generate all output in unicode (UTF-8) encoded GitHub-compatible Markdown (unless the user requests another format)
+- For text output formats use *ONLY* ASCII characters *except* when unicode is needed for *text* in non-latin languages; **NEVER** use non-ASCII punctuation or formatting characters
 
 **Template compliance is mandatory**: Use the exact section headers and table structures specified above. Do **not** invent alternative header names or table structures. The `Statement Quotes` section and its three subsections must match exactly, and the header lines for the quotes tables must match exactly.
 
