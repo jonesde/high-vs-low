@@ -27,7 +27,7 @@ Before fixing anything, derive these from the report. These are your source of t
 
 Validate that every normative claim in the original text was captured and classified correctly.
 
-- [ ] **Re-scan source text for missed stances**: Identify any verse/paragraph with no `Location` reference in the report. Extract and classify all missing normative claims.
+- [ ] **Re-scan source text for missed stances**: Identify any verse/etc reference or line number with no `Location` reference in the report. Extract and classify all missing normative claims.
 - [ ] **Split multi-claim locations**: Any source location represented by a single statement but containing **two or more distinct stances** must be split into separate statements.
 - [ ] **Required fields present on every statement**: Confirm each row has `#`, `Location`, `Rules`, `Principle Quote`, `Speaker`, `Stance Quote`, `Key Topics`, and `Decision Notes`.
 - [ ] **Rules are exhaustive**: The `Rules` column must list **all** relevant Distinction Rules by **concept**, not vocabulary.
