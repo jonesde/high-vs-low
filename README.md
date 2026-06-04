@@ -4,7 +4,8 @@ Evaluate and score articles, emails, speeches, web pages, books (by chapter), et
 
 **Easy Run** chat prompt:
 ```text
-Follow the instructions in the https://git.new/high-vs-low file to evaluate the text below and generate a DETAILED report:
+Follow the instructions in the https://git.new/high-vs-low file to 
+evaluate the text below and generate a DETAILED report:
 
 ```
 
