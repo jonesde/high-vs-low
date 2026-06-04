@@ -59,3 +59,26 @@ Follow these steps *in order*:
       6. Return `id` and both original and updated counts for verification
    - **Verify after each**: Confirm counts, score, and evaluation are populated and have been updated as needed; remember these to report at the end
 5. **Report**: Describe what was done, if there were any issues and what was done about them, and a summary of the scores per record from before and after the review
+
+## Automated Script Alternative
+
+This script follows the 5-step Database Delegation Workflow above, calling an OpenAI-compatible endpoint for evaluations and reviews.
+
+Do *NOT* use this script unless the user explicitly requests it. This script is an alternative to the instructions above to run batches outside an agent. If you are an agent reading this file for instructions, ignore this unless you are asked to look at it.
+
+Usage:
+```
+python3 high-vs-low/scripts/batch-sqlite.py <db_path> [options]
+```
+
+Key options:
+- `--endpoint URL` / `--api-key KEY`: OpenAI-compatible endpoint (or set `OPENAI_ENDPOINT` / `OPENAI_API_KEY` env vars)
+- `--model MODEL`: Model name override
+- `--stub`: Use a stub client that returns constant responses (`STUB_EVALUATION_RESPONSE` / `STUB_REVIEW_RESPONSE`) — useful for testing
+- `--limit N`: Process only the first N records
+- `--start-id ID`: Start from a specific record ID
+- `--skip-review`: Skip the review phase
+- `--dry-run`: Preview without modifying the database
+- `--reset-only`: Only clean out evaluation/count/score columns and exit
+
+The script automatically resets evaluation columns before each run. It uses `urllib` only (no external dependencies).
