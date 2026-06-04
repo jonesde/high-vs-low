@@ -38,7 +38,7 @@ Follow these steps *in order*:
 2. **Preview records**: Check `id` range, text lengths, and existing evaluation state; DO NOT read full document text or include it in instructions (instruct subagent to read)
 3. **Delegate evaluation per-record**
    - *ALWAYS* use one task per one record; delegate one task at a time sequentially and verify results before starting the next
-   - Send *these* instructions (replace locations and column names as needed):
+   - Send *these exact* instructions to subagent (replace locations and column names as needed):
       1. Read the `high-vs-low` skill (via skill like `skill_view(name='high-vs-low')` or path like `/opt/data/skills/high-vs-low/SKILL.md`)
       2. Read `doc_text` for the designated `id` from the `documents` table in the specified *database* (include database location and access details)
       3. Evaluate the text: follow skill instructions and reason through the full text as an AI
@@ -50,7 +50,7 @@ Follow these steps *in order*:
 4. **Delegate review per-record**
    - *ALWAYS* do this review unless the user has asked to skip the review
    - *ALWAYS* use one task per one record; delegate one task at a time sequentially and verify results before starting the next
-   - Send *these* instructions (replace locations and column names as needed):
+   - Send *these exact* instructions to subagent (replace locations and column names as needed):
       1. Read the `high-vs-low` skill (via skill like `skill_view(name='high-vs-low')` or path like `/opt/data/skills/high-vs-low/SKILL.md`)
       2. Read the `references/report-review.md` skill reference file (Evaluation Report Review Checklist) via skill like `skill_view(name='high-vs-low', file_path='references/report-review.md')` or path like `/opt/data/skills/high-vs-low/references/report-review.md`
       3. Read `doc_text` and `evaluation` for the designated `id` from the `documents` table in the specified *database* (include database location and access details)
