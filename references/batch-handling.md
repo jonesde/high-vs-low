@@ -86,9 +86,11 @@ Argument options:
 - `--dry-run`: Preview without modifying the database
 - `--stub`: Use a stub client that returns constant responses — useful for testing
 - `--reset`: Clean out evaluation/count/score columns before processing (opt-in; without this flag, existing evaluations are preserved)
+- `--reset-only`: Clean out evaluation/count/score columns and then exit (no evaluation or review)
 
 Common Patterns:
 - **Reset and re-eval a subset**: `--reset --where "year = 1975" --limit 5`
+- **Continue eval on a subset**: `--where "year = 1975 AND evaluation IS NOT NULL" --limit 5`
 - **Preview without modifying**: `--skip-evaluation --skip-review --where "year >= 2000"`
 - **Resume from a specific ID**: `--start-id 500 --limit 10`
 - **WHERE Examples**: `--where "year = 1975"`, `--where "evaluation IS NOT NULL"`, `--where "score < -3"`

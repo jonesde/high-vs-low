@@ -185,7 +185,7 @@ class OpenAIClient:
         self.api_key = api_key
         self.model = model
 
-    def chat(self, system_prompt, user_prompt, temperature=0.0):
+    def chat(self, system_prompt, user_prompt):
         """Send a chat completion request and return ChatResult(content, usage)."""
         url = f"{self.endpoint}/chat/completions"
         payload = {
@@ -194,7 +194,6 @@ class OpenAIClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            "temperature": temperature,
         }
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
@@ -208,7 +207,7 @@ class OpenAIClient:
         )
         start = time.monotonic()
         try:
-            with urllib.request.urlopen(req, timeout=300) as resp:
+            with urllib.request.urlopen(req, timeout=1800) as resp:
                 body = json.loads(resp.read().decode("utf-8"))
             elapsed = time.monotonic() - start
             content = body["choices"][0]["message"]["content"]
@@ -235,7 +234,7 @@ class StubClient:
         self.call_count = 0
         self.review_call_count = 0
 
-    def chat(self, system_prompt, user_prompt, temperature=0.0):
+    def chat(self, system_prompt, user_prompt):
         self.call_count += 1
         # Distinguish by user prompt — system prompts now both contain SKILL.md
         if user_prompt.lower().startswith("review"):
