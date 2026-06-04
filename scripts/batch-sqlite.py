@@ -129,7 +129,7 @@ The evaluation report is valid. No changes required.
 class OpenAIClient:
     """Minimal OpenAI-compatible chat completions client using urllib."""
 
-    def __init__(self, endpoint, api_key, model="gpt-4o"):
+    def __init__(self, endpoint, api_key, model=""):
         self.endpoint = endpoint.rstrip("/")
         self.api_key = api_key
         self.model = model
