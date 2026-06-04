@@ -175,6 +175,7 @@ class ChatResult(NamedTuple):
     prompt_tokens: Optional[int] = None
     completion_tokens: Optional[int] = None
     total_tokens: Optional[int] = None
+    reasoning_tokens: Optional[int] = None
 
 
 class OpenAIClient:
@@ -213,12 +214,14 @@ class OpenAIClient:
             elapsed = time.monotonic() - start
             content = body["choices"][0]["message"]["content"]
             usage = body.get("usage", {})
+            usage_details = usage.get("completion_tokens_details", {})
             return ChatResult(
                 content=content,
                 elapsed=elapsed,
                 prompt_tokens=usage.get("prompt_tokens"),
                 completion_tokens=usage.get("completion_tokens"),
                 total_tokens=usage.get("total_tokens"),
+                reasoning_tokens=usage_details.get("reasoning_tokens"),
             )
         except urllib.error.HTTPError as exc:
             elapsed = time.monotonic() - start
@@ -254,6 +257,7 @@ class StubClient:
             prompt_tokens=100,
             completion_tokens=200,
             total_tokens=300,
+            reasoning_tokens=0,
         )
 
 
@@ -638,6 +642,8 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
     total_prompt_tokens = 0
     total_completion_tokens = 0
     total_tokens = 0
+    total_reasoning_tokens = 0
+    total_output_tokens = 0
 
     for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
         print(f"[{idx}/{len(records)}] Evaluating ID={doc_id}: {doc_title}")
@@ -662,11 +668,15 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
             total_completion_tokens += result.completion_tokens
         if result.total_tokens is not None:
             total_tokens += result.total_tokens
+        if result.reasoning_tokens is not None:
+            total_reasoning_tokens += result.reasoning_tokens
+        output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
+        total_output_tokens += output_tokens
 
         # Parse results
         count_hl, count_ll, score = parse_evaluation_report(response)
         print(f"  Result: HL={count_hl}, LL={count_ll}, Score={score}")
-        print(f"  API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} completion={result.completion_tokens} total={result.total_tokens}")
+        print(f"  API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} reasoning={result.reasoning_tokens} output={output_tokens} completion={result.completion_tokens} total={result.total_tokens}")
 
         if not dry_run:
             save_evaluation(conn, table_name, doc_id, response, count_hl, count_ll, score)
@@ -689,7 +699,7 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
     print(f"  Total phase time:  {phase_elapsed:.1f}s")
     print(f"  Total API time:    {total_elapsed:.1f}s")
     print(f"  Avg API time/rec:  {total_elapsed / len(results):.1f}s" if results else "  Avg API time/rec:  N/A")
-    print(f"  Total tokens:      prompt={total_prompt_tokens} completion={total_completion_tokens} total={total_tokens}")
+    print(f"  Total tokens:      prompt={total_prompt_tokens} reasoning={total_reasoning_tokens} output={total_output_tokens} completion={total_completion_tokens} total={total_tokens}")
     print("=" * 60)
     print()
 
@@ -713,6 +723,8 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
     total_prompt_tokens = 0
     total_completion_tokens = 0
     total_tokens = 0
+    total_reasoning_tokens = 0
+    total_output_tokens = 0
 
     for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
         print(f"[{idx}/{len(records)}] Reviewing ID={doc_id}: {doc_title}")
@@ -770,6 +782,10 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
                 total_completion_tokens += result.completion_tokens
             if result.total_tokens is not None:
                 total_tokens += result.total_tokens
+            if result.reasoning_tokens is not None:
+                total_reasoning_tokens += result.reasoning_tokens
+            output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
+            total_output_tokens += output_tokens
 
             # Parse review results
             new_hl, new_ll, new_score = parse_review_result(response)
@@ -780,7 +796,7 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
             print(f"    Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
             print(f"    Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
             print(f"    Changes reported: {'YES' if has_changes else 'NO'}")
-            print(f"    API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} completion={result.completion_tokens} total={result.total_tokens}")
+            print(f"    API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} reasoning={result.reasoning_tokens} output={output_tokens} completion={result.completion_tokens} total={result.total_tokens}")
 
             # If LLM reported changes, save updated evaluation and loop again
             if has_changes and iteration < MAX_REVIEW_ITERATIONS:
@@ -837,7 +853,7 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
     print(f"  Total phase time:  {phase_elapsed:.1f}s")
     print(f"  Total API time:    {total_elapsed:.1f}s")
     print(f"  Avg API time/rec:  {total_elapsed / len(review_results):.1f}s" if review_results else "  Avg API time/rec:  N/A")
-    print(f"  Total tokens:      prompt={total_prompt_tokens} completion={total_completion_tokens} total={total_tokens}")
+    print(f"  Total tokens:      prompt={total_prompt_tokens} reasoning={total_reasoning_tokens} output={total_output_tokens} completion={total_completion_tokens} total={total_tokens}")
     print("=" * 60)
     print()
 
