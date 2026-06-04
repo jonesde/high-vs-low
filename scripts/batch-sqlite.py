@@ -29,6 +29,7 @@ Options:
   --reset-only       Only clean out evaluation/count/score columns and exit
   --where CLAUSE     SQL WHERE clause (without 'WHERE') to filter records
   --table TABLE_NAME Table name to use (default: auto-detect if DB has exactly one table)
+  --document-column COLUMN_NAME Column containing the document text (default: doc_text)
   --report-type TYPE basic or detailed (default: basic)
 """
 
@@ -331,7 +332,7 @@ def parse_review_result(review_text):
 # Database operations
 # ---------------------------------------------------------------------------
 
-def discover_schema(conn, table_name):
+def discover_schema(conn, table_name, doc_column):
     """Step 1: Discover schema by querying sqlite_master."""
     cursor = conn.cursor()
     cursor.execute(
@@ -347,7 +348,7 @@ def discover_schema(conn, table_name):
     print()
 
     # Verify required columns exist
-    required = {"id", "doc_text", "evaluation", "count_hl", "count_ll", "score"}
+    required = {"id", doc_column, "evaluation", "count_hl", "count_ll", "score"}
     found = {m[0] for m in re.findall(r"(\w+)\s+(TEXT|INTEGER|REAL)", schema, re.IGNORECASE)}
     missing = required - found
     if missing:
@@ -358,14 +359,14 @@ def discover_schema(conn, table_name):
     return schema
 
 
-def preview_records(conn, table_name, limit=None, start_id=None, where_clause=None):
+def preview_records(conn, table_name, doc_column, limit=None, start_id=None, where_clause=None):
     """Step 2: Preview records - check id range, text lengths, evaluation state."""
     cursor = conn.cursor()
 
     cursor.execute(f"SELECT MIN(id), MAX(id), COUNT(*) FROM {table_name}")
     min_id, max_id, total = cursor.fetchone()
 
-    cursor.execute(f"SELECT AVG(LENGTH(doc_text)), MIN(LENGTH(doc_text)), MAX(LENGTH(doc_text)) FROM {table_name}")
+    cursor.execute(f"SELECT AVG(LENGTH({doc_column})), MIN(LENGTH({doc_column})), MAX(LENGTH({doc_column})) FROM {table_name}")
     avg_len, min_len, max_len = cursor.fetchone()
 
     cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE evaluation IS NOT NULL")
@@ -419,10 +420,10 @@ def reset_evaluations(conn, table_name, where_clause=None):
     print()
 
 
-def get_records_to_process(conn, table_name, limit=None, start_id=None, where_clause=None):
+def get_records_to_process(conn, table_name, doc_column, limit=None, start_id=None, where_clause=None):
     """Get the list of (id, doc_title, doc_text) to process."""
     cursor = conn.cursor()
-    query = f"SELECT id, doc_title, doc_text FROM {table_name}"
+    query = f"SELECT id, doc_title, {doc_column} FROM {table_name}"
 
     # Build WHERE clause from all filters
     conditions = []
@@ -456,11 +457,11 @@ def save_evaluation(conn, table_name, doc_id, evaluation, count_hl, count_ll, sc
     conn.commit()
 
 
-def load_record(conn, table_name, doc_id):
+def load_record(conn, table_name, doc_column, doc_id):
     """Load a single record's doc_text, doc_title, and evaluation."""
     cursor = conn.cursor()
     cursor.execute(
-        f"SELECT id, doc_title, doc_text, evaluation FROM {table_name} WHERE id = ?",
+        f"SELECT id, doc_title, {doc_column}, evaluation FROM {table_name} WHERE id = ?",
         (doc_id,),
     )
     row = cursor.fetchone()
@@ -473,7 +474,7 @@ def load_record(conn, table_name, doc_id):
 # Workflow steps
 # ---------------------------------------------------------------------------
 
-def step3_evaluate(conn, table_name, client, records, dry_run=False, report_type="basic"):
+def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False, report_type="basic"):
     """Step 3: Delegate evaluation per-record."""
     print("=" * 60)
     print("[Step 3] Evaluation Phase")
@@ -505,7 +506,7 @@ def step3_evaluate(conn, table_name, client, records, dry_run=False, report_type
             print(f"  Saved to database.")
 
         # Verify
-        record = load_record(conn, table_name, doc_id)
+        record = load_record(conn, table_name, doc_column, doc_id)
         if record and record["evaluation"] is not None:
             print(f"  Verified: evaluation populated ({len(record['evaluation'])} chars)")
         else:
@@ -517,7 +518,7 @@ def step3_evaluate(conn, table_name, client, records, dry_run=False, report_type
     return results
 
 
-def step4_review(conn, table_name, client, records, eval_results, dry_run=False):
+def step4_review(conn, table_name, doc_column, client, records, eval_results, dry_run=False):
     """Step 4: Delegate review per-record."""
     print("=" * 60)
     print("[Step 4] Review Phase")
@@ -529,7 +530,7 @@ def step4_review(conn, table_name, client, records, eval_results, dry_run=False)
         print(f"[{idx}/{len(records)}] Reviewing ID={doc_id}: {doc_title}")
 
         # Load current evaluation
-        record = load_record(conn, table_name, doc_id)
+        record = load_record(conn, table_name, doc_column, doc_id)
         if not record or record["evaluation"] is None:
             print(f"  SKIPPED: No evaluation found for ID={doc_id}")
             review_results.append((doc_id, doc_title, None, None, None, None, None, None, "No evaluation"))
@@ -574,7 +575,7 @@ def step4_review(conn, table_name, client, records, eval_results, dry_run=False)
             print(f"  No changes needed.")
 
         # Verify
-        record = load_record(conn, table_name, doc_id)
+        record = load_record(conn, table_name, doc_column, doc_id)
         if record and record["evaluation"] is not None:
             print(f"  Verified: evaluation present ({len(record['evaluation'])} chars)")
         else:
@@ -650,6 +651,7 @@ def main():
     parser.add_argument("--reset-only", action="store_true", help="Only reset evaluation data and exit (no eval)")
     parser.add_argument("--where", default=None, help="SQL WHERE clause (without 'WHERE') to filter records")
     parser.add_argument("--table", default=None, help="Table name to use (default: auto-detect if DB has exactly one table)")
+    parser.add_argument("--document-column", default="doc_text", help="Column containing the document text (default: doc_text)")
     parser.add_argument("--report-type", choices=["basic", "detailed"], default="basic", help="Report type")
 
     args = parser.parse_args()
@@ -685,12 +687,15 @@ def main():
                 print(f"  Available tables: {', '.join(tables)}")
             sys.exit(1)
 
+    doc_column = args.document_column
+    print(f"[DB] Document column: {doc_column}")
+
     try:
         # Step 1: Discover schema
-        discover_schema(conn, table_name)
+        discover_schema(conn, table_name, doc_column)
 
         # Step 2: Preview records
-        preview_records(conn, table_name, limit=args.limit, start_id=args.start_id, where_clause=args.where)
+        preview_records(conn, table_name, doc_column, limit=args.limit, start_id=args.start_id, where_clause=args.where)
 
         # Reset evaluations (if --reset or --reset-only is passed)
         if args.reset or args.reset_only:
@@ -720,7 +725,7 @@ def main():
         print()
 
         # Get records to process
-        records = get_records_to_process(conn, table_name, limit=args.limit, start_id=args.start_id, where_clause=args.where)
+        records = get_records_to_process(conn, table_name, doc_column, limit=args.limit, start_id=args.start_id, where_clause=args.where)
         if not records:
             print("No records to process.")
             return
@@ -734,7 +739,7 @@ def main():
             eval_results = []
         else:
             eval_results = step3_evaluate(
-                conn, table_name, client, records, dry_run=args.dry_run, report_type=args.report_type
+                conn, table_name, doc_column, client, records, dry_run=args.dry_run, report_type=args.report_type
             )
 
         # Step 4: Review each record (unless skipped)
@@ -743,7 +748,7 @@ def main():
             review_results = []
         else:
             review_results = step4_review(
-                conn, table_name, client, records, eval_results, dry_run=args.dry_run
+                conn, table_name, doc_column, client, records, eval_results, dry_run=args.dry_run
             )
 
         # Step 5: Report
