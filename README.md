@@ -9,7 +9,7 @@ evaluate the text below and generate a DETAILED report:
 
 ```
 
-If your chat interface can't reach a URL but you can upload a file attachment (or just paste it in): [[https://raw.githubusercontent.com/jonesde/high-vs-low/refs/heads/master/SKILL.md|Download SKILL.md File]].
+If your chat interface can't reach a URL but you can upload a file attachment (or just paste it in): [Download SKILL.md File](https://raw.githubusercontent.com/jonesde/high-vs-low/refs/heads/master/SKILL.md).
 
 **Easy Install** agent prompt:
 ```text
