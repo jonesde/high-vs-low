@@ -194,6 +194,7 @@ class OpenAIClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
+            "reasoning_effort": "high",
         }
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
