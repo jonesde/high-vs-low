@@ -76,7 +76,8 @@ Argument options:
 - `--api-key KEY`: API key (optional; defaults to empty string, or `OPENAI_API_KEY` env var if set)
 - `--model MODEL`: Model name (default: ``; endpoint decides or errors)
 - `--report-type TYPE`: basic or detailed (default: basic)
-- `--table TABLE_NAME`: Table name (default: ``; endpoint decides or errors)
+- `--table TABLE_NAME`: Table name to use (default: auto-detect if DB has exactly one table; errors if multiple tables and not specified)
+- `--document-column COLUMN_NAME`: Column containing the document text (default: `doc_text`)
 - `--limit N`: Process only the first N records
 - `--where CLAUSE`: SQL WHERE clause (without the word `WHERE`) to filter which records are reset or evaluated. Combines with `--start-id` using AND. 
 - `--start-id ID`: Start from a specific record ID
@@ -95,3 +96,14 @@ Common Patterns:
 - **WHERE Examples**: `--where "year = 1975"`, `--where "evaluation IS NOT NULL"`, `--where "score < -3"`
 
 The script does NOT reset evaluation columns by default — pass `--reset` to clear them before starting. Use `--where` to target a subset of records for reset or evaluation. It uses `urllib` only (no external dependencies).
+
+## Dynamic Prompt Loading
+
+The script loads the full SKILL.md file (and `references/report-review.md` for reviews) at runtime and includes them in the system prompt sent to the AI endpoint. This means:
+
+- **Evaluation system prompt**: Full SKILL.md + minimal task instructions specifying BASIC or DETAILED report type
+- **Review system prompt**: Full SKILL.md + full `references/report-review.md` + minimal task instructions
+
+Because SKILL.md is included verbatim, updates to the skill are automatically reflected in batch runs without script changes. The minimal instructions layer on top tells the model which report type to produce and what to do with the provided document text.
+
+**Pitfall**: The StubClient distinguishes evaluation from review by checking `user_prompt.lower().startswith("review")`, not by searching for "review" in the system prompt — because SKILL.md contains the word "review" in many places.

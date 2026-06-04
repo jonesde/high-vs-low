@@ -174,7 +174,8 @@ class StubClient:
 
     def chat(self, system_prompt, user_prompt, temperature=0.0):
         self.call_count += 1
-        if "review" in system_prompt.lower() or "review" in user_prompt.lower():
+        # Distinguish by user prompt — system prompts now both contain SKILL.md
+        if user_prompt.lower().startswith("review"):
             return STUB_REVIEW
         return STUB_EVALUATION
 
@@ -183,44 +184,74 @@ class StubClient:
 # Prompt builders
 # ---------------------------------------------------------------------------
 
-EVALUATION_SYSTEM_PROMPT = """You are a High Law vs Low Law alignment evaluator.
+# ---------------------------------------------------------------------------
+# Prompt builders — load skill files dynamically
+# ---------------------------------------------------------------------------
 
-Read the provided text and produce a complete evaluation report following this structure:
-
-1. Extract ALL normative statements with stances on moral/legal principles
-2. Classify each as High Law or Low Law aligned using the Distinction Rule Table
-3. Assign key topics using the Root Taxonomy
-4. Calculate scores: Score = (HL_pct - LL_pct) / 10 on scale -10 to +10
-
-Produce a markdown report with these EXACT sections:
-- # High Law vs Low Law Alignment Evaluation: {title}
-- ## Overview
-- ## Key Topics (numbered list, 5-14 topics)
-- ## Statement Quotes with ### High Law Aligned (N statements) and ### Low Law Aligned (N statements) subsections
-  Each with table: | # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
-- ## Scoring Summary table with HL/LL counts, percentages, and Score formula
-- ## Key Topic Score Table with columns: Key Topic | High # | Low # | Score
-
-Ensure counts in headers match actual table rows. Ensure scoring is mathematically correct."""
+_SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-REVIEW_SYSTEM_PROMPT = """You are a High Law vs Low Law evaluation report reviewer.
+def _read_skill_file(relative_path):
+    """Read a file from the skill directory."""
+    path = os.path.join(_SKILL_DIR, relative_path)
+    if not os.path.exists(path):
+        print(f"WARNING: Skill file not found: {path}")
+        return ""
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
 
-You will receive the original document text and an existing evaluation report.
-Review the evaluation against this checklist:
 
-1. Verify all normative stances in the source text are captured
-2. Verify HL/LL table header counts match actual rows
-3. Verify scoring math: Score = (HL_pct - LL_pct) / 10
-4. Verify Key Topic Score Table counts match statement assignments
-5. Verify bidirectional topic consistency (list <-> statements)
-6. Verify Decision Notes are internally consistent
+def build_evaluation_system_prompt(report_type="basic"):
+    """Build evaluation system prompt: SKILL.md + minimal instructions."""
+    skill_md = _read_skill_file("SKILL.md")
 
-Return your review result with:
-- Original counts: HL=N, LL=N, Score=X.X
-- Updated counts: HL=N, LL=N, Score=X.X (same if no changes)
-- Description of any changes made
-- If no changes, state that no changes are required."""
+    if report_type == "detailed":
+        extra = (
+            "\n\n## Report Type: DETAILED\n\n"
+            "Produce a **detailed** evaluation report. Include ALL sections from the Report Specification:\n"
+            "Overview, Key Topics, Statement Quotes, Scoring Summary, Key Topic Score Table,\n"
+            "Evaluation Highlights, Key Topic Evaluation Table, Key Topic Details (one per topic),\n"
+            "and Conclusions."
+        )
+    else:
+        extra = (
+            "\n\n## Report Type: BASIC\n\n"
+            "Produce a **basic** evaluation report. Include only the mandatory sections:\n"
+            "Overview, Key Topics, Statement Quotes, Scoring Summary, Key Topic Score Table.\n"
+            "Do NOT include Evaluation Highlights, Key Topic Evaluation Table, Key Topic Details, or Conclusions."
+        )
+
+    instructions = (
+        "\n\n# Task\n\n"
+        "You are a High Law vs Low Law alignment evaluator.\n\n"
+        "Evaluate the provided document text. Follow the Evaluation Protocol (Steps 1-5) "
+        "and Report Specification from the skill file above.\n"
+        f"{extra}\n\n"
+        "Execute the Self-Verification and Post-Report Self-Check before emitting the final report."
+    )
+
+    return skill_md + instructions
+
+
+def build_review_system_prompt():
+    """Build review system prompt: SKILL.md + review checklist + minimal instructions."""
+    skill_md = _read_skill_file("SKILL.md")
+    review_md = _read_skill_file("references/report-review.md")
+
+    instructions = (
+        "\n\n# Task\n\n"
+        "You are a High Law vs Low Law evaluation report reviewer.\n\n"
+        "Review the provided evaluation report against the original document text.\n"
+        "Execute the review checklist from the reference file above, in order.\n"
+        "If changes are needed, describe them clearly with original and updated counts.\n"
+        "If no changes are needed, state that explicitly.\n\n"
+        "Return your review result with:\n"
+        "- Original counts: HL=N, LL=N, Score=X.X\n"
+        "- Updated counts: HL=N, LL=N, Score=X.X (same if no changes)\n"
+        "- Description of any changes made"
+    )
+
+    return skill_md + "\n" + review_md + instructions
 
 
 def build_evaluation_user_prompt(doc_text, doc_title):
@@ -486,7 +517,7 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
         print(f"[{idx}/{len(records)}] Evaluating ID={doc_id}: {doc_title}")
 
         # Build prompts
-        system_prompt = EVALUATION_SYSTEM_PROMPT.format(title=doc_title)
+        system_prompt = build_evaluation_system_prompt(report_type)
         user_prompt = build_evaluation_user_prompt(doc_text, doc_title)
 
         # Call AI endpoint
@@ -546,7 +577,7 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
                 break
 
         # Build prompts
-        system_prompt = REVIEW_SYSTEM_PROMPT
+        system_prompt = build_review_system_prompt()
         user_prompt = build_review_user_prompt(
             record["doc_text"], record["evaluation"], doc_title
         )
@@ -642,7 +673,7 @@ def main():
     parser.add_argument("--start-id", type=int, default=None, help="Start from this record ID")
     parser.add_argument("--endpoint", default=os.environ.get("OPENAI_ENDPOINT", "http://127.0.0.1:1234/v1"), help="OpenAI-compatible endpoint URL")
     parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", ""), help="API key")
-    parser.add_argument("--model", default="qwen3.6-27b-mtp", help="Model name")
+    parser.add_argument("--model", default="", help="Model name (default: empty, let endpoint decide)")
     parser.add_argument("--stub", action="store_true", help="Use stub AI client (constant response)")
     parser.add_argument("--skip-review", action="store_true", help="Skip the review phase")
     parser.add_argument("--skip-evaluation", action="store_true", help="Skip the evaluation phase")
