@@ -42,6 +42,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from typing import NamedTuple, Optional
 
 
 # ---------------------------------------------------------------------------
@@ -126,6 +127,15 @@ The evaluation report is valid. No changes required.
 # OpenAI-compatible client
 # ---------------------------------------------------------------------------
 
+class ChatResult(NamedTuple):
+    """Result from an AI chat call with content and usage metadata."""
+    content: str
+    elapsed: float = 0.0
+    prompt_tokens: Optional[int] = None
+    completion_tokens: Optional[int] = None
+    total_tokens: Optional[int] = None
+
+
 class OpenAIClient:
     """Minimal OpenAI-compatible chat completions client using urllib."""
 
@@ -135,7 +145,7 @@ class OpenAIClient:
         self.model = model
 
     def chat(self, system_prompt, user_prompt, temperature=0.0):
-        """Send a chat completion request and return the assistant message."""
+        """Send a chat completion request and return ChatResult(content, usage)."""
         url = f"{self.endpoint}/chat/completions"
         payload = {
             "model": self.model,
@@ -155,14 +165,25 @@ class OpenAIClient:
             },
             method="POST",
         )
+        start = time.monotonic()
         try:
             with urllib.request.urlopen(req, timeout=300) as resp:
                 body = json.loads(resp.read().decode("utf-8"))
-                return body["choices"][0]["message"]["content"]
+            elapsed = time.monotonic() - start
+            content = body["choices"][0]["message"]["content"]
+            usage = body.get("usage", {})
+            return ChatResult(
+                content=content,
+                elapsed=elapsed,
+                prompt_tokens=usage.get("prompt_tokens"),
+                completion_tokens=usage.get("completion_tokens"),
+                total_tokens=usage.get("total_tokens"),
+            )
         except urllib.error.HTTPError as exc:
+            elapsed = time.monotonic() - start
             error_body = exc.read().decode("utf-8", errors="replace")
             raise RuntimeError(
-                f"HTTP {exc.code} from {url}: {error_body}"
+                f"HTTP {exc.code} from {url} ({elapsed:.1f}s): {error_body}"
             ) from exc
 
 
@@ -176,8 +197,16 @@ class StubClient:
         self.call_count += 1
         # Distinguish by user prompt — system prompts now both contain SKILL.md
         if user_prompt.lower().startswith("review"):
-            return STUB_REVIEW
-        return STUB_EVALUATION
+            content = STUB_REVIEW
+        else:
+            content = STUB_EVALUATION
+        return ChatResult(
+            content=content,
+            elapsed=0.01,
+            prompt_tokens=100,
+            completion_tokens=200,
+            total_tokens=300,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -505,9 +534,17 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
     print("=" * 60)
     print("[Step 3] Evaluation Phase")
     print("=" * 60)
+    print(f"  Records: {len(records)}")
+    print(f"  Report type: {report_type}")
     print()
 
     results = []
+    phase_start = time.monotonic()
+    total_elapsed = 0.0
+    total_prompt_tokens = 0
+    total_completion_tokens = 0
+    total_tokens = 0
+
     for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
         print(f"[{idx}/{len(records)}] Evaluating ID={doc_id}: {doc_title}")
 
@@ -517,15 +554,25 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
 
         # Call AI endpoint
         try:
-            response = client.chat(system_prompt, user_prompt)
+            result = client.chat(system_prompt, user_prompt)
         except RuntimeError as exc:
             print(f"  ERROR: {exc}")
             results.append((doc_id, doc_title, None, None, None, None, str(exc)))
             continue
 
+        response = result.content
+        total_elapsed += result.elapsed
+        if result.prompt_tokens is not None:
+            total_prompt_tokens += result.prompt_tokens
+        if result.completion_tokens is not None:
+            total_completion_tokens += result.completion_tokens
+        if result.total_tokens is not None:
+            total_tokens += result.total_tokens
+
         # Parse results
         count_hl, count_ll, score = parse_evaluation_report(response)
         print(f"  Result: HL={count_hl}, LL={count_ll}, Score={score}")
+        print(f"  API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} completion={result.completion_tokens} total={result.total_tokens}")
 
         if not dry_run:
             save_evaluation(conn, table_name, doc_id, response, count_hl, count_ll, score)
@@ -541,6 +588,17 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
         results.append((doc_id, doc_title, count_hl, count_ll, score, response, None))
         print()
 
+    phase_elapsed = time.monotonic() - phase_start
+    print("=" * 60)
+    print("[Step 3] Evaluation Phase Complete")
+    print(f"  Records processed: {len(results)}")
+    print(f"  Total phase time:  {phase_elapsed:.1f}s")
+    print(f"  Total API time:    {total_elapsed:.1f}s")
+    print(f"  Avg API time/rec:  {total_elapsed / len(results):.1f}s" if results else "  Avg API time/rec:  N/A")
+    print(f"  Total tokens:      prompt={total_prompt_tokens} completion={total_completion_tokens} total={total_tokens}")
+    print("=" * 60)
+    print()
+
     return results
 
 
@@ -549,9 +607,16 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
     print("=" * 60)
     print("[Step 4] Review Phase")
     print("=" * 60)
+    print(f"  Records: {len(records)}")
     print()
 
     review_results = []
+    phase_start = time.monotonic()
+    total_elapsed = 0.0
+    total_prompt_tokens = 0
+    total_completion_tokens = 0
+    total_tokens = 0
+
     for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
         print(f"[{idx}/{len(records)}] Reviewing ID={doc_id}: {doc_title}")
 
@@ -579,17 +644,27 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
 
         # Call AI endpoint
         try:
-            response = client.chat(system_prompt, user_prompt)
+            result = client.chat(system_prompt, user_prompt)
         except RuntimeError as exc:
             print(f"  ERROR: {exc}")
             review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, None, None, None, str(exc)))
             continue
+
+        response = result.content
+        total_elapsed += result.elapsed
+        if result.prompt_tokens is not None:
+            total_prompt_tokens += result.prompt_tokens
+        if result.completion_tokens is not None:
+            total_completion_tokens += result.completion_tokens
+        if result.total_tokens is not None:
+            total_tokens += result.total_tokens
 
         # Parse review results
         new_hl, new_ll, new_score = parse_review_result(response)
 
         print(f"  Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
         print(f"  Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
+        print(f"  API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} completion={result.completion_tokens} total={result.total_tokens}")
 
         # Update if changed
         changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
@@ -609,6 +684,17 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
 
         review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, new_hl, new_ll, new_score, None))
         print()
+
+    phase_elapsed = time.monotonic() - phase_start
+    print("=" * 60)
+    print("[Step 4] Review Phase Complete")
+    print(f"  Records processed: {len(review_results)}")
+    print(f"  Total phase time:  {phase_elapsed:.1f}s")
+    print(f"  Total API time:    {total_elapsed:.1f}s")
+    print(f"  Avg API time/rec:  {total_elapsed / len(review_results):.1f}s" if review_results else "  Avg API time/rec:  N/A")
+    print(f"  Total tokens:      prompt={total_prompt_tokens} completion={total_completion_tokens} total={total_tokens}")
+    print("=" * 60)
+    print()
 
     return review_results
 
