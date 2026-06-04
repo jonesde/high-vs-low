@@ -27,6 +27,7 @@ Before fixing anything, derive these from the report. These are your source of t
 
 Validate that every normative claim in the original text was captured and classified correctly.
 
+- [ ] **Location references valid** *If* existing references (like verse numbers) are present in the source text then use them, otherwise *always* use line numbers for location (count new lines); check for locations that use a paragraph number or section names instead of actual verse/etc references or lines: For every such statement, search the source text for the stance quote (or distinctive keywords from it) to find the real line number. Record actual line numbers, not paragraph or other numbers. This is essential for reproducibility and auditability.
 - [ ] **Re-scan source text for missed stances**: Identify any verse/etc reference or line number with no `Location` reference in the report. Extract and classify all missing normative claims.
 - [ ] **Split multi-claim locations**: Any source location represented by a single statement but containing **two or more distinct stances** must be split into separate statements.
 - [ ] **Required fields present on every statement**: Confirm each row has `#`, `Location`, `Rules`, `Principle Quote`, `Speaker`, `Stance Quote`, `Key Topics`, and `Decision Notes`.
@@ -126,7 +127,6 @@ Validate global template compliance and holistic consistency.
 ## Common Pitfalls During Review
 
 - **Header count** can lag behind actual table rows. Always count rows manually.
-- **Location references** that use "Para N" or section names instead of actual verse/etc references or lines: For every statement, search the source text for the stance quote (or distinctive keywords from it) to find the real line number. Record actual line numbers, not paragraph or other numbers. This is essential for reproducibility and auditability.
 - **Per-topic scores go stale after moves**: Moving a statement changes topic-level HL/LL counts AND scores. Recalculate ALL affected topics.
 - **Dual-topic Score Table impact on reclassification**: When a statement is reclassified (moved from HL to LL or vice versa) AND reassigned to a different Key Topic, TWO topics are affected: the topic losing the statement (decrement its HL or LL count) AND the topic gaining it (increment the other). It is easy to update only one side. Always verify both affected topics' Score Table entries after any reclassification + topic change.
 - **Evaluation Table bullets diverge from Score Table**: After statement changes, update both Score Table numbers AND Evaluation Table bullet points.
