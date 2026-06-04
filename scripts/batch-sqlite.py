@@ -28,6 +28,7 @@ Options:
   --reset            Clean out evaluation/count/score columns before processing
   --reset-only       Only clean out evaluation/count/score columns and exit
   --where CLAUSE     SQL WHERE clause (without 'WHERE') to filter records
+  --table TABLE_NAME Table name to use (default: auto-detect if DB has exactly one table)
   --report-type TYPE basic or detailed (default: basic)
 """
 
@@ -330,15 +331,15 @@ def parse_review_result(review_text):
 # Database operations
 # ---------------------------------------------------------------------------
 
-def discover_schema(conn):
+def discover_schema(conn, table_name):
     """Step 1: Discover schema by querying sqlite_master."""
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT sql FROM sqlite_master WHERE type='table' AND name='documents'"
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
     )
     row = cursor.fetchone()
     if not row:
-        print("ERROR: No 'documents' table found in the database.")
+        print(f"ERROR: Table '{table_name}' not found in the database.")
         sys.exit(1)
     schema = row[0]
     print("[Step 1] Schema discovered:")
@@ -357,20 +358,20 @@ def discover_schema(conn):
     return schema
 
 
-def preview_records(conn, limit=None, start_id=None, where_clause=None):
+def preview_records(conn, table_name, limit=None, start_id=None, where_clause=None):
     """Step 2: Preview records - check id range, text lengths, evaluation state."""
     cursor = conn.cursor()
 
-    cursor.execute("SELECT MIN(id), MAX(id), COUNT(*) FROM documents")
+    cursor.execute(f"SELECT MIN(id), MAX(id), COUNT(*) FROM {table_name}")
     min_id, max_id, total = cursor.fetchone()
 
-    cursor.execute("SELECT AVG(LENGTH(doc_text)), MIN(LENGTH(doc_text)), MAX(LENGTH(doc_text)) FROM documents")
+    cursor.execute(f"SELECT AVG(LENGTH(doc_text)), MIN(LENGTH(doc_text)), MAX(LENGTH(doc_text)) FROM {table_name}")
     avg_len, min_len, max_len = cursor.fetchone()
 
-    cursor.execute("SELECT COUNT(*) FROM documents WHERE evaluation IS NOT NULL")
+    cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE evaluation IS NOT NULL")
     evaluated = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM documents WHERE evaluation IS NULL")
+    cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE evaluation IS NULL")
     unevaluated = cursor.fetchone()[0]
 
     print("[Step 2] Record preview:")
@@ -391,10 +392,10 @@ def preview_records(conn, limit=None, start_id=None, where_clause=None):
 
     if conditions:
         cursor.execute(
-            "SELECT COUNT(*) FROM documents WHERE " + " AND ".join(conditions), params
+            f"SELECT COUNT(*) FROM {table_name} WHERE " + " AND ".join(conditions), params
         )
     else:
-        cursor.execute("SELECT COUNT(*) FROM documents")
+        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
     eligible = cursor.fetchone()[0]
 
     if limit and limit < eligible:
@@ -406,10 +407,10 @@ def preview_records(conn, limit=None, start_id=None, where_clause=None):
     return min_id, max_id, total
 
 
-def reset_evaluations(conn, where_clause=None):
+def reset_evaluations(conn, table_name, where_clause=None):
     """Clean out evaluation, count_hl, count_ll, and score columns."""
     cursor = conn.cursor()
-    query = "UPDATE documents SET evaluation = NULL, count_hl = NULL, count_ll = NULL, score = NULL"
+    query = f"UPDATE {table_name} SET evaluation = NULL, count_hl = NULL, count_ll = NULL, score = NULL"
     if where_clause is not None:
         query += f" WHERE {where_clause}"
     cursor.execute(query)
@@ -418,10 +419,10 @@ def reset_evaluations(conn, where_clause=None):
     print()
 
 
-def get_records_to_process(conn, limit=None, start_id=None, where_clause=None):
+def get_records_to_process(conn, table_name, limit=None, start_id=None, where_clause=None):
     """Get the list of (id, doc_title, doc_text) to process."""
     cursor = conn.cursor()
-    query = "SELECT id, doc_title, doc_text FROM documents"
+    query = f"SELECT id, doc_title, doc_text FROM {table_name}"
 
     # Build WHERE clause from all filters
     conditions = []
@@ -443,11 +444,11 @@ def get_records_to_process(conn, limit=None, start_id=None, where_clause=None):
     return cursor.fetchall()
 
 
-def save_evaluation(conn, doc_id, evaluation, count_hl, count_ll, score):
+def save_evaluation(conn, table_name, doc_id, evaluation, count_hl, count_ll, score):
     """Save evaluation results to the database."""
     cursor = conn.cursor()
     cursor.execute(
-        """UPDATE documents
+        f"""UPDATE {table_name}
            SET evaluation = ?, count_hl = ?, count_ll = ?, score = ?
            WHERE id = ?""",
         (evaluation, count_hl, count_ll, score, doc_id),
@@ -455,11 +456,11 @@ def save_evaluation(conn, doc_id, evaluation, count_hl, count_ll, score):
     conn.commit()
 
 
-def load_record(conn, doc_id):
+def load_record(conn, table_name, doc_id):
     """Load a single record's doc_text, doc_title, and evaluation."""
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT id, doc_title, doc_text, evaluation FROM documents WHERE id = ?",
+        f"SELECT id, doc_title, doc_text, evaluation FROM {table_name} WHERE id = ?",
         (doc_id,),
     )
     row = cursor.fetchone()
@@ -472,7 +473,7 @@ def load_record(conn, doc_id):
 # Workflow steps
 # ---------------------------------------------------------------------------
 
-def step3_evaluate(conn, client, records, dry_run=False, report_type="basic"):
+def step3_evaluate(conn, table_name, client, records, dry_run=False, report_type="basic"):
     """Step 3: Delegate evaluation per-record."""
     print("=" * 60)
     print("[Step 3] Evaluation Phase")
@@ -500,11 +501,11 @@ def step3_evaluate(conn, client, records, dry_run=False, report_type="basic"):
         print(f"  Result: HL={count_hl}, LL={count_ll}, Score={score}")
 
         if not dry_run:
-            save_evaluation(conn, doc_id, response, count_hl, count_ll, score)
+            save_evaluation(conn, table_name, doc_id, response, count_hl, count_ll, score)
             print(f"  Saved to database.")
 
         # Verify
-        record = load_record(conn, doc_id)
+        record = load_record(conn, table_name, doc_id)
         if record and record["evaluation"] is not None:
             print(f"  Verified: evaluation populated ({len(record['evaluation'])} chars)")
         else:
@@ -516,7 +517,7 @@ def step3_evaluate(conn, client, records, dry_run=False, report_type="basic"):
     return results
 
 
-def step4_review(conn, client, records, eval_results, dry_run=False):
+def step4_review(conn, table_name, client, records, eval_results, dry_run=False):
     """Step 4: Delegate review per-record."""
     print("=" * 60)
     print("[Step 4] Review Phase")
@@ -528,7 +529,7 @@ def step4_review(conn, client, records, eval_results, dry_run=False):
         print(f"[{idx}/{len(records)}] Reviewing ID={doc_id}: {doc_title}")
 
         # Load current evaluation
-        record = load_record(conn, doc_id)
+        record = load_record(conn, table_name, doc_id)
         if not record or record["evaluation"] is None:
             print(f"  SKIPPED: No evaluation found for ID={doc_id}")
             review_results.append((doc_id, doc_title, None, None, None, None, None, None, "No evaluation"))
@@ -567,13 +568,13 @@ def step4_review(conn, client, records, eval_results, dry_run=False):
         changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
         if changed and not dry_run:
             # Update counts/score; keep or update evaluation based on review
-            save_evaluation(conn, doc_id, record["evaluation"], new_hl, new_ll, new_score)
+            save_evaluation(conn, table_name, doc_id, record["evaluation"], new_hl, new_ll, new_score)
             print(f"  Updated database with new counts/score.")
         elif not dry_run:
             print(f"  No changes needed.")
 
         # Verify
-        record = load_record(conn, doc_id)
+        record = load_record(conn, table_name, doc_id)
         if record and record["evaluation"] is not None:
             print(f"  Verified: evaluation present ({len(record['evaluation'])} chars)")
         else:
@@ -648,6 +649,7 @@ def main():
     parser.add_argument("--reset", action="store_true", help="Reset evaluation data before processing")
     parser.add_argument("--reset-only", action="store_true", help="Only reset evaluation data and exit (no eval)")
     parser.add_argument("--where", default=None, help="SQL WHERE clause (without 'WHERE') to filter records")
+    parser.add_argument("--table", default=None, help="Table name to use (default: auto-detect if DB has exactly one table)")
     parser.add_argument("--report-type", choices=["basic", "detailed"], default="basic", help="Report type")
 
     args = parser.parse_args()
@@ -667,17 +669,33 @@ def main():
     conn = sqlite3.connect(args.db_path)
     print(f"[DB] Connected: {args.db_path}")
 
+    # Resolve table name
+    if args.table:
+        table_name = args.table
+    else:
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+        tables = [row[0] for row in cursor.fetchall()]
+        if len(tables) == 1:
+            table_name = tables[0]
+            print(f"[DB] Auto-detected table: {table_name}")
+        else:
+            print(f"ERROR: Database has {len(tables)} tables. Please specify one with --table.")
+            if tables:
+                print(f"  Available tables: {', '.join(tables)}")
+            sys.exit(1)
+
     try:
         # Step 1: Discover schema
-        discover_schema(conn)
+        discover_schema(conn, table_name)
 
         # Step 2: Preview records
-        preview_records(conn, limit=args.limit, start_id=args.start_id, where_clause=args.where)
+        preview_records(conn, table_name, limit=args.limit, start_id=args.start_id, where_clause=args.where)
 
         # Reset evaluations (if --reset or --reset-only is passed)
         if args.reset or args.reset_only:
             if not args.dry_run:
-                reset_evaluations(conn, where_clause=args.where)
+                reset_evaluations(conn, table_name, where_clause=args.where)
             else:
                 print("[Dry-run] Would reset evaluations.")
                 print()
@@ -702,7 +720,7 @@ def main():
         print()
 
         # Get records to process
-        records = get_records_to_process(conn, limit=args.limit, start_id=args.start_id, where_clause=args.where)
+        records = get_records_to_process(conn, table_name, limit=args.limit, start_id=args.start_id, where_clause=args.where)
         if not records:
             print("No records to process.")
             return
@@ -716,7 +734,7 @@ def main():
             eval_results = []
         else:
             eval_results = step3_evaluate(
-                conn, client, records, dry_run=args.dry_run, report_type=args.report_type
+                conn, table_name, client, records, dry_run=args.dry_run, report_type=args.report_type
             )
 
         # Step 4: Review each record (unless skipped)
@@ -725,7 +743,7 @@ def main():
             review_results = []
         else:
             review_results = step4_review(
-                conn, client, records, eval_results, dry_run=args.dry_run
+                conn, table_name, client, records, eval_results, dry_run=args.dry_run
             )
 
         # Step 5: Report
