@@ -75,22 +75,20 @@ Argument options:
 - `--endpoint URL`: OpenAI-compatible endpoint (default: `http://127.0.0.1:1234/v1`)
 - `--api-key KEY`: API key (optional; defaults to empty string, or `OPENAI_API_KEY` env var if set)
 - `--model MODEL`: Model name (default: ``; endpoint decides or errors)
-- `--report-type TYPE`: basic or detailed (default: basic)
+- `--detailed`: Produce detailed evaluation reports (default: basic reports)
 - `--table TABLE_NAME`: Table name to use (default: auto-detect if DB has exactly one table; errors if multiple tables and not specified)
 - `--document-column COLUMN_NAME`: Column containing the document text (default: `doc_text`)
 - `--limit N`: Process only the first N records
-- `--where CLAUSE`: SQL WHERE clause (without the word `WHERE`) to filter which records are reset or evaluated. Combines with `--start-id` using AND. 
+- `--where CLAUSE`: SQL WHERE clause (without the word `WHERE`) to filter which records are reset or evaluated. Combines with `--start-id` using AND.
 - `--start-id ID`: Start from a specific record ID
 - `--skip-evaluation`: Skip the evaluation phase (step 3)
 - `--skip-review`: Skip the review phase (step 4)
 - `--dry-run`: Preview without modifying the database
-- `--stub`: Use a stub client that returns constant responses (`STUB_EVALUATION_RESPONSE` / `STUB_REVIEW_RESPONSE`) — useful for testing
+- `--stub`: Use a stub client that returns constant responses — useful for testing
 - `--reset`: Clean out evaluation/count/score columns before processing (opt-in; without this flag, existing evaluations are preserved)
-- `--reset-only`: Clean out evaluation/count/score columns and exit immediately — does not run evaluation or review phases
 
 Common Patterns:
 - **Reset and re-eval a subset**: `--reset --where "year = 1975" --limit 5`
-- **Reset only specific records**: `--reset-only --where "score < -5"`
 - **Preview without modifying**: `--skip-evaluation --skip-review --where "year >= 2000"`
 - **Resume from a specific ID**: `--start-id 500 --limit 10`
 - **WHERE Examples**: `--where "year = 1975"`, `--where "evaluation IS NOT NULL"`, `--where "score < -3"`
@@ -98,3 +96,5 @@ Common Patterns:
 The script does NOT reset evaluation columns by default — pass `--reset` to clear them before starting. Use `--where` to target a subset of records for reset or evaluation. It uses `urllib` only (no external dependencies).
 
 The script loads the full SKILL.md file (and `references/report-review.md` for reviews) at runtime and includes them in the system prompt sent to the AI endpoint. Because SKILL.md is included verbatim, updates to the skill are automatically reflected in batch runs without script changes. The minimal instructions layer on top tells the model which report type to produce and what to do with the provided document text.
+
+The review phase includes a re-execution loop (up to 3 iterations) for records where the LLM self-reports adding, moving, or removing statements.

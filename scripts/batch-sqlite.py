@@ -120,6 +120,47 @@ The evaluation has been reviewed against the checklist.
 **Updated counts**: HL=2, LL=3, Score=-2.0
 
 The evaluation report is valid. No changes required.
+
+## CHANGES SUMMARY
+
+No changes needed.
+"""
+
+STUB_REVIEW_WITH_CHANGES = """# Review Result: STUB_REVIEW_RESPONSE
+
+The evaluation has been reviewed against the checklist.
+
+**Changes made during review**: Added 1 High Law statement that was previously missed.
+
+**Original counts**: HL=2, LL=3, Score=-2.0
+**Updated counts**: HL=3, LL=3, Score=0.0
+
+## CHANGES SUMMARY
+
+STATEMENTS ADDED
+
+Added 1 High Law statement (statement #7) that was previously missed.
+
+### High Law Aligned (3 statements)
+
+1. Statement one
+2. Statement two
+3. Statement seven (newly added)
+
+### Low Law Aligned (3 statements)
+
+1. Statement four
+2. Statement five
+3. Statement six
+
+### Scoring Summary
+
+| Category | Count |
+|----------|-------|
+| High Law Aligned | 3 |
+| Low Law Aligned | 3 |
+
+**Score** = **0.0**
 """
 
 
@@ -192,12 +233,19 @@ class StubClient:
 
     def __init__(self):
         self.call_count = 0
+        self.review_call_count = 0
 
     def chat(self, system_prompt, user_prompt, temperature=0.0):
         self.call_count += 1
         # Distinguish by user prompt — system prompts now both contain SKILL.md
         if user_prompt.lower().startswith("review"):
-            content = STUB_REVIEW
+            self.review_call_count += 1
+            # First review call: report changes (triggers re-execution loop)
+            # Subsequent review calls: no changes (exits loop)
+            if self.review_call_count == 1:
+                content = STUB_REVIEW_WITH_CHANGES
+            else:
+                content = STUB_REVIEW
         else:
             content = STUB_EVALUATION
         return ChatResult(
@@ -269,7 +317,11 @@ def build_review_system_prompt():
         "Execute the review checklist from the reference file above, all included instructions in exact order.\n"
         "If changes are needed, describe them clearly with original and updated counts.\n"
         "If no changes are needed, state that explicitly.\n\n"
-        "Return your review result with:\n"
+        "At the end of your review, include a CHANGES SUMMARY section:\n"
+        "- Emit 'STATEMENTS ADDED' if you added any statements\n"
+        "- Emit 'STATEMENTS MOVED' if you moved any statements between categories\n"
+        "- Emit 'STATEMENTS REMOVED' if you removed any statements\n"
+        "- If any changes were made, provide the FULL updated evaluation report text\n"
         "- Original counts: HL=N, LL=N, Score=X.X\n"
         "- Updated counts: HL=N, LL=N, Score=X.X (same if no changes)\n"
         "- Description of any changes made"
@@ -376,11 +428,53 @@ def parse_review_result(review_text):
     if hl_match and ll_match and score_match:
         return (
             int(hl_match.group(1)),
-            int(ll_match.group(1)),
-            float(score_match.group(1)),
+            int(ll_match.group(2)),
+            float(score_match.group(3)),
         )
 
     return None, None, None
+
+
+def parse_review_has_changes(review_text):
+    """Check if the LLM self-reported adding, moving, or removing statements."""
+    return (
+        "STATEMENTS ADDED" in review_text
+        or "STATEMENTS MOVED" in review_text
+        or "STATEMENTS REMOVED" in review_text
+    )
+
+
+def parse_review_updated_eval(review_text):
+    """Extract the full updated evaluation report text from the review response."""
+    # Look for a full evaluation report embedded in the response
+    # The LLM should output the full updated evaluation after changes
+    # Try to find it by looking for the evaluation structure markers
+
+    # Strategy: look for the evaluation markers that indicate the start of the full report
+    # The evaluation starts with a title or header and contains High Law/Low Law sections
+
+    # Try to find content between clear delimiters if the LLM used them
+    eval_match = re.search(
+        r"Updated\s+Evaluation\s+Report[^\n]*\n[-=]+\n(.*?)(?=\n\nCHANGES|\n\nUpdated counts|\Z)",
+        review_text,
+        re.DOTALL | re.IGNORECASE,
+    )
+    if eval_match:
+        return eval_match.group(1).strip()
+
+    # Try to find the full report by looking for the evaluation structure
+    # Look for the section that contains both High Law and Low Law sections
+    hl_match = re.search(r"(###?\s*High Law Aligned.*?)(###?\s*Low Law Aligned)", review_text, re.DOTALL)
+    ll_end = re.search(r"(###?\s*Low Law Aligned.*?)(###?\s*(?:Scoring|Score|Summary)|\Z)", review_text, re.DOTALL)
+
+    if hl_match and ll_end:
+        # Extract from High Law section through the end of Low Law section
+        start = hl_match.start()
+        end = ll_end.end()
+        return review_text[start:end].strip()
+
+    # If no changes were made, return None
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -603,11 +697,14 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
 
 
 def step4_review(conn, table_name, doc_column, client, records, eval_results, dry_run=False):
-    """Step 4: Delegate review per-record."""
+    """Step 4: Delegate review per-record with re-execution loop."""
+    MAX_REVIEW_ITERATIONS = 3
+
     print("=" * 60)
     print("[Step 4] Review Phase")
     print("=" * 60)
     print(f"  Records: {len(records)}")
+    print(f"  Max review iterations: {MAX_REVIEW_ITERATIONS}")
     print()
 
     review_results = []
@@ -636,53 +733,101 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
                 orig_hl, orig_ll, orig_score = r[2], r[3], r[4]
                 break
 
-        # Build prompts
-        system_prompt = build_review_system_prompt()
-        user_prompt = build_review_user_prompt(
-            record["doc_text"], record["evaluation"], doc_title
-        )
+        # Re-execution loop: up to MAX_REVIEW_ITERATIONS
+        final_hl, final_ll, final_score = orig_hl, orig_ll, orig_score
+        final_error = None
 
-        # Call AI endpoint
-        try:
-            result = client.chat(system_prompt, user_prompt)
-        except RuntimeError as exc:
-            print(f"  ERROR: {exc}")
-            review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, None, None, None, str(exc)))
-            continue
+        for iteration in range(1, MAX_REVIEW_ITERATIONS + 1):
+            iter_label = f"Review pass {iteration}" if iteration > 1 else "Review"
+            print(f"  [{iter_label}]")
 
-        response = result.content
-        total_elapsed += result.elapsed
-        if result.prompt_tokens is not None:
-            total_prompt_tokens += result.prompt_tokens
-        if result.completion_tokens is not None:
-            total_completion_tokens += result.completion_tokens
-        if result.total_tokens is not None:
-            total_tokens += result.total_tokens
+            # Reload current state from DB (may have been updated by previous iteration)
+            record = load_record(conn, table_name, doc_column, doc_id)
+            if not record or record["evaluation"] is None:
+                print(f"    ERROR: evaluation lost during re-review")
+                final_error = "Evaluation lost during re-review"
+                break
 
-        # Parse review results
-        new_hl, new_ll, new_score = parse_review_result(response)
+            # Build prompts
+            system_prompt = build_review_system_prompt()
+            user_prompt = build_review_user_prompt(
+                record["doc_text"], record["evaluation"], doc_title
+            )
 
-        print(f"  Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
-        print(f"  Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
-        print(f"  API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} completion={result.completion_tokens} total={result.total_tokens}")
+            # Call AI endpoint
+            try:
+                result = client.chat(system_prompt, user_prompt)
+            except RuntimeError as exc:
+                print(f"    ERROR: {exc}")
+                final_error = str(exc)
+                break
 
-        # Update if changed
-        changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
-        if changed and not dry_run:
-            # Update counts/score; keep or update evaluation based on review
-            save_evaluation(conn, table_name, doc_id, record["evaluation"], new_hl, new_ll, new_score)
-            print(f"  Updated database with new counts/score.")
-        elif not dry_run:
-            print(f"  No changes needed.")
+            response = result.content
+            total_elapsed += result.elapsed
+            if result.prompt_tokens is not None:
+                total_prompt_tokens += result.prompt_tokens
+            if result.completion_tokens is not None:
+                total_completion_tokens += result.completion_tokens
+            if result.total_tokens is not None:
+                total_tokens += result.total_tokens
 
-        # Verify
-        record = load_record(conn, table_name, doc_column, doc_id)
-        if record and record["evaluation"] is not None:
-            print(f"  Verified: evaluation present ({len(record['evaluation'])} chars)")
-        else:
-            print(f"  WARNING: evaluation missing after review")
+            # Parse review results
+            new_hl, new_ll, new_score = parse_review_result(response)
 
-        review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, new_hl, new_ll, new_score, None))
+            # Check if LLM self-reported adding/moving/removing statements
+            has_changes = parse_review_has_changes(response)
+
+            print(f"    Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
+            print(f"    Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
+            print(f"    Changes reported: {'YES' if has_changes else 'NO'}")
+            print(f"    API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} completion={result.completion_tokens} total={result.total_tokens}")
+
+            # If LLM reported changes, save updated evaluation and loop again
+            if has_changes and iteration < MAX_REVIEW_ITERATIONS:
+                # Extract the updated evaluation text from the response
+                updated_eval = parse_review_updated_eval(response)
+
+                if updated_eval and not dry_run:
+                    # Save the updated evaluation text along with new counts/score
+                    save_evaluation(conn, table_name, doc_id, updated_eval, new_hl, new_ll, new_score)
+                    print(f"    Saved updated evaluation + counts/score to database.")
+                    print(f"    Updated evaluation length: {len(updated_eval)} chars")
+                    print(f"    -> Re-reviewing with updated evaluation...")
+                elif updated_eval:
+                    print(f"    [DRY RUN] Would save updated evaluation + counts/score.")
+                else:
+                    # No updated eval text extracted, but changes reported — still save counts
+                    if not dry_run:
+                        save_evaluation(conn, table_name, doc_id, record["evaluation"], new_hl, new_ll, new_score)
+                        print(f"    Saved updated counts/score (no eval text extracted).")
+                    print(f"    -> Re-reviewing with same evaluation...")
+
+                # Update tracking for next iteration
+                orig_hl, orig_ll, orig_score = new_hl, new_ll, new_score
+                final_hl, final_ll, final_score = new_hl, new_ll, new_score
+                continue
+
+            # No changes reported or last iteration — finalize
+            final_hl, final_ll, final_score = new_hl, new_ll, new_score
+
+            # Update counts/score if they changed (and this is the final pass)
+            changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
+            if changed and not dry_run:
+                save_evaluation(conn, table_name, doc_id, record["evaluation"], new_hl, new_ll, new_score)
+                print(f"    Final: Updated database with counts/score.")
+            elif not dry_run:
+                print(f"    Final: No changes needed.")
+
+            # Verify
+            record = load_record(conn, table_name, doc_column, doc_id)
+            if record and record["evaluation"] is not None:
+                print(f"    Verified: evaluation present ({len(record['evaluation'])} chars)")
+            else:
+                print(f"    WARNING: evaluation missing after review")
+
+            break  # Exit the iteration loop
+
+        review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
         print()
 
     phase_elapsed = time.monotonic() - phase_start
