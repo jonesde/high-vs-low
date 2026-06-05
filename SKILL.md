@@ -139,7 +139,8 @@ Follow these steps in order:
 
 ## Step 2: Classify Statement Alignment
 
-> **Rule**: Mentioning High/Low principles does not imply alignment. Stance from commentary determines alignment.
+> **Alignment Rule**: Mentioning High/Low principles does not imply alignment. Stance from commentary determines alignment.
+> **Alignment Instruction**: Analyze text for the stances of speakers and the type of principle the text presents. Think and report only in the context of speaker stance and principle type analysis, NOT: problem solving, predicting outcomes, or the truth. Interpret blatant lies, obvious facts, and everything in between as face value representations of the stance of the speaker about a principle. Interpret absurd predictions, reminders of obvious outcomes, and everything in between as statements by the speaker that take a stance on principles related to the actions and the outcomes.
 
 **Author Alignment 2x2 Map**
 
