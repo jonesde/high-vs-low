@@ -972,14 +972,32 @@ def get_records_to_process(conn, table_name, doc_column, limit=None, start_id=No
 
 
 def save_evaluation(conn, table_name, doc_id, evaluation, count_hl, count_ll, score):
-    """Save evaluation results to the database."""
+    """Save evaluation results to the database.
+
+    Safe partial update — only columns whose corresponding parameter is not None
+    are included in the SET clause, so existing values are never accidentally
+    nulled out.
+    """
     cursor = conn.cursor()
-    cursor.execute(
-        f"""UPDATE {table_name}
-           SET evaluation = ?, count_hl = ?, count_ll = ?, score = ?
-           WHERE id = ?""",
-        (evaluation, count_hl, count_ll, score, doc_id),
-    )
+    assignments = []
+    params = []
+    if evaluation is not None:
+        assignments.append("evaluation = ?")
+        params.append(evaluation)
+    if count_hl is not None:
+        assignments.append("count_hl = ?")
+        params.append(count_hl)
+    if count_ll is not None:
+        assignments.append("count_ll = ?")
+        params.append(count_ll)
+    if score is not None:
+        assignments.append("score = ?")
+        params.append(score)
+    if not assignments:
+        return  # nothing to update
+    params.append(doc_id)
+    query = f"UPDATE {table_name} SET {', '.join(assignments)} WHERE id = ?"
+    cursor.execute(query, params)
     conn.commit()
 
 
@@ -1173,22 +1191,24 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         if updated_is_valid_report:
             if not dry_run:
                 save_evaluation(conn, table_name, doc_id, updated_eval, new_hl, new_ll, new_score)
-                print(f"      Saved updated evaluation + counts/score to database.")
+                print("      Saved updated evaluation + counts/score to database.")
                 print(f"      Updated evaluation length: {len(updated_eval)} chars")
             else:
-                print(f"      [DRY RUN] Would save updated evaluation + counts/score.")
+                print("      [DRY RUN] Would save updated evaluation + counts/score.")
             eval_text = updated_eval  # use updated text for next iteration
         else:
             if not dry_run:
                 # Quick check to see if counts/score need to be corrected or filled in
-                # TODO: this needs a save that is safe/non-destructive:
-                # new_hl, new_ll, new_score = parse_evaluation_report(current_eval)
-                # if ((new_hl and new_hl != orig_hl) or (new_ll and new_ll != orig_ll) or (new_score and new_score != orig_score)):
-                #    save_evaluation(conn, table_name, doc_id, current_eval, new_hl, new_ll, new_score)
-
-                print(f"      Skipped evaluation + counts/score update (no valid eval text extracted).")
+                new_hl, new_ll, new_score = parse_evaluation_report(current_eval)
+                if ((new_hl and new_hl != orig_hl) or (new_ll and new_ll != orig_ll) or (new_score and new_score != orig_score)):
+                    # NOTE: this relies on save_evalution() remaining "safe" and not nulling columns with None value
+                    save_evaluation(conn, table_name, doc_id, None, new_hl, new_ll, new_score)
+                    print("      Skipped evaluation update (no valid eval text extracted).")
+                    print(f"      NOTE: Saved corrected counts/score from current report text, DB values were not correct: DB HL={orig_hl}, LL={orig_ll}, Score={orig_score} REPORT HL={new_hl}, LL={new_ll}, Score={new_score}")
+                else:
+                    print("      Skipped evaluation + counts/score update (no valid eval text extracted).")
             else:
-                print(f"      [DRY RUN] Would skip evaluation + counts/score update (no valid eval text extracted).")
+                print("      [DRY RUN] Would skip evaluation + counts/score update (no valid eval text extracted).")
 
         if has_changes and iteration < MAX_REVIEW_ITERATIONS:
             # Only save updated_eval if it is actually a valid report.
