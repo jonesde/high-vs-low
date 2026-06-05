@@ -809,251 +809,272 @@ def load_record(conn, table_name, doc_column, doc_id):
 # Workflow steps
 # ---------------------------------------------------------------------------
 
-def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False, detailed=False):
-    """Step 3: Delegate evaluation per-record."""
-    print("=" * 60)
-    print("[Step 3] Evaluation Phase")
-    print("=" * 60)
-    print(f"  Records: {len(records)}")
-    print(f"  Report type: {'detailed' if detailed else 'basic'}")
-    print()
+def _accumulate_stats(stats, result):
+    """Accumulate token/time stats from a ChatResult into a stats dict."""
+    stats["total_elapsed"] += result.elapsed
+    if result.first_token_elapsed is not None:
+        stats["total_generation_time"] += result.elapsed - result.first_token_elapsed
+    if result.prompt_tokens is not None:
+        stats["total_prompt_tokens"] += result.prompt_tokens
+    if result.completion_tokens is not None:
+        stats["total_completion_tokens"] += result.completion_tokens
+    if result.total_tokens is not None:
+        stats["total_tokens"] += result.total_tokens
+    if result.reasoning_tokens is not None:
+        stats["total_reasoning_tokens"] += result.reasoning_tokens
+    output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
+    stats["total_output_tokens"] += output_tokens
 
-    results = []
-    phase_start = time.monotonic()
-    total_elapsed = 0.0
-    total_generation_time = 0.0
-    total_prompt_tokens = 0
-    total_completion_tokens = 0
-    total_tokens = 0
-    total_reasoning_tokens = 0
-    total_output_tokens = 0
 
-    for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
-        print(f"[{idx}/{len(records)}] Evaluating ID={doc_id}: {doc_title}")
+def _stats_summary(name, stats, record_count):
+    """Print a phase summary from accumulated stats."""
+    print(f"[{name}] {name} Complete")
+    print(f"  Records processed: {record_count}")
+    print(f"  Total phase time:  {time.monotonic() - stats['phase_start']:.1f}s")
+    print(f"  Total API time:    {stats['total_elapsed']:.1f}s")
+    if record_count > 0:
+        print(f"  Avg API time/rec:  {stats['total_elapsed'] / record_count:.1f}s")
+    print(f"  Total tokens:      prompt: {stats['total_prompt_tokens']} reasoning: {stats['total_reasoning_tokens']} output: {stats['total_output_tokens']} completion: {stats['total_completion_tokens']} total: {stats['total_tokens']}")
+    if stats["total_generation_time"] > 0:
+        print(f"  Tokens/Second:     completion: {stats['total_completion_tokens'] / stats['total_generation_time']:.1f}")
 
-        # Build prompts
-        system_prompt = build_evaluation_system_prompt("detailed" if detailed else "basic")
-        user_prompt = build_evaluation_user_prompt(doc_text, doc_title)
 
-        # Call AI endpoint
+def _empty_stats():
+    """Return a fresh stats dict."""
+    return {
+        "phase_start": time.monotonic(),
+        "total_elapsed": 0.0,
+        "total_generation_time": 0.0,
+        "total_prompt_tokens": 0,
+        "total_completion_tokens": 0,
+        "total_tokens": 0,
+        "total_reasoning_tokens": 0,
+        "total_output_tokens": 0,
+    }
+
+
+def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, conn, table_name, doc_column):
+    """Evaluate a single record. Returns (doc_id, doc_title, hl, ll, score, response, error, chat_result)."""
+    system_prompt = build_evaluation_system_prompt("detailed" if detailed else "basic")
+    user_prompt = build_evaluation_user_prompt(doc_text, doc_title)
+    try:
+        result = client.chat_stream(system_prompt, user_prompt, progress_cb=print_progress)
+    except RuntimeError as exc:
+        print_progress_done()
+        print(f"    ERROR: {exc}")
+        return (doc_id, doc_title, None, None, None, None, str(exc), None)
+
+    print_progress_done()
+    count_hl, count_ll, score = parse_evaluation_report(result.content)
+    print(f"    Result: HL={count_hl}, LL={count_ll}, Score={score}")
+
+    if not dry_run:
+        save_evaluation(conn, table_name, doc_id, result.content, count_hl, count_ll, score)
+        print(f"    Saved to database.")
+
+    # Verify
+    record = load_record(conn, table_name, doc_column, doc_id)
+    if record and record["evaluation"] is not None:
+        print(f"    Verified: evaluation populated ({len(record['evaluation'])} chars)")
+    else:
+        print(f"    WARNING: evaluation not found in database after save")
+
+    return (doc_id, doc_title, count_hl, count_ll, score, result.content, None, result)
+
+
+def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_run, conn, table_name, doc_column, eval_text=None):
+    """Review a single record with re-execution loop.
+
+    eval_text: optional pre-loaded evaluation text (used in dry-run mode or when
+                the evaluation was just generated and not yet persisted).
+    Returns (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error).
+    """
+    MAX_REVIEW_ITERATIONS = 3
+
+    final_hl, final_ll, final_score = orig_hl, orig_ll, orig_score
+    final_error = None
+
+    for iteration in range(1, MAX_REVIEW_ITERATIONS + 1):
+        iter_label = f"Review pass {iteration}" if iteration > 1 else "Review"
+        print(f"    [{iter_label}]")
+
+        # In dry-run mode or when eval_text is provided, use it directly;
+        # otherwise reload from DB (may have been updated by previous iteration)
+        if eval_text is not None:
+            current_eval = eval_text
+            current_doc_text = None  # will be loaded below if needed
+        else:
+            record = load_record(conn, table_name, doc_column, doc_id)
+            if not record or record["evaluation"] is None:
+                print(f"      ERROR: evaluation lost during re-review")
+                final_error = "Evaluation lost during re-review"
+                break
+            current_eval = record["evaluation"]
+            current_doc_text = record["doc_text"]
+
+        if current_doc_text is None:
+            rec = load_record(conn, table_name, doc_column, doc_id)
+            current_doc_text = rec["doc_text"] if rec else ""
+
+        system_prompt = build_review_system_prompt()
+        user_prompt = build_review_user_prompt(
+            current_doc_text, current_eval, doc_title
+        )
+
         try:
             result = client.chat_stream(system_prompt, user_prompt, progress_cb=print_progress)
         except RuntimeError as exc:
             print_progress_done()
-            print(f"  ERROR: {exc}")
-            results.append((doc_id, doc_title, None, None, None, None, str(exc)))
-            continue
+            print(f"      ERROR: {exc}")
+            final_error = str(exc)
+            break
 
         print_progress_done()
-        response = result.content
-        total_elapsed += result.elapsed
-        if result.first_token_elapsed is not None:
-            total_generation_time += result.elapsed - result.first_token_elapsed
-        if result.prompt_tokens is not None:
-            total_prompt_tokens += result.prompt_tokens
-        if result.completion_tokens is not None:
-            total_completion_tokens += result.completion_tokens
-        if result.total_tokens is not None:
-            total_tokens += result.total_tokens
-        if result.reasoning_tokens is not None:
-            total_reasoning_tokens += result.reasoning_tokens
+
+        new_hl, new_ll, new_score = parse_review_result(result.content)
+        has_changes = parse_review_has_changes(result.content)
+
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
-        total_output_tokens += output_tokens
+        print(f"      Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
+        print(f"      Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
+        print(f"      Changes reported: {'YES' if has_changes else 'NO'}")
+        print(f"      API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} reasoning={result.reasoning_tokens} output={output_tokens} completion={result.completion_tokens} total={result.total_tokens}")
 
-        # Parse results
-        count_hl, count_ll, score = parse_evaluation_report(response)
-        print(f"  Result: HL={count_hl}, LL={count_ll}, Score={score}")
-        print(f"  API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} reasoning={result.reasoning_tokens} output={output_tokens} completion={result.completion_tokens} total={result.total_tokens}")
+        if has_changes and iteration < MAX_REVIEW_ITERATIONS:
+            updated_eval = parse_review_updated_eval(result.content)
+            if updated_eval and not dry_run:
+                save_evaluation(conn, table_name, doc_id, updated_eval, new_hl, new_ll, new_score)
+                print(f"      Saved updated evaluation + counts/score to database.")
+                print(f"      Updated evaluation length: {len(updated_eval)} chars")
+                print(f"      -> Re-reviewing with updated evaluation...")
+                eval_text = updated_eval  # use updated text for next iteration
+            elif updated_eval:
+                print(f"      [DRY RUN] Would save updated evaluation + counts/score.")
+                eval_text = updated_eval  # use updated text for next iteration
+            else:
+                if not dry_run:
+                    save_evaluation(conn, table_name, doc_id, current_eval, new_hl, new_ll, new_score)
+                    print(f"      Saved updated counts/score (no eval text extracted).")
+                print(f"      -> Re-reviewing with same evaluation...")
 
-        if not dry_run:
-            save_evaluation(conn, table_name, doc_id, response, count_hl, count_ll, score)
-            print(f"  Saved to database.")
-
-        # Verify
-        record = load_record(conn, table_name, doc_column, doc_id)
-        if record and record["evaluation"] is not None:
-            print(f"  Verified: evaluation populated ({len(record['evaluation'])} chars)")
-        else:
-            print(f"  WARNING: evaluation not found in database after save")
-
-        results.append((doc_id, doc_title, count_hl, count_ll, score, response, None))
-        print()
-
-    phase_elapsed = time.monotonic() - phase_start
-    print("=" * 60)
-    print("[Step 3] Evaluation Phase Complete")
-    print(f"  Records processed: {len(results)}")
-    print(f"  Total phase time:  {phase_elapsed:.1f}s")
-    print(f"  Total API time:    {total_elapsed:.1f}s")
-    print(f"  Avg API time/rec:  {total_elapsed / len(results):.1f}s" if results else "  Avg API time/rec:  N/A")
-    print(f"  Total tokens:      prompt: {total_prompt_tokens} reasoning: {total_reasoning_tokens} output: {total_output_tokens} completion: {total_completion_tokens} total: {total_tokens}")
-    if total_generation_time > 0:
-        print(f"  Tokens/Second:     completion: {total_completion_tokens / total_generation_time:.1f}")
-    print("=" * 60)
-    print()
-
-    return results
-
-
-def step4_review(conn, table_name, doc_column, client, records, eval_results, dry_run=False):
-    """Step 4: Delegate review per-record with re-execution loop."""
-    MAX_REVIEW_ITERATIONS = 3
-
-    print("=" * 60)
-    print("[Step 4] Review Phase")
-    print("=" * 60)
-    print(f"  Records: {len(records)}")
-    print(f"  Max review iterations: {MAX_REVIEW_ITERATIONS}")
-    print()
-
-    review_results = []
-    phase_start = time.monotonic()
-    total_elapsed = 0.0
-    total_generation_time = 0.0
-    total_prompt_tokens = 0
-    total_completion_tokens = 0
-    total_tokens = 0
-    total_reasoning_tokens = 0
-    total_output_tokens = 0
-
-    for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
-        print(f"[{idx}/{len(records)}] Reviewing ID={doc_id}: {doc_title}")
-
-        # Load current evaluation
-        record = load_record(conn, table_name, doc_column, doc_id)
-        if not record or record["evaluation"] is None:
-            print(f"  SKIPPED: No evaluation found for ID={doc_id}")
-            review_results.append((doc_id, doc_title, None, None, None, None, None, None, "No evaluation"))
+            orig_hl, orig_ll, orig_score = new_hl, new_ll, new_score
+            final_hl, final_ll, final_score = new_hl, new_ll, new_score
             continue
 
-        # Get original counts from eval_results
-        orig_hl = None
-        orig_ll = None
-        orig_score = None
-        for r in eval_results:
-            if r[0] == doc_id:
-                orig_hl, orig_ll, orig_score = r[2], r[3], r[4]
-                break
+        # No changes reported or last iteration — finalize
+        final_hl, final_ll, final_score = new_hl, new_ll, new_score
+        changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
+        if changed and not dry_run:
+            save_evaluation(conn, table_name, doc_id, current_eval, new_hl, new_ll, new_score)
+            print(f"      Final: Updated database with counts/score.")
+        elif not dry_run:
+            print(f"      Final: No changes needed.")
 
-        # Re-execution loop: up to MAX_REVIEW_ITERATIONS
-        final_hl, final_ll, final_score = orig_hl, orig_ll, orig_score
-        final_error = None
-
-        for iteration in range(1, MAX_REVIEW_ITERATIONS + 1):
-            iter_label = f"Review pass {iteration}" if iteration > 1 else "Review"
-            print(f"  [{iter_label}]")
-
-            # Reload current state from DB (may have been updated by previous iteration)
-            record = load_record(conn, table_name, doc_column, doc_id)
-            if not record or record["evaluation"] is None:
-                print(f"    ERROR: evaluation lost during re-review")
-                final_error = "Evaluation lost during re-review"
-                break
-
-            # Build prompts
-            system_prompt = build_review_system_prompt()
-            user_prompt = build_review_user_prompt(
-                record["doc_text"], record["evaluation"], doc_title
-            )
-
-            # Call AI endpoint
-            try:
-                result = client.chat_stream(system_prompt, user_prompt, progress_cb=print_progress)
-            except RuntimeError as exc:
-                print_progress_done()
-                print(f"    ERROR: {exc}")
-                final_error = str(exc)
-                break
-
-            print_progress_done()
-            response = result.content
-            total_elapsed += result.elapsed
-            if result.first_token_elapsed is not None:
-                total_generation_time += result.elapsed - result.first_token_elapsed
-            if result.prompt_tokens is not None:
-                total_prompt_tokens += result.prompt_tokens
-            if result.completion_tokens is not None:
-                total_completion_tokens += result.completion_tokens
-            if result.total_tokens is not None:
-                total_tokens += result.total_tokens
-            if result.reasoning_tokens is not None:
-                total_reasoning_tokens += result.reasoning_tokens
-            output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
-            total_output_tokens += output_tokens
-
-            # Parse review results
-            new_hl, new_ll, new_score = parse_review_result(response)
-
-            # Check if LLM self-reported adding/moving/removing statements
-            has_changes = parse_review_has_changes(response)
-
-            print(f"    Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
-            print(f"    Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
-            print(f"    Changes reported: {'YES' if has_changes else 'NO'}")
-            print(f"    API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} reasoning={result.reasoning_tokens} output={output_tokens} completion={result.completion_tokens} total={result.total_tokens}")
-
-            # If LLM reported changes, save updated evaluation and loop again
-            if has_changes and iteration < MAX_REVIEW_ITERATIONS:
-                # Extract the updated evaluation text from the response
-                updated_eval = parse_review_updated_eval(response)
-
-                if updated_eval and not dry_run:
-                    # Save the updated evaluation text along with new counts/score
-                    save_evaluation(conn, table_name, doc_id, updated_eval, new_hl, new_ll, new_score)
-                    print(f"    Saved updated evaluation + counts/score to database.")
-                    print(f"    Updated evaluation length: {len(updated_eval)} chars")
-                    print(f"    -> Re-reviewing with updated evaluation...")
-                elif updated_eval:
-                    print(f"    [DRY RUN] Would save updated evaluation + counts/score.")
-                else:
-                    # No updated eval text extracted, but changes reported — still save counts
-                    if not dry_run:
-                        save_evaluation(conn, table_name, doc_id, record["evaluation"], new_hl, new_ll, new_score)
-                        print(f"    Saved updated counts/score (no eval text extracted).")
-                    print(f"    -> Re-reviewing with same evaluation...")
-
-                # Update tracking for next iteration
-                orig_hl, orig_ll, orig_score = new_hl, new_ll, new_score
-                final_hl, final_ll, final_score = new_hl, new_ll, new_score
-                continue
-
-            # No changes reported or last iteration — finalize
-            final_hl, final_ll, final_score = new_hl, new_ll, new_score
-
-            # Update counts/score if they changed (and this is the final pass)
-            changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
-            if changed and not dry_run:
-                save_evaluation(conn, table_name, doc_id, record["evaluation"], new_hl, new_ll, new_score)
-                print(f"    Final: Updated database with counts/score.")
-            elif not dry_run:
-                print(f"    Final: No changes needed.")
-
-            # Verify
+        # Verify
+        if dry_run:
+            print(f"      [DRY RUN] Would verify evaluation in database.")
+        else:
             record = load_record(conn, table_name, doc_column, doc_id)
             if record and record["evaluation"] is not None:
-                print(f"    Verified: evaluation present ({len(record['evaluation'])} chars)")
+                print(f"      Verified: evaluation present ({len(record['evaluation'])} chars)")
             else:
-                print(f"    WARNING: evaluation missing after review")
+                print(f"      WARNING: evaluation missing after review")
 
-            break  # Exit the iteration loop
+        break
 
-        review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
-        print()
+    return (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error)
 
-    phase_elapsed = time.monotonic() - phase_start
+
+def process_records_interleaved(conn, table_name, doc_column, client, records, dry_run=False, detailed=False, skip_evaluation=False, skip_review=False):
+    """Process records: evaluate then review for each record before moving to the next.
+
+    Returns (eval_results, review_results) tuples compatible with step5_report.
+    eval_results: (doc_id, doc_title, hl, ll, score, response, error)
+    review_results: (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error)
+    """
+    eval_results = []
+    review_results = []
+
+    eval_stats = _empty_stats()
+    review_stats = _empty_stats()
+
     print("=" * 60)
-    print("[Step 4] Review Phase Complete")
-    print(f"  Records processed: {len(review_results)}")
-    print(f"  Total phase time:  {phase_elapsed:.1f}s")
-    print(f"  Total API time:    {total_elapsed:.1f}s")
-    print(f"  Avg API time/rec:  {total_elapsed / len(review_results):.1f}s" if review_results else "  Avg API time/rec:  N/A")
-    print(f"  Total tokens:      prompt: {total_prompt_tokens} reasoning: {total_reasoning_tokens} output: {total_output_tokens} completion: {total_completion_tokens} total: {total_tokens}")
-    if total_generation_time > 0:
-        print(f"  Tokens/Second:     completion: {total_completion_tokens / total_generation_time:.1f}")
+    print("[Step 3/4] Interleaved Evaluation + Review")
     print("=" * 60)
+    print(f"  Records: {len(records)}")
+    print(f"  Report type: {'detailed' if detailed else 'basic'}")
+    print(f"  Skip evaluation: {skip_evaluation}")
+    print(f"  Skip review: {skip_review}")
     print()
 
-    return review_results
+    for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
+        print(f"[{idx}/{len(records)}] ID={doc_id}: {doc_title}")
+
+        response = None  # set by eval step, used by review step
+
+        # --- Step 3: Evaluate (unless skipped) ---
+        if skip_evaluation:
+            print(f"  [Step 3] SKIPPED (--skip-evaluation)")
+            # Load existing evaluation counts from DB for review
+            record = load_record(conn, table_name, doc_column, doc_id)
+            if record and record["evaluation"] is not None:
+                count_hl, count_ll, score = parse_evaluation_report(record["evaluation"])
+            else:
+                count_hl, count_ll, score = None, None, None
+            eval_results.append((doc_id, doc_title, count_hl, count_ll, score, None, None))
+        else:
+            print(f"  [Step 3] Evaluating...")
+            er = _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, conn, table_name, doc_column)
+            _, _, count_hl, count_ll, score, response, error, chat_result = er
+            if chat_result:
+                _accumulate_stats(eval_stats, chat_result)
+            eval_results.append((doc_id, doc_title, count_hl, count_ll, score, response, error))
+
+        print()
+
+        # --- Step 4: Review (unless skipped) ---
+        if skip_review:
+            print(f"  [Step 4] SKIPPED (--skip-review)")
+            review_results.append((doc_id, doc_title, count_hl, count_ll, score, count_hl, count_ll, score, None))
+        else:
+            print(f"  [Step 4] Reviewing...")
+            # If we skipped evaluation, parse counts from DB
+            rev_orig_hl = count_hl
+            rev_orig_ll = count_ll
+            rev_orig_score = score
+            if rev_orig_hl is None:
+                record = load_record(conn, table_name, doc_column, doc_id)
+                if record and record["evaluation"] is not None:
+                    rev_orig_hl, rev_orig_ll, rev_orig_score = parse_evaluation_report(record["evaluation"])
+
+            if rev_orig_hl is None:
+                print(f"    SKIPPED: No evaluation found for ID={doc_id}")
+                review_results.append((doc_id, doc_title, None, None, None, None, None, None, "No evaluation"))
+            else:
+                # Pass evaluation text directly to review (avoids DB round-trip)
+                if not skip_evaluation and response is not None:
+                    rev_eval_text = response
+                else:
+                    rec = load_record(conn, table_name, doc_column, doc_id)
+                    rev_eval_text = rec["evaluation"] if rec else None
+                rr = _review_record(client, doc_id, doc_title, rev_orig_hl, rev_orig_ll, rev_orig_score, dry_run, conn, table_name, doc_column, eval_text=rev_eval_text)
+                review_results.append(rr)
+
+        print()
+
+    # Print summaries
+    print("=" * 60)
+    print()
+    if not skip_evaluation:
+        _stats_summary("Step 3 Evaluation", eval_stats, len([r for r in eval_results if r[6] is None]))
+        print("=" * 60)
+        print()
+    if not skip_review:
+        _stats_summary("Step 4 Review", review_stats, len([r for r in review_results if r[8] is None]))
+        print("=" * 60)
+        print()
+
+    return eval_results, review_results
 
 
 def step5_report(eval_results, review_results):
@@ -1202,23 +1223,12 @@ def main():
         print(f"Processing {len(records)} records...")
         print()
 
-        # Step 3: Evaluate each record
-        if args.skip_evaluation:
-            print("[Skipped] Evaluation phase skipped by --skip-evaluation")
-            eval_results = []
-        else:
-            eval_results = step3_evaluate(
-                conn, table_name, doc_column, client, records, dry_run=args.dry_run, detailed=args.detailed
-            )
-
-        # Step 4: Review each record (unless skipped)
-        if args.skip_review:
-            print("[Skipped] Review phase skipped by --skip-review")
-            review_results = []
-        else:
-            review_results = step4_review(
-                conn, table_name, doc_column, client, records, eval_results, dry_run=args.dry_run
-            )
+        # Step 3/4: Interleaved evaluation + review per record
+        eval_results, review_results = process_records_interleaved(
+            conn, table_name, doc_column, client, records,
+            dry_run=args.dry_run, detailed=args.detailed,
+            skip_evaluation=args.skip_evaluation, skip_review=args.skip_review,
+        )
 
         # Step 5: Report
         step5_report(eval_results, review_results)
