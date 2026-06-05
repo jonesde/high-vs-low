@@ -130,7 +130,11 @@ The evaluation report is valid. No changes required.
 No changes needed.
 """
 
-STUB_REVIEW_WITH_CHANGES = """# Review Result: STUB_REVIEW_RESPONSE
+# Unique divider the LLM emits after a regenerated evaluation report.
+# Used by parse_review_updated_eval to reliably extract the full report.
+EVAL_REPORT_END_MARKER = "--- END OF UPDATED EVALUATION REPORT ---"
+
+STUB_REVIEW_WITH_CHANGES = f"""# Review Result: STUB_REVIEW_RESPONSE
 
 The evaluation has been reviewed against the checklist.
 
@@ -139,32 +143,77 @@ The evaluation has been reviewed against the checklist.
 **Original counts**: HL=2, LL=3, Score=-2.0
 **Updated counts**: HL=3, LL=3, Score=0.0
 
+## Updated Evaluation Report
+
+# High Law vs Low Law Alignment Evaluation: STUB_DOCUMENT
+
+## Overview
+Updated stub evaluation.
+
+---
+
+## Key Topics
+
+1. **Authority and Power: Obedience**
+2. **Justice and Punishment: Divine Justice**
+3. **Mercy and Compassion: Forgiveness**
+4. **Autonomy and Consent: Free Will**
+5. **Community and Belonging: Unity**
+
+---
+
+## Statement Quotes
+
+### High Law Aligned (3 statements)
+
+| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
+|---| -------- | ----- | --------------- | ------- | ------------ | ---------- | -------------- |
+| 1 | Line 5 | 6-HL,37-HL | "individual agency and choice" | Author | "each person must choose for themselves" | Authority and Power: Obedience | HL |
+| 2 | Line 12 | 26-HL,5-HL | "compassion for the suffering" | Author | "we must show mercy to all" | Mercy and Compassion: Forgiveness | HL |
+| 3 | Line 25 | 6-HL | "newly added statement" | Author | "this was missed before" | Autonomy and Consent: Free Will | HL (added during review) |
+
+### Low Law Aligned (3 statements)
+
+| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
+|---| -------- | ----- | --------------- | ------- | ------------ | ---------- | -------------- |
+| 1 | Line 8 | 17-LL,19-LL | "obey under threat of punishment" | Author | "you must obey or face consequences" | Authority and Power: Obedience | LL |
+| 2 | Line 15 | 25-LL,27-LL | "punishment for transgression" | Author | "the wicked shall be punished" | Justice and Punishment: Divine Justice | LL |
+| 3 | Line 20 | 34-LL,35-LL | "conformity to the standard" | Author | "those who do not conform will be cast out" | Community and Belonging: Unity | LL |
+
+---
+
+## Scoring Summary
+
+| Category | Count | Percentage |
+| -------- | ----- | ---------- |
+| High Law Aligned | 3 | 50.0% |
+| Low Law Aligned | 3 | 50.0% |
+| **Total** | **6** | **100%** |
+
+**Score**: ((50.0 - 50.0) / 10) = **0.0**
+
+---
+
+## Key Topic Score Table
+
+| Key Topic | High # | Low # | Score |
+| --------- | ------ | ----- | ----- |
+| Authority and Power: Obedience | 1 | 1 | 0.0 |
+| Justice and Punishment: Divine Justice | 0 | 1 | -10.0 |
+| Mercy and Compassion: Forgiveness | 1 | 0 | 10.0 |
+| Autonomy and Consent: Free Will | 1 | 0 | 10.0 |
+| Community and Belonging: Unity | 0 | 1 | -10.0 |
+
+{EVAL_REPORT_END_MARKER}
+
 ## CHANGES SUMMARY
 
 STATEMENTS ADDED
 
-Added 1 High Law statement (statement #7) that was previously missed.
+Added 1 High Law statement (statement #3) that was previously missed.
 
-### High Law Aligned (3 statements)
-
-1. Statement one
-2. Statement two
-3. Statement seven (newly added)
-
-### Low Law Aligned (3 statements)
-
-1. Statement four
-2. Statement five
-3. Statement six
-
-### Scoring Summary
-
-| Category | Count |
-|----------|-------|
-| High Law Aligned | 3 |
-| Low Law Aligned | 3 |
-
-**Score** = **0.0**
+**Original counts**: HL=2, LL=3, Score=-2.0
+**Updated counts**: HL=3, LL=3, Score=0.0
 """
 
 
@@ -563,7 +612,10 @@ def build_review_system_prompt():
         "If changes are needed, describe them clearly with original and updated counts.\n"
         "If no changes are needed, state that explicitly.\n\n"
         "If any changes were made, regenerate the entire updated evaluation report.\n"
-        "At the end of your review, include a CHANGES SUMMARY section:\n"
+        f"After the regenerated report, emit the following marker on its own line:\n"
+        f"```\n{EVAL_REPORT_END_MARKER}\n```\n"
+        "This marker tells the parser where the report ends and the summary begins.\n\n"
+        "After the marker, include a CHANGES SUMMARY section:\n"
         "- Emit 'STATEMENTS ADDED' if you added any statements\n"
         "- Emit 'STATEMENTS MOVED' if you moved any statements between categories\n"
         "- Emit 'STATEMENTS REMOVED' if you removed any statements\n"
@@ -745,44 +797,29 @@ def parse_review_has_changes(review_text):
 
 
 def parse_review_updated_eval(review_text):
-    """Extract the full updated evaluation report text from the review response."""
-    # Strategy 1: look for content between explicit delimiters if the LLM used them
-    eval_match = re.search(
-        r"Updated\s+Evaluation\s+Report[^\n]*\n[-=]+\n(.*?)(?=\n\nCHANGES|\n\nUpdated counts|\Z)",
-        review_text,
-        re.DOTALL | re.IGNORECASE,
-    )
-    if eval_match:
-        return eval_match.group(1).strip()
+    """Extract the full updated evaluation report text from the review response.
 
-    # Strategy 2: find the evaluation title and grab everything from there to end.
-    # The LLM outputs the full report (title + all sections) at the end of its response.
+    Looks for the EVAL_REPORT_END_MARKER emitted by the LLM after the regenerated
+    report.  Everything between the evaluation title line and that marker is the
+    updated report.
+    """
+    # Find the marker
+    marker_pos = review_text.find(EVAL_REPORT_END_MARKER)
+    if marker_pos == -1:
+        return None
+
+    # Everything before the marker is the report (plus any preamble).
+    # Find the start of the evaluation — look for the title line.
+    before_marker = review_text[:marker_pos]
     title_match = re.search(
         r"(#\s+High Law vs Low Law Alignment Evaluation:.*?\n)",
-        review_text,
+        before_marker,
     )
     if title_match:
-        result = review_text[title_match.start():].strip()
-        # Strip any trailing review commentary that appears after a final --- separator
-        # followed by non-evaluation text.  Heuristic: if the text ends with a clean
-        # evaluation section (Conclusions or a score table), keep it all.
-        return result
+        return before_marker[title_match.start():].strip()
 
-    # Strategy 3: find from ## Statement Quotes to end of text.
-    # This captures the statement tables + scoring + everything after.
-    sq_match = re.search(r"(##\s+Statement Quotes\n)", review_text)
-    if sq_match:
-        result = review_text[sq_match.start():].strip()
-        return result
-
-    # Strategy 4: find from ### High Law Aligned through to end of text.
-    hl_match = re.search(r"(###?\s*High Law Aligned)", review_text)
-    if hl_match:
-        result = review_text[hl_match.start():].strip()
-        return result
-
-    # If no changes were made, return None
-    return None
+    # Fallback: if no title found, take everything before the marker.
+    return before_marker.strip()
 
 
 # ---------------------------------------------------------------------------
