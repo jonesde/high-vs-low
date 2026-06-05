@@ -37,12 +37,13 @@ import argparse
 import json
 import os
 import re
+import shutil
 import sqlite3
 import sys
 import time
 import urllib.error
 import urllib.request
-from typing import NamedTuple, Optional
+from typing import Callable, NamedTuple, Optional
 
 
 # ---------------------------------------------------------------------------
@@ -177,6 +178,59 @@ class ChatResult(NamedTuple):
     total_tokens: Optional[int] = None
     reasoning_tokens: Optional[int] = None
 
+ProgressCallback = Callable[[int, str, float], None]
+
+
+def print_progress(token_count: int, content_so_far: str, start_time: float) -> None:
+    """Print a single-line progress indicator with token count, elapsed time, and recent text.
+
+    Format: gen... NNN tokens 00:00 | ...recent text filling the rest of the line
+    Refreshes at most once per second.
+    """
+    global _LAST_PROGRESS_TIME
+    now = time.monotonic()
+    # Skip if less than 1 second since last refresh
+    if now - _LAST_PROGRESS_TIME < 1.0:
+        return
+    _LAST_PROGRESS_TIME = now
+
+    term_width = _term_width()
+    # Elapsed time as MM:SS
+    elapsed = now - start_time
+    mins = int(elapsed) // 60
+    secs = int(elapsed) % 60
+    # Left side: "gen... NNN tokens 00:00 | "
+    left = f"gen {token_count} tokens {mins:02d}:{secs:02d} | "
+    # Available space for text (leave 1 char margin)
+    text_width = max(10, term_width - len(left) - 1)
+    # Collapse newlines so embedded \n don't break the single-line display
+    flat = content_so_far.replace("\r", "").replace("\n", " ")
+    # Take the most recent characters that fit
+    recent = flat[-(text_width + 20):]
+    recent = recent[-text_width:]
+    # Clear the line and print
+    sys.stdout.write("\r" + " " * term_width + "\r" + left + recent)
+    sys.stdout.flush()
+
+
+_TERM_WIDTH: int = 0
+_LAST_PROGRESS_TIME: float = 0.0
+
+
+def _term_width() -> int:
+    """Cached terminal width to avoid repeated syscalls."""
+    global _TERM_WIDTH
+    if _TERM_WIDTH == 0:
+        _TERM_WIDTH = shutil.get_terminal_size(fallback=(180, 24)).columns
+    return _TERM_WIDTH
+
+
+def print_progress_done() -> None:
+    """Clear the progress line and move to next line."""
+    term_width = shutil.get_terminal_size(fallback=(180, 24)).columns
+    sys.stdout.write("\r" + " " * term_width + "\r\n")
+    sys.stdout.flush()
+
 
 class OpenAIClient:
     """Minimal OpenAI-compatible chat completions client using urllib."""
@@ -231,6 +285,100 @@ class OpenAIClient:
             ) from exc
 
 
+    def chat_stream(self, system_prompt, user_prompt, progress_cb=None):
+        """Send a streaming chat completion request.
+        
+        Uses SSE streaming to show progress as tokens arrive.
+        progress_cb(token_count, content_so_far) is called per chunk.
+        Returns ChatResult with full content and usage.
+        """
+        url = f"{self.endpoint}/chat/completions"
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "reasoning_effort": "high",
+            "stream": True,
+        }
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+            },
+            method="POST",
+        )
+        start = time.monotonic()
+        try:
+            with urllib.request.urlopen(req, timeout=1800) as resp:
+                full_content = []
+                prompt_tokens = None
+                completion_tokens = None
+                total_tokens = None
+                reasoning_tokens = None
+                token_count = 0
+                
+                # Read SSE stream line by line
+                for raw_line in resp:
+                    line = raw_line.decode("utf-8").rstrip("\n")
+                    if not line or not line.startswith("data: "):
+                        continue
+                    data_str = line[6:]  # strip "data: "
+                    if data_str == "[DONE]":
+                        break
+                    try:
+                        chunk = json.loads(data_str)
+                    except json.JSONDecodeError:
+                        continue
+                    
+                    # Extract delta content
+                    choices = chunk.get("choices", [])
+                    for choice in choices:
+                        delta = choice.get("delta", {})
+                        delta_content = delta.get("content")
+                        if delta_content:
+                            full_content.append(delta_content)
+                            if progress_cb:
+                                # Count actual words in accumulated content as token proxy
+                                token_count = len("".join(full_content).split())
+                                progress_cb(token_count, "".join(full_content), start)
+                    
+                    # Extract usage from final chunk (has content = None)
+                    usage = chunk.get("usage")
+                    if usage:
+                        prompt_tokens = usage.get("prompt_tokens")
+                        completion_tokens = usage.get("completion_tokens")
+                        total_tokens = usage.get("total_tokens")
+                        cd = usage.get("completion_tokens_details", {})
+                        reasoning_tokens = cd.get("reasoning_tokens")
+                
+                elapsed = time.monotonic() - start
+                content = "".join(full_content)
+                
+                # If no usage in stream, try to get it (some endpoints don't send it)
+                if completion_tokens is None:
+                    completion_tokens = token_count
+                
+                return ChatResult(
+                    content=content,
+                    elapsed=elapsed,
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    total_tokens=total_tokens,
+                    reasoning_tokens=reasoning_tokens,
+                )
+        except urllib.error.HTTPError as exc:
+            elapsed = time.monotonic() - start
+            error_body = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(
+                f"HTTP {exc.code} from {url} ({elapsed:.1f}s): {error_body}"
+            ) from exc
+
+
 class StubClient:
     """Stub that returns constant responses for testing."""
 
@@ -260,6 +408,33 @@ class StubClient:
             reasoning_tokens=0,
         )
 
+    def chat_stream(self, system_prompt, user_prompt, progress_cb=None):
+        self.call_count += 1
+        if user_prompt.lower().startswith("review"):
+            self.review_call_count += 1
+            if self.review_call_count == 1:
+                content = STUB_REVIEW_WITH_CHANGES
+            else:
+                content = STUB_REVIEW
+        else:
+            content = STUB_EVALUATION
+        # Simulate streaming in chunks
+        chunk_size = 50
+        start = time.monotonic()
+        for i in range(0, len(content), chunk_size):
+            chunk = content[i:i + chunk_size]
+            if progress_cb:
+                token_count = len(content[:i + len(chunk)].split())
+                progress_cb(token_count, content[:i + len(chunk)], start)
+            time.sleep(0.001)
+        return ChatResult(
+            content=content,
+            elapsed=0.01,
+            prompt_tokens=100,
+            completion_tokens=200,
+            total_tokens=300,
+            reasoning_tokens=0,
+        )
 
 # ---------------------------------------------------------------------------
 # Prompt builders
@@ -654,12 +829,14 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
 
         # Call AI endpoint
         try:
-            result = client.chat(system_prompt, user_prompt)
+            result = client.chat_stream(system_prompt, user_prompt, progress_cb=print_progress)
         except RuntimeError as exc:
+            print_progress_done()
             print(f"  ERROR: {exc}")
             results.append((doc_id, doc_title, None, None, None, None, str(exc)))
             continue
 
+        print_progress_done()
         response = result.content
         total_elapsed += result.elapsed
         if result.prompt_tokens is not None:
@@ -768,12 +945,14 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
 
             # Call AI endpoint
             try:
-                result = client.chat(system_prompt, user_prompt)
+                result = client.chat_stream(system_prompt, user_prompt, progress_cb=print_progress)
             except RuntimeError as exc:
+                print_progress_done()
                 print(f"    ERROR: {exc}")
                 final_error = str(exc)
                 break
 
+            print_progress_done()
             response = result.content
             total_elapsed += result.elapsed
             if result.prompt_tokens is not None:
