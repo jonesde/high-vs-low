@@ -758,31 +758,19 @@ def parse_evaluation_report(report_text):
 
 
 def parse_review_result(review_text):
-    """Extract updated counts from a review result."""
-    # Try "Updated counts" line
-    updated_match = re.search(
-        r"Updated counts.*?HL\s*=\s*(\d+).*?LL\s*=\s*(\d+).*?Score\s*=\s*([+-]?\d+\.?\d*)",
-        review_text,
-        re.DOTALL,
-    )
-    if updated_match:
-        return (
-            int(updated_match.group(1)),
-            int(updated_match.group(2)),
-            float(updated_match.group(3)),
-        )
+    """Extract updated counts from a review result.
 
-    # Fallback: try to parse from the full review text
-    hl_match = re.search(r"HL\s*=\s*(\d+)", review_text)
-    ll_match = re.search(r"LL\s*=\s*(\d+)", review_text)
-    score_match = re.search(r"Score\s*=\s*([+-]?\d+\.?\d*)", review_text)
+    Parses the regenerated evaluation report (between the title and
+    EVAL_REPORT_END_MARKER).  The CHANGES SUMMARY section is NOT used — the
+    LLM frequently miscounts there.  The actual statement tables in the
+    regenerated report are the authoritative source.
 
-    if hl_match and ll_match and score_match:
-        return (
-            int(hl_match.group(1)),
-            int(ll_match.group(1)),
-            float(score_match.group(1)),
-        )
+    Returns (hl, ll, score) from the regenerated report, or (None, None, None)
+    if no regenerated report is present (LLM reported no changes).
+    """
+    updated_eval = parse_review_updated_eval(review_text)
+    if updated_eval is not None:
+        return parse_evaluation_report(updated_eval)
 
     return None, None, None
 
@@ -1116,7 +1104,20 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
         print_progress_done()
 
-        new_hl, new_ll, new_score = parse_review_result(result.content)
+        # Parse counts the same way as the evaluation step — directly from
+        # the raw LLM output.  parse_evaluation_report looks for
+        # "High Law Aligned | N" in the Scoring Summary table, which is
+        # reliable even when the response also contains preamble text and a
+        # CHANGES SUMMARY section.
+        new_hl, new_ll, new_score = parse_evaluation_report(result.content)
+
+        # Extract the regenerated report (between title and marker) for saving.
+        # If no regenerated report was emitted, the LLM reported no changes and
+        # we keep the original counts.
+        updated_eval = parse_review_updated_eval(result.content)
+        if updated_eval is None:
+            new_hl, new_ll, new_score = orig_hl, orig_ll, orig_score
+
         has_changes = parse_review_has_changes(result.content)
 
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
@@ -1126,7 +1127,6 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         print(f"      API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} reasoning={result.reasoning_tokens} output={output_tokens} completion={result.completion_tokens} total={result.total_tokens}")
 
         if has_changes and iteration < MAX_REVIEW_ITERATIONS:
-            updated_eval = parse_review_updated_eval(result.content)
             if updated_eval and not dry_run:
                 save_evaluation(conn, table_name, doc_id, updated_eval, new_hl, new_ll, new_score)
                 print(f"      Saved updated evaluation + counts/score to database.")
