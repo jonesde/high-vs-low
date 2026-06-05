@@ -9,7 +9,7 @@
 
 ## 0. Build Audit Inventories
 
-- [ ] **Automated verification**: For Markdown formatted reports run `python3 scripts/verify_report.py <report.md>` from the skill directory as an initial automated cross-check. This catches various count and score mismatches and outputs info and issues found. If any issues are found, use them to inform the complete review, do *not* use script output alone as a reason to make changes.
+- [ ] **Automated verification**: For Markdown formatted reports run `python3 scripts/verify-report.py <report.md>` from the skill directory as an initial automated cross-check. This catches various count and score mismatches and outputs info and issues found. If any issues are found, use them to inform the complete review, do *not* use script output alone as a reason to make changes.
 
 Before fixing anything, derive these from the report. These are your source of truth - do not trust generated summaries, headers, or narrative counts.
 

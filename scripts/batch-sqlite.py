@@ -39,7 +39,9 @@ import os
 import re
 import shutil
 import sqlite3
+import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urllib.error
@@ -586,7 +588,17 @@ Document Text:
 Produce the evaluation report as specified."""
 
 
-def build_review_user_prompt(doc_text, evaluation, doc_title):
+def build_review_user_prompt(doc_text, evaluation, doc_title, verify_output=None):
+    verify_section = ""
+    if verify_output is not None:
+        verify_section = f"""
+---
+Automated Verification Report:
+---
+{verify_output}
+---
+
+"""
     return f"""Review the following evaluation report for the document titled "{doc_title}".
 
 Original Document Text:
@@ -598,9 +610,54 @@ Existing Evaluation Report:
 ---
 {evaluation}
 ---
-
-Review the evaluation for accuracy, completeness, and consistency.
+{verify_section}Review the evaluation for accuracy, completeness, and consistency.
+If the Automated Verification Report above lists any issues, prioritize fixing those first.
 Report original and updated counts."""
+
+
+def run_verify_report(evaluation_text):
+    """Run verify-report.py on the given evaluation text and return its stdout.
+
+    Writes the evaluation to a temp file, runs the script, and cleans up.
+    Returns the combined stdout+stderr output, or None if the script is not
+    found or fails to run.
+    """
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    verify_script = os.path.join(script_dir, "verify-report.py")
+
+    if not os.path.exists(verify_script):
+        print(f"    [Verify] Script not found: {verify_script} — skipping")
+        return None
+
+    try:
+        # Write evaluation to a temporary file
+        fd, tmp_path = tempfile.mkstemp(suffix=".md", text=True)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(evaluation_text)
+
+            result = subprocess.run(
+                [sys.executable, verify_script, tmp_path],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            output = result.stdout
+            if result.stderr:
+                output += result.stderr
+            return output.strip()
+        finally:
+            # Clean up temp file
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+    except subprocess.TimeoutExpired:
+        print(f"    [Verify] verify-report.py timed out — skipping")
+        return None
+    except Exception as exc:
+        print(f"    [Verify] Error running verify-report.py: {exc} — skipping")
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -991,9 +1048,17 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
             rec = load_record(conn, table_name, doc_column, doc_id)
             current_doc_text = rec["doc_text"] if rec else ""
 
+        # Run automated verification on the current evaluation
+        print(f"      [Verify] Running verify-report.py...")
+        verify_output = run_verify_report(current_eval)
+        if verify_output:
+            # Show a short summary line
+            first_line = verify_output.split("\n")[0]
+            print(f"      [Verify] {first_line}")
+
         system_prompt = build_review_system_prompt()
         user_prompt = build_review_user_prompt(
-            current_doc_text, current_eval, doc_title
+            current_doc_text, current_eval, doc_title, verify_output=verify_output
         )
 
         # Start progress display immediately
