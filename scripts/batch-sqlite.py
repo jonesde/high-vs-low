@@ -533,7 +533,7 @@ def build_evaluation_system_prompt(report_type="basic"):
     else:
         extra = (
             "\n\n## Report Type: BASIC\n\n"
-            "Produce a **basic** evaluation report. Do *not* include the DETAILED sections."
+            "Produce a **basic/score** evaluation report. Do *not* include the detailed sections. Stop after the *Key Topic Score Table* section."
         )
 
     instructions = (
@@ -689,14 +689,7 @@ def parse_review_has_changes(review_text):
 
 def parse_review_updated_eval(review_text):
     """Extract the full updated evaluation report text from the review response."""
-    # Look for a full evaluation report embedded in the response
-    # The LLM should output the full updated evaluation after changes
-    # Try to find it by looking for the evaluation structure markers
-
-    # Strategy: look for the evaluation markers that indicate the start of the full report
-    # The evaluation starts with a title or header and contains High Law/Low Law sections
-
-    # Try to find content between clear delimiters if the LLM used them
+    # Strategy 1: look for content between explicit delimiters if the LLM used them
     eval_match = re.search(
         r"Updated\s+Evaluation\s+Report[^\n]*\n[-=]+\n(.*?)(?=\n\nCHANGES|\n\nUpdated counts|\Z)",
         review_text,
@@ -705,16 +698,31 @@ def parse_review_updated_eval(review_text):
     if eval_match:
         return eval_match.group(1).strip()
 
-    # Try to find the full report by looking for the evaluation structure
-    # Look for the section that contains both High Law and Low Law sections
-    hl_match = re.search(r"(###?\s*High Law Aligned.*?)(###?\s*Low Law Aligned)", review_text, re.DOTALL)
-    ll_end = re.search(r"(###?\s*Low Law Aligned.*?)(###?\s*(?:Scoring|Score|Summary)|\Z)", review_text, re.DOTALL)
+    # Strategy 2: find the evaluation title and grab everything from there to end.
+    # The LLM outputs the full report (title + all sections) at the end of its response.
+    title_match = re.search(
+        r"(#\s+High Law vs Low Law Alignment Evaluation:.*?\n)",
+        review_text,
+    )
+    if title_match:
+        result = review_text[title_match.start():].strip()
+        # Strip any trailing review commentary that appears after a final --- separator
+        # followed by non-evaluation text.  Heuristic: if the text ends with a clean
+        # evaluation section (Conclusions or a score table), keep it all.
+        return result
 
-    if hl_match and ll_end:
-        # Extract from High Law section through the end of Low Law section
-        start = hl_match.start()
-        end = ll_end.end()
-        return review_text[start:end].strip()
+    # Strategy 3: find from ## Statement Quotes to end of text.
+    # This captures the statement tables + scoring + everything after.
+    sq_match = re.search(r"(##\s+Statement Quotes\n)", review_text)
+    if sq_match:
+        result = review_text[sq_match.start():].strip()
+        return result
+
+    # Strategy 4: find from ### High Law Aligned through to end of text.
+    hl_match = re.search(r"(###?\s*High Law Aligned)", review_text)
+    if hl_match:
+        result = review_text[hl_match.start():].strip()
+        return result
 
     # If no changes were made, return None
     return None
