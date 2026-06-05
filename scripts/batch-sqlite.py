@@ -612,7 +612,7 @@ def build_review_system_prompt():
         "If changes are needed, describe them clearly with original and updated counts.\n"
         "If no changes are needed, state that explicitly.\n\n"
         "If any changes were made, regenerate the entire updated evaluation report.\n"
-        f"After the regenerated report, emit the following marker on its own line:\n"
+        f"After the regenerated report or statement that no changes are needed, emit the following marker on its own line:\n"
         f"```\n{EVAL_REPORT_END_MARKER}\n```\n"
         "This marker tells the parser where the report ends and the summary begins.\n\n"
         "After the marker, include a CHANGES SUMMARY section:\n"
