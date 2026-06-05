@@ -583,7 +583,7 @@ Document Text:
 {doc_text}
 ---
 
-Produce the complete evaluation report as specified."""
+Produce the evaluation report as specified."""
 
 
 def build_review_user_prompt(doc_text, evaluation, doc_title):
