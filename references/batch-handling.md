@@ -88,12 +88,14 @@ Argument options:
 - `--reset`: Clean out evaluation/count/score columns before processing (opt-in; without this flag, existing evaluations are preserved)
 - `--reset-only`: Clean out evaluation/count/score columns and then exit (no evaluation or review)
 
+NOTE: the script never does an evaluation if there is already an evaluation in place (filters by evaluation is null)
+
 Common Patterns:
+- **Easy Common Case (do 10 not yet done)**: `python3 batch-sqlite.py my.db --limit 10`
 - **Reset and re-eval a subset**: `--reset --where "year = 1975" --limit 5`
-- **Continue eval on a subset**: `--where "year = 1975 AND evaluation IS NOT NULL" --limit 5`
+- **Continue eval on a subset**: `--where "year = 1975" --limit 5`
 - **Preview without modifying**: `--skip-evaluation --skip-review --where "year >= 2000"`
 - **Resume from a specific ID**: `--start-id 500 --limit 10`
-- **WHERE Examples**: `--where "year = 1975"`, `--where "evaluation IS NOT NULL"`, `--where "score < -3"`
 
 The script does NOT reset evaluation columns by default — pass `--reset` to clear them before starting. Use `--where` to target a subset of records for reset or evaluation. It uses `urllib` only (no external dependencies).
 
