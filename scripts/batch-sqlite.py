@@ -40,6 +40,7 @@ import re
 import shutil
 import sqlite3
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -216,6 +217,63 @@ def print_progress(token_count: int, content_so_far: str, start_time: float) -> 
 
 _TERM_WIDTH: int = 0
 _LAST_PROGRESS_TIME: float = 0.0
+_WAIT_THREAD: Optional[threading.Thread] = None
+_WAIT_THREAD_STOP: threading.Event = threading.Event()
+
+
+def _wait_timer_loop(start_time: float) -> None:
+    """Background thread that keeps the progress line visible while waiting for tokens."""
+    while not _WAIT_THREAD_STOP.is_set():
+        print_progress(0, "", start_time)
+        # Sleep in small increments so we stop quickly when first token arrives
+        for _ in range(10):
+            if _WAIT_THREAD_STOP.is_set():
+                break
+            time.sleep(0.1)
+
+
+def start_wait_timer(start_time: float) -> None:
+    """Start a background thread that keeps the progress line ticking while waiting."""
+    global _WAIT_THREAD, _WAIT_THREAD_STOP
+    _WAIT_THREAD_STOP.clear()
+    _WAIT_THREAD = threading.Thread(target=_wait_timer_loop, args=(start_time,), daemon=True)
+    _WAIT_THREAD.start()
+
+
+def stop_wait_timer() -> None:
+    """Stop the background wait timer thread."""
+    global _WAIT_THREAD
+    _WAIT_THREAD_STOP.set()
+    if _WAIT_THREAD is not None:
+        _WAIT_THREAD.join(timeout=2.0)
+        _WAIT_THREAD = None
+
+
+def make_streaming_callback(progress_cb: ProgressCallback) -> tuple:
+    """Create a callback wrapper that starts the wait timer and stops it on first token.
+
+    Returns (start_fn, wrapped_callback) where:
+      - start_fn(start_time) kicks off the background timer thread
+      - wrapped_callback replaces the original progress_cb; stops the timer on first call
+    """
+    first = [True]  # mutable flag
+
+    def start_fn(start_time: float) -> None:
+        # Reset _LAST_PROGRESS_TIME so the timer prints immediately
+        global _LAST_PROGRESS_TIME
+        _LAST_PROGRESS_TIME = 0.0
+        start_wait_timer(start_time)
+
+    def wrapped(token_count: int, content_so_far: str, start_time: float) -> None:
+        if first[0]:
+            first[0] = False
+            stop_wait_timer()
+            # Reset so the first real callback prints immediately
+            global _LAST_PROGRESS_TIME
+            _LAST_PROGRESS_TIME = 0.0
+        progress_cb(token_count, content_so_far, start_time)
+
+    return start_fn, wrapped
 
 
 def _term_width() -> int:
@@ -857,12 +915,21 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, con
     """Evaluate a single record. Returns (doc_id, doc_title, hl, ll, score, response, error, chat_result)."""
     system_prompt = build_evaluation_system_prompt("detailed" if detailed else "basic")
     user_prompt = build_evaluation_user_prompt(doc_text, doc_title)
+
+    # Start progress display immediately — timer ticks while waiting for first token
+    _start_time = time.monotonic()
+    start_fn, wrapped_cb = make_streaming_callback(print_progress)
+    start_fn(_start_time)
+
     try:
-        result = client.chat_stream(system_prompt, user_prompt, progress_cb=print_progress)
+        result = client.chat_stream(system_prompt, user_prompt, progress_cb=wrapped_cb)
     except RuntimeError as exc:
+        stop_wait_timer()
         print_progress_done()
         print(f"    ERROR: {exc}")
         return (doc_id, doc_title, None, None, None, None, str(exc), None)
+
+    stop_wait_timer()
 
     print_progress_done()
     count_hl, count_ll, score = parse_evaluation_report(result.content)
@@ -921,13 +988,21 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
             current_doc_text, current_eval, doc_title
         )
 
+        # Start progress display immediately
+        _rev_start = time.monotonic()
+        rev_start_fn, rev_wrapped_cb = make_streaming_callback(print_progress)
+        rev_start_fn(_rev_start)
+
         try:
-            result = client.chat_stream(system_prompt, user_prompt, progress_cb=print_progress)
+            result = client.chat_stream(system_prompt, user_prompt, progress_cb=rev_wrapped_cb)
         except RuntimeError as exc:
+            stop_wait_timer()
             print_progress_done()
             print(f"      ERROR: {exc}")
             final_error = str(exc)
             break
+
+        stop_wait_timer()
 
         print_progress_done()
 
