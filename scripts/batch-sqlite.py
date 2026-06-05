@@ -177,6 +177,7 @@ class ChatResult(NamedTuple):
     completion_tokens: Optional[int] = None
     total_tokens: Optional[int] = None
     reasoning_tokens: Optional[int] = None
+    first_token_elapsed: Optional[float] = None
 
 ProgressCallback = Callable[[int, str, float], None]
 
@@ -321,6 +322,7 @@ class OpenAIClient:
                 total_tokens = None
                 reasoning_tokens = None
                 token_count = 0
+                first_token_time = None
                 
                 # Read SSE stream line by line
                 for raw_line in resp:
@@ -341,6 +343,8 @@ class OpenAIClient:
                         delta = choice.get("delta", {})
                         delta_content = delta.get("content")
                         if delta_content:
+                            if first_token_time is None:
+                                first_token_time = time.monotonic() - start
                             full_content.append(delta_content)
                             if progress_cb:
                                 # Count actual words in accumulated content as token proxy
@@ -370,6 +374,7 @@ class OpenAIClient:
                     completion_tokens=completion_tokens,
                     total_tokens=total_tokens,
                     reasoning_tokens=reasoning_tokens,
+                    first_token_elapsed=first_token_time,
                 )
         except urllib.error.HTTPError as exc:
             elapsed = time.monotonic() - start
@@ -434,6 +439,7 @@ class StubClient:
             completion_tokens=200,
             total_tokens=300,
             reasoning_tokens=0,
+            first_token_elapsed=0.005,
         )
 
 # ---------------------------------------------------------------------------
@@ -607,8 +613,8 @@ def parse_review_result(review_text):
     if hl_match and ll_match and score_match:
         return (
             int(hl_match.group(1)),
-            int(ll_match.group(2)),
-            float(score_match.group(3)),
+            int(ll_match.group(1)),
+            float(score_match.group(1)),
         )
 
     return None, None, None
@@ -756,6 +762,7 @@ def get_records_to_process(conn, table_name, doc_column, limit=None, start_id=No
     # Build WHERE clause from all filters
     conditions = []
     params = []
+    conditions.append("evaluation IS NULL")  # never overwrite existing evaluations
     if where_clause is not None:
         conditions.append(where_clause)
     if start_id is not None:
@@ -814,6 +821,7 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
     results = []
     phase_start = time.monotonic()
     total_elapsed = 0.0
+    total_generation_time = 0.0
     total_prompt_tokens = 0
     total_completion_tokens = 0
     total_tokens = 0
@@ -839,6 +847,8 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
         print_progress_done()
         response = result.content
         total_elapsed += result.elapsed
+        if result.first_token_elapsed is not None:
+            total_generation_time += result.elapsed - result.first_token_elapsed
         if result.prompt_tokens is not None:
             total_prompt_tokens += result.prompt_tokens
         if result.completion_tokens is not None:
@@ -876,7 +886,9 @@ def step3_evaluate(conn, table_name, doc_column, client, records, dry_run=False,
     print(f"  Total phase time:  {phase_elapsed:.1f}s")
     print(f"  Total API time:    {total_elapsed:.1f}s")
     print(f"  Avg API time/rec:  {total_elapsed / len(results):.1f}s" if results else "  Avg API time/rec:  N/A")
-    print(f"  Total tokens:      prompt={total_prompt_tokens} reasoning={total_reasoning_tokens} output={total_output_tokens} completion={total_completion_tokens} total={total_tokens}")
+    print(f"  Total tokens:      prompt: {total_prompt_tokens} reasoning: {total_reasoning_tokens} output: {total_output_tokens} completion: {total_completion_tokens} total: {total_tokens}")
+    if total_generation_time > 0:
+        print(f"  Tokens/Second:     completion: {total_completion_tokens / total_generation_time:.1f}")
     print("=" * 60)
     print()
 
@@ -897,6 +909,7 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
     review_results = []
     phase_start = time.monotonic()
     total_elapsed = 0.0
+    total_generation_time = 0.0
     total_prompt_tokens = 0
     total_completion_tokens = 0
     total_tokens = 0
@@ -955,6 +968,8 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
             print_progress_done()
             response = result.content
             total_elapsed += result.elapsed
+            if result.first_token_elapsed is not None:
+                total_generation_time += result.elapsed - result.first_token_elapsed
             if result.prompt_tokens is not None:
                 total_prompt_tokens += result.prompt_tokens
             if result.completion_tokens is not None:
@@ -1032,7 +1047,9 @@ def step4_review(conn, table_name, doc_column, client, records, eval_results, dr
     print(f"  Total phase time:  {phase_elapsed:.1f}s")
     print(f"  Total API time:    {total_elapsed:.1f}s")
     print(f"  Avg API time/rec:  {total_elapsed / len(review_results):.1f}s" if review_results else "  Avg API time/rec:  N/A")
-    print(f"  Total tokens:      prompt={total_prompt_tokens} reasoning={total_reasoning_tokens} output={total_output_tokens} completion={total_completion_tokens} total={total_tokens}")
+    print(f"  Total tokens:      prompt: {total_prompt_tokens} reasoning: {total_reasoning_tokens} output: {total_output_tokens} completion: {total_completion_tokens} total: {total_tokens}")
+    if total_generation_time > 0:
+        print(f"  Tokens/Second:     completion: {total_completion_tokens / total_generation_time:.1f}")
     print("=" * 60)
     print()
 
