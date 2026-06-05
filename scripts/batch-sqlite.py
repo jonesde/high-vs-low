@@ -590,7 +590,7 @@ def build_evaluation_system_prompt(report_type="basic"):
     instructions = (
         "\n\n# Task\n\n"
         "You are a High Law vs Low Law alignment evaluator.\n\n"
-        "Evaluate the provided document text by following the Evaluation Protocol (Steps 1-5) "
+        "Evaluate the provided document text by following the Evaluation Protocol "
         "and Report Specification from the skill file above.\n"
         f"{extra}\n\n"
         "Execute the Self-Verification and Post-Report Self-Check before emitting the final report."
@@ -608,14 +608,14 @@ def build_review_system_prompt():
         "\n\n# Task\n\n"
         "You are a High Law vs Low Law evaluation report reviewer.\n\n"
         "Review the provided evaluation report against the original document text.\n"
-        "Execute the review checklist from the reference file above, all included instructions in exact order.\n"
-        "If changes are needed, describe them clearly with original and updated counts.\n"
-        "If no changes are needed, state that explicitly.\n\n"
-        "If any changes were made, regenerate the entire updated evaluation report.\n"
-        f"After the regenerated report or statement that no changes are needed, emit the following marker on its own line:\n"
+        "1. Execute the review checklist from the reference file above, all included instructions in exact order.\n"
+        "2. If changes are needed, describe them clearly with original and updated counts.\n"
+        "3. If no changes are needed, state that explicitly.\n\n"
+        "4. If you made any changes, regenerate the entire updated evaluation report.\n"
+        "5. If you regenerated an updated evaluation report, **ALWAYS** emit the following marker **EXACTLY** on its own line:\n"
         f"```\n{EVAL_REPORT_END_MARKER}\n```\n"
         "This marker tells the parser where the report ends and the summary begins.\n\n"
-        "After the marker, include a CHANGES SUMMARY section:\n"
+        "6. After the marker, include a CHANGES SUMMARY section:\n"
         "- Emit 'STATEMENTS ADDED' if you added any statements\n"
         "- Emit 'STATEMENTS MOVED' if you moved any statements between categories\n"
         "- Emit 'STATEMENTS REMOVED' if you removed any statements\n"
@@ -784,30 +784,73 @@ def parse_review_has_changes(review_text):
     )
 
 
+_REPORT_TITLE_PREFIX = "# High Law vs Low Law Alignment Evaluation"
+
+
+def _is_valid_report(text):
+    """Check if text looks like a real evaluation report.
+
+    Verifies two mandatory section headers from the report template:
+      1. The text contains "# High Law vs Low Law Alignment Evaluation"
+         (after stripping leading whitespace the first line must start with it)
+      2. Somewhere in the text "## Scoring Summary" is present
+
+    Returns True only if BOTH conditions are met.
+    """
+    if not text:
+        return False
+    first_line = text.lstrip().split("\n")[0]
+    if not first_line.startswith(_REPORT_TITLE_PREFIX):
+        return False
+    if "## Scoring Summary" not in text:
+        return False
+    return True
+
+
+def _trim_to_report_header(text):
+    """Strip all characters before the report title header.
+
+    Finds the first occurrence of "# High Law vs Low Law Alignment Evaluation"
+    in the text and returns the substring starting from that "#".  This enforces
+    the report template spec that the title header is the very first thing in
+    the report.
+
+    Returns the trimmed text, or the original text if the header is not found.
+    """
+    idx = text.find(_REPORT_TITLE_PREFIX)
+    if idx == -1:
+        return text
+    return text[idx:]
+
+
 def parse_review_updated_eval(review_text):
     """Extract the full updated evaluation report text from the review response.
 
     Looks for the EVAL_REPORT_END_MARKER emitted by the LLM after the regenerated
     report.  Everything between the evaluation title line and that marker is the
     updated report.
+
+    Only returns the extracted text if it passes _is_valid_report (contains both
+    the report title header and the Scoring Summary section).  If the LLM emitted
+    the marker but only a short validation message, returns None.
     """
     # Find the marker
     marker_pos = review_text.find(EVAL_REPORT_END_MARKER)
     if marker_pos == -1:
         return None
 
-    # Everything before the marker is the report (plus any preamble).
-    # Find the start of the evaluation — look for the title line.
+    # Everything before the marker is the candidate report text (possibly with
+    # preamble).  Trim to the report title header so "#" is the first character,
+    # enforcing the template spec.
     before_marker = review_text[:marker_pos]
-    title_match = re.search(
-        r"(#\s+High Law vs Low Law Alignment Evaluation:.*?\n)",
-        before_marker,
-    )
-    if title_match:
-        return before_marker[title_match.start():].strip()
+    candidate = _trim_to_report_header(before_marker)
 
-    # Fallback: if no title found, take everything before the marker.
-    return before_marker.strip()
+    # If the header was found, candidate now starts with "# High Law ...".
+    # If not, candidate == before_marker and will fail _is_valid_report below.
+    if _is_valid_report(candidate):
+        return candidate
+
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -1101,46 +1144,57 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
             break
 
         stop_wait_timer()
-
         print_progress_done()
+
+        # has_changes defined as presense of LLM self-reported text about STATEMENT changes that is not part of the evaluation report
+        has_changes = parse_review_has_changes(result.content)
+
+        # Extract the regenerated report (between title and marker) for saving.
+        # If no regenerated report was emitted, the LLM reported no changes and
+        # we keep the original counts.
+        updated_eval = parse_review_updated_eval(result.content)
+        updated_is_valid_report = updated_eval and _is_valid_report(updated_eval)
 
         # Parse counts the same way as the evaluation step — directly from
         # the raw LLM output.  parse_evaluation_report looks for
         # "High Law Aligned | N" in the Scoring Summary table, which is
         # reliable even when the response also contains preamble text and a
         # CHANGES SUMMARY section.
-        new_hl, new_ll, new_score = parse_evaluation_report(result.content)
-
-        # Extract the regenerated report (between title and marker) for saving.
-        # If no regenerated report was emitted, the LLM reported no changes and
-        # we keep the original counts.
-        updated_eval = parse_review_updated_eval(result.content)
-        if updated_eval is None:
-            new_hl, new_ll, new_score = orig_hl, orig_ll, orig_score
-
-        has_changes = parse_review_has_changes(result.content)
+        if updated_is_valid_report:
+            new_hl, new_ll, new_score = parse_evaluation_report(updated_eval)
 
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
         print(f"      Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
         print(f"      Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
-        print(f"      Changes reported: {'YES' if has_changes else 'NO'}")
-        print(f"      API: {result.elapsed:.1f}s | prompt={result.prompt_tokens} reasoning={result.reasoning_tokens} output={output_tokens} completion={result.completion_tokens} total={result.total_tokens}")
+        print(f"      Statement Changes reported: {'YES' if has_changes else 'NO'}")
+        print(f"      Valid New Report found: {'YES' if updated_is_valid_report else 'NO'}")
+        print(f"      API: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
 
-        if has_changes and iteration < MAX_REVIEW_ITERATIONS:
-            if updated_eval and not dry_run:
+        if updated_is_valid_report:
+            if not dry_run:
                 save_evaluation(conn, table_name, doc_id, updated_eval, new_hl, new_ll, new_score)
                 print(f"      Saved updated evaluation + counts/score to database.")
                 print(f"      Updated evaluation length: {len(updated_eval)} chars")
-                print(f"      -> Re-reviewing with updated evaluation...")
-                eval_text = updated_eval  # use updated text for next iteration
-            elif updated_eval:
-                print(f"      [DRY RUN] Would save updated evaluation + counts/score.")
-                eval_text = updated_eval  # use updated text for next iteration
             else:
-                if not dry_run:
-                    save_evaluation(conn, table_name, doc_id, current_eval, new_hl, new_ll, new_score)
-                    print(f"      Saved updated counts/score (no eval text extracted).")
-                print(f"      -> Re-reviewing with same evaluation...")
+                print(f"      [DRY RUN] Would save updated evaluation + counts/score.")
+            eval_text = updated_eval  # use updated text for next iteration
+        else:
+            if not dry_run:
+                # Quick check to see if counts/score need to be corrected or filled in
+                # TODO: this needs a save that is safe/non-destructive:
+                # new_hl, new_ll, new_score = parse_evaluation_report(current_eval)
+                # if ((new_hl and new_hl != orig_hl) or (new_ll and new_ll != orig_ll) or (new_score and new_score != orig_score)):
+                #    save_evaluation(conn, table_name, doc_id, current_eval, new_hl, new_ll, new_score)
+
+                print(f"      Skipped evaluation + counts/score update (no valid eval text extracted).")
+            else:
+                print(f"      [DRY RUN] Would skip evaluation + counts/score update (no valid eval text extracted).")
+
+        if has_changes and iteration < MAX_REVIEW_ITERATIONS:
+            # Only save updated_eval if it is actually a valid report.
+            # parse_review_updated_eval already validates, but double-check here
+            # so a short validation message never overwrites the real report.
+            print(f"      -> Re-reviewing with same evaluation...")
 
             orig_hl, orig_ll, orig_score = new_hl, new_ll, new_score
             final_hl, final_ll, final_score = new_hl, new_ll, new_score
