@@ -167,7 +167,7 @@ class ChatResult(NamedTuple):
 ProgressCallback = Callable[[int, str, float], None]
 
 
-def print_progress(token_count: int, content_so_far: str, start_time: float) -> None:
+def print_progress(char_count: int, content_so_far: str, start_time: float) -> None:
     """Print a single-line progress indicator with token count, elapsed time, and recent text.
     Refreshes at most once per second.
     """
@@ -183,8 +183,11 @@ def print_progress(token_count: int, content_so_far: str, start_time: float) -> 
     elapsed = now - start_time
     mins = int(elapsed) // 60
     secs = int(elapsed) % 60
-    # Left side: "gen... NNN tokens 00:00 | "
-    left = f"{mins:02d}:{secs:02d} tokens {token_count} | "
+    # Left side: "MM:SS thinking..." while waiting, then "MM:SS NNN tokens | "
+    if char_count == 0:
+        left = f"{mins:02d}:{secs:02d} reasoning... | "
+    else:
+        left = f"{mins:02d}:{secs:02d} chars {char_count} | "
     # Available space for text (leave 1 char margin)
     text_width = max(10, term_width - len(left) - 1)
     # Collapse newlines so embedded \n don't break the single-line display
@@ -246,14 +249,14 @@ def make_streaming_callback(progress_cb: ProgressCallback) -> tuple:
         _LAST_PROGRESS_TIME = 0.0
         start_wait_timer(start_time)
 
-    def wrapped(token_count: int, content_so_far: str, start_time: float) -> None:
+    def wrapped(char_count: int, content_so_far: str, start_time: float) -> None:
         if first[0]:
             first[0] = False
             stop_wait_timer()
             # Reset so the first real callback prints immediately
             global _LAST_PROGRESS_TIME
             _LAST_PROGRESS_TIME = 0.0
-        progress_cb(token_count, content_so_far, start_time)
+        progress_cb(char_count, content_so_far, start_time)
 
     return start_fn, wrapped
 
@@ -268,8 +271,7 @@ def _term_width() -> int:
 
 def print_progress_done() -> None:
     """Clear the progress line and move to next line."""
-    term_width = shutil.get_terminal_size(fallback=(180, 24)).columns
-    sys.stdout.write("\r" + " " * term_width + "\r\n")
+    sys.stdout.write("\r" + " " * _term_width() + "\r\n")
     sys.stdout.flush()
 
 
@@ -328,9 +330,9 @@ class OpenAIClient:
 
     def chat_stream(self, system_prompt, user_prompt, progress_cb=None):
         """Send a streaming chat completion request.
-        
+
         Uses SSE streaming to show progress as tokens arrive.
-        progress_cb(token_count, content_so_far) is called per chunk.
+        progress_cb(char_count, content_so_far) is called per chunk.
         Returns ChatResult with full content and usage.
         """
         url = f"{self.endpoint}/chat/completions"
@@ -362,9 +364,9 @@ class OpenAIClient:
                 completion_tokens = None
                 total_tokens = None
                 reasoning_tokens = None
-                token_count = 0
+                char_count = 0
                 first_token_time = None
-                
+
                 # Read SSE stream line by line
                 for raw_line in resp:
                     line = raw_line.decode("utf-8").rstrip("\n")
@@ -377,7 +379,7 @@ class OpenAIClient:
                         chunk = json.loads(data_str)
                     except json.JSONDecodeError:
                         continue
-                    
+
                     # Extract delta content
                     choices = chunk.get("choices", [])
                     for choice in choices:
@@ -389,9 +391,9 @@ class OpenAIClient:
                             full_content.append(delta_content)
                             if progress_cb:
                                 # Count actual words in accumulated content as token proxy
-                                token_count = len("".join(full_content).split())
-                                progress_cb(token_count, "".join(full_content), start)
-                    
+                                char_count = len("".join(full_content).split())
+                                progress_cb(char_count, "".join(full_content), start)
+
                     # Extract usage from final chunk (has content = None)
                     usage = chunk.get("usage")
                     if usage:
@@ -403,11 +405,11 @@ class OpenAIClient:
 
                 elapsed = time.monotonic() - start
                 content = "".join(full_content)
-                
+
                 # If no usage in stream, try to get it (some endpoints don't send it)
                 if completion_tokens is None:
-                    completion_tokens = token_count
-                
+                    completion_tokens = char_count
+
                 # NOTE: remember to comment this out after using to debug or whatever
                 # print(f"API response in {elapsed:.1f}s\nUSAGE: {usage}\nCHUNK: {chunk}\nCONTENT: {content}")
 
@@ -466,8 +468,8 @@ class StubClient:
         for i in range(0, len(content), chunk_size):
             chunk = content[i:i + chunk_size]
             if progress_cb:
-                token_count = len(content[:i + len(chunk)].split())
-                progress_cb(token_count, content[:i + len(chunk)], start)
+                char_count = len(content[:i + len(chunk)].split())
+                progress_cb(char_count, content[:i + len(chunk)], start)
             time.sleep(0.001)
         return ChatResult(
             content=content,
