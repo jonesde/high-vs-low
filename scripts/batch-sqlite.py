@@ -411,6 +411,7 @@ class OpenAIClient:
             ],
             "reasoning_effort": "high",
             "stream": True,
+            "stream_options": {"include_usage": True},
         }
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
@@ -468,7 +469,7 @@ class OpenAIClient:
                         total_tokens = usage.get("total_tokens")
                         cd = usage.get("completion_tokens_details", {})
                         reasoning_tokens = cd.get("reasoning_tokens")
-                
+
                 elapsed = time.monotonic() - start
                 content = "".join(full_content)
                 
@@ -476,15 +477,11 @@ class OpenAIClient:
                 if completion_tokens is None:
                     completion_tokens = token_count
                 
-                return ChatResult(
-                    content=content,
-                    elapsed=elapsed,
-                    prompt_tokens=prompt_tokens,
-                    completion_tokens=completion_tokens,
-                    total_tokens=total_tokens,
-                    reasoning_tokens=reasoning_tokens,
-                    first_token_elapsed=first_token_time,
-                )
+                # TODO: comment this out
+                print(f"API response in {elapsed:.1f}s\nUSAGE: {usage}\nCHUNK: {chunk}\nCONTENT: {content}")
+
+                return ChatResult(content=content, elapsed=elapsed, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
+                    total_tokens=total_tokens, reasoning_tokens=reasoning_tokens, first_token_elapsed=first_token_time)
         except urllib.error.HTTPError as exc:
             elapsed = time.monotonic() - start
             error_body = exc.read().decode("utf-8", errors="replace")
@@ -561,22 +558,21 @@ class StubClient:
 
 _SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 def _read_skill_file(relative_path):
     """Read a file from the skill directory."""
     path = os.path.join(_SKILL_DIR, relative_path)
     if not os.path.exists(path):
         print(f"WARNING: Skill file not found: {path}")
         return ""
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+    with open(path, "r", encoding="utf-8") as fl:
+        return fl.read()
 
 
-def build_evaluation_system_prompt(report_type="basic"):
+def build_evaluation_system_prompt(is_detailed):
     """Build evaluation system prompt: SKILL.md + minimal instructions."""
     skill_md = _read_skill_file("SKILL.md")
 
-    if report_type == "detailed":
+    if is_detailed:
         extra = (
             "\n\n## Report Type: DETAILED\n\n"
             "Produce a **DETAILED** evaluation report. Include ALL sections from the Report Specification."
@@ -945,28 +941,36 @@ def reset_evaluations(conn, table_name, where_clause=None):
     print()
 
 
-def get_records_to_process(conn, table_name, doc_column, limit=None, start_id=None, where_clause=None):
+def get_records_to_process(conn, table_name, doc_column, args):
     """Get the list of (id, doc_title, doc_text) to process."""
-    cursor = conn.cursor()
-    query = f"SELECT id, doc_title, {doc_column} FROM {table_name}"
+    limit = args.limit
+    start_id = args.start_id
+    where_clause = args.where
 
     # Build WHERE clause from all filters
     conditions = []
     params = []
-    conditions.append("evaluation IS NULL")  # never overwrite existing evaluations
+
+    # never overwrite existing evaluations, if doing (not skipping) the evaluation phase, make this a hard constraint
+    if not args.skip_evaluation:
+        conditions.append("evaluation IS NULL")
+    # add conditions from args
     if where_clause is not None:
         conditions.append(where_clause)
     if start_id is not None:
         conditions.append("id >= ?")
         params.append(start_id)
 
+    query = f"SELECT id, doc_title, {doc_column} FROM {table_name}"
+
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
     query += " ORDER BY id"
-    if limit is not None:
+    if limit:
         query += " LIMIT ?"
         params.append(limit)
 
+    cursor = conn.cursor()
     cursor.execute(query, params)
     return cursor.fetchall()
 
@@ -1064,7 +1068,8 @@ def _empty_stats():
 
 def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, conn, table_name, doc_column):
     """Evaluate a single record. Returns (doc_id, doc_title, hl, ll, score, response, error, chat_result)."""
-    system_prompt = build_evaluation_system_prompt("detailed" if detailed else "basic")
+
+    system_prompt = build_evaluation_system_prompt(detailed)
     user_prompt = build_evaluation_user_prompt(doc_text, doc_title)
 
     # Start progress display immediately — timer ticks while waiting for first token
@@ -1108,7 +1113,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
                 the evaluation was just generated and not yet persisted).
     Returns (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error).
     """
-    MAX_REVIEW_ITERATIONS = 3
+    MAX_REVIEW_ITERATIONS = 2
 
     final_hl, final_ll, final_score = orig_hl, orig_ll, orig_score
     final_error = None
@@ -1174,11 +1179,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         updated_eval = parse_review_updated_eval(result.content)
         updated_is_valid_report = updated_eval and _is_valid_report(updated_eval)
 
-        # Parse counts the same way as the evaluation step — directly from
-        # the raw LLM output.  parse_evaluation_report looks for
-        # "High Law Aligned | N" in the Scoring Summary table, which is
-        # reliable even when the response also contains preamble text and a
-        # CHANGES SUMMARY section.
+        # Parse counts the same way as the evaluation step — directly from the raw LLM output.
         if updated_is_valid_report:
             new_hl, new_ll, new_score = parse_evaluation_report(updated_eval)
         else:
@@ -1190,6 +1191,10 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         print(f"      Statement Changes reported: {'YES' if has_changes else 'NO'}")
         print(f"      Valid New Report found: {'YES' if updated_is_valid_report else 'NO'}")
         print(f"      API: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
+
+        if has_changes and not updated_is_valid_report:
+            print(f"      Full Response: {result.content}")
+            break
 
         if updated_is_valid_report:
             if not dry_run:
@@ -1244,16 +1249,21 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
         break
 
-    return (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error)
+    return (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, result)
 
 
-def process_records_interleaved(conn, table_name, doc_column, client, records, dry_run=False, detailed=False, skip_evaluation=False, skip_review=False):
+def process_records_interleaved(conn, table_name, doc_column, client, records, args):
     """Process records: evaluate then review for each record before moving to the next.
 
     Returns (eval_results, review_results) tuples compatible with step5_report.
     eval_results: (doc_id, doc_title, hl, ll, score, response, error)
     review_results: (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error)
     """
+
+    dry_run = args.dry_run
+    detailed = args.detailed
+    skip_evaluation = args.skip_evaluation
+    skip_review = args.skip_review
     eval_results = []
     review_results = []
 
@@ -1319,8 +1329,11 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, d
                 else:
                     rec = load_record(conn, table_name, doc_column, doc_id)
                     rev_eval_text = rec["evaluation"] if rec else None
-                rr = _review_record(client, doc_id, doc_title, rev_orig_hl, rev_orig_ll, rev_orig_score, dry_run, conn, table_name, doc_column, eval_text=rev_eval_text)
-                review_results.append(rr)
+                rr = _review_record(client, doc_id, doc_title, rev_orig_hl, rev_orig_ll, rev_orig_score, dry_run, conn, table_name, doc_column, rev_eval_text)
+                _, _, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, chat_result = rr
+                if chat_result:
+                    _accumulate_stats(review_stats, chat_result)
+                review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
 
         print()
 
@@ -1477,7 +1490,7 @@ def main():
         print()
 
         # Get records to process
-        records = get_records_to_process(conn, table_name, doc_column, limit=args.limit, start_id=args.start_id, where_clause=args.where)
+        records = get_records_to_process(conn, table_name, doc_column, args)
         if not records:
             print("No records to process.")
             return
@@ -1486,11 +1499,7 @@ def main():
         print()
 
         # Step 3/4: Interleaved evaluation + review per record
-        eval_results, review_results = process_records_interleaved(
-            conn, table_name, doc_column, client, records,
-            dry_run=args.dry_run, detailed=args.detailed,
-            skip_evaluation=args.skip_evaluation, skip_review=args.skip_review,
-        )
+        eval_results, review_results = process_records_interleaved(conn, table_name, doc_column, client, records, args)
 
         # Step 5: Report
         step5_report(eval_results, review_results)
