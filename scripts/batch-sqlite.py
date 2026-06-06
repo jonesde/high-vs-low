@@ -693,6 +693,7 @@ def run_verify_report(evaluation_text):
             output = result.stdout
             if result.stderr:
                 output += result.stderr
+            print(f"    [Verify] Script Output:\n{output}\n\n")
             return output.strip()
         finally:
             # Clean up temp file
@@ -856,7 +857,7 @@ def discover_schema(conn, table_name, doc_column):
         print(f"ERROR: Table '{table_name}' not found in the database.")
         sys.exit(1)
     schema = row[0]
-    print("[Step 1] Schema discovered:")
+    print("[DB] Schema discovered:")
     print(schema)
     print()
 
@@ -865,9 +866,9 @@ def discover_schema(conn, table_name, doc_column):
     found = {m[0] for m in re.findall(r"(\w+)\s+(TEXT|INTEGER|REAL)", schema, re.IGNORECASE)}
     missing = required - found
     if missing:
-        print(f"ERROR: Missing required columns: {missing}")
+        print(f"[DB] ERROR: Missing required columns: {missing}")
         sys.exit(1)
-    print(f"[Step 1] All required columns present: {required}")
+    print(f"[DB] All required columns present: {required}")
     print()
     return schema
 
@@ -888,7 +889,7 @@ def preview_records(conn, table_name, doc_column, limit=None, start_id=None, whe
     cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE evaluation IS NULL")
     unevaluated = cursor.fetchone()[0]
 
-    print("[Step 2] Record preview:")
+    print("Record preview:")
     print(f"  ID range: {min_id} - {max_id}")
     print(f"  Total records: {total}")
     print(f"  Text lengths: avg={avg_len:.0f}, min={min_len}, max={max_len}")
@@ -1035,27 +1036,20 @@ def _stats_summary(name, stats, record_count):
     """Print a phase summary from accumulated stats."""
     print(f"[{name}] {name} Complete")
     print(f"  Records processed: {record_count}")
-    print(f"  Total phase time:  {time.monotonic() - stats['phase_start']:.1f}s")
-    print(f"  API time:          {stats['total_elapsed']:.1f}s")
+    print(f"  Total time:        {time.monotonic() - stats['phase_start']:.1f}s")
+    print(f"  {name} time:   {stats['total_elapsed']:.1f}s")
     if record_count > 1:
-        print(f"  Avg API time/rec:  {stats['total_elapsed'] / record_count:.1f}s")
-    print(f"  Total tokens:      prompt: {stats['total_prompt_tokens']} reasoning: {stats['total_reasoning_tokens']} output: {stats['total_output_tokens']} completion: {stats['total_completion_tokens']} total: {stats['total_tokens']}")
+        print(f"  Avg time/rec:      {stats['total_elapsed'] / record_count:.1f}s")
+    # completion {stats['total_completion_tokens']} total {stats['total_tokens']}
+    print(f"  Tokens:            prompt {stats['total_prompt_tokens']} reasoning {stats['total_reasoning_tokens']} output {stats['total_output_tokens']}")
     if stats["total_generation_time"]:
         print(f"  Tokens/Second:     output: {(stats['total_output_tokens'] / stats['total_generation_time']):.1f} (in {stats['total_generation_time']:.1f}s)")
 
 
 def _empty_stats():
     """Return a fresh stats dict."""
-    return {
-        "phase_start": time.monotonic(),
-        "total_elapsed": 0.0,
-        "total_generation_time": 0.0,
-        "total_prompt_tokens": 0,
-        "total_completion_tokens": 0,
-        "total_tokens": 0,
-        "total_reasoning_tokens": 0,
-        "total_output_tokens": 0,
-    }
+    return { "phase_start": time.monotonic(), "total_elapsed": 0.0, "total_generation_time": 0.0, "total_prompt_tokens": 0,
+        "total_completion_tokens": 0, "total_tokens": 0, "total_reasoning_tokens": 0, "total_output_tokens": 0 }
 
 
 def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, conn, table_name, doc_column):
@@ -1083,9 +1077,12 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, con
     eval_report = result.content.lstrip() if result.content else None
     count_hl, count_ll, score = parse_evaluation_report(eval_report)
     if eval_report:
-        print(f"    Result: HL={count_hl}, LL={count_ll}, Score={score}")
+        print(f"    Eval Result: HL={count_hl}, LL={count_ll}, Score={score}")
     else:
         print("    No evaluation report returned")
+
+    output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
+    print(f"    LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
 
     if dry_run or not eval_report:
         return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
@@ -1111,7 +1108,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
                 the evaluation was just generated and not yet persisted).
     Returns (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error).
     """
-    MAX_REVIEW_ITERATIONS = 2
+    MAX_REVIEW_ITERATIONS = 3
 
     final_hl, final_ll, final_score = orig_hl, orig_ll, orig_score
     final_error = None
@@ -1183,12 +1180,12 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         else:
             new_hl, new_ll, new_score = None, None, None
 
-        output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
         print(f"      Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
         print(f"      Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
         print(f"      Statement Changes reported: {'YES' if has_changes else 'NO'}")
-        print(f"      Valid New Report found: {'YES' if updated_is_valid_report else 'NO'}")
-        print(f"      API: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
+        print(f"      Valid New Report found:     {'YES' if updated_is_valid_report else 'NO'}")
+        output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
+        print(f"      LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
 
         if updated_is_valid_report:
             if not dry_run:
@@ -1265,7 +1262,7 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
     review_stats = _empty_stats()
 
     print("=" * 60)
-    print("[Step 3/4] Interleaved Evaluation + Review")
+    print("Interleaved Evaluation + Review")
     print("=" * 60)
     print(f"  Records: {len(records)}")
     print(f"  Report type: {'detailed' if detailed else 'basic'}")
@@ -1280,7 +1277,7 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
 
         # --- Step 3: Evaluate (unless skipped) ---
         if skip_evaluation:
-            print(f"  [Step 3] SKIPPED (--skip-evaluation)")
+            print(f"  [EVAL] SKIPPED (--skip-evaluation)")
             # Load existing evaluation counts from DB for review
             record = load_record(conn, table_name, doc_column, doc_id)
             if record and record["evaluation"] is not None:
@@ -1289,7 +1286,7 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
                 count_hl, count_ll, score = None, None, None
             eval_results.append((doc_id, doc_title, count_hl, count_ll, score, None, None))
         else:
-            print(f"  [Step 3] Evaluating...")
+            print(f"  [EVAL] Evaluating...")
             er = _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, conn, table_name, doc_column)
             _, _, count_hl, count_ll, score, response, error, chat_result = er
             if chat_result:
@@ -1300,10 +1297,10 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
 
         # --- Step 4: Review (unless skipped) ---
         if skip_review:
-            print(f"  [Step 4] SKIPPED (--skip-review)")
+            print(f"  [REVW] SKIPPED (--skip-review)")
             review_results.append((doc_id, doc_title, count_hl, count_ll, score, count_hl, count_ll, score, None))
         else:
-            print(f"  [Step 4] Reviewing...")
+            print(f"  [REVW] Reviewing...")
             # If we skipped evaluation, parse counts from DB
             rev_orig_hl = count_hl
             rev_orig_ll = count_ll
@@ -1335,11 +1332,11 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
     print("=" * 60)
     print()
     if not skip_evaluation:
-        _stats_summary("Step 3 Evaluation", eval_stats, len([r for r in eval_results if r[6] is None]))
+        _stats_summary("Evaluation", eval_stats, len([r for r in eval_results if r[6] is None]))
         print("=" * 60)
         print()
     if not skip_review:
-        _stats_summary("Step 4 Review", review_stats, len([r for r in review_results if r[8] is None]))
+        _stats_summary("Review", review_stats, len([r for r in review_results if r[8] is None]))
         print("=" * 60)
         print()
 
@@ -1349,7 +1346,7 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
 def step5_report(eval_results, review_results):
     """Step 5: Report summary."""
     print("=" * 60)
-    print("[Step 5] Summary Report")
+    print("Summary Report")
     print("=" * 60)
     print()
 
