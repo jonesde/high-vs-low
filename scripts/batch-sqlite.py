@@ -76,18 +76,18 @@ The document was evaluated for High Law vs Low Law alignment.
 
 ### High Law Aligned (2 statements)
 
-| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
-|---| -------- | ----- | --------------- | ------- | ------------ | ---------- | -------------- |
-| 1 | Line 5 | 6-HL,37-HL | "individual agency and choice" | Author | "each person must choose for themselves" | Authority and Power: Obedience, Autonomy and Consent: Free Will | HL principle (autonomy), author supports = HL |
-| 2 | Line 12 | 26-HL,5-HL | "compassion for the suffering" | Author | "we must show mercy to all" | Mercy and Compassion: Forgiveness | HL principle (liberating mercy), author supports = HL |
+| # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |
+|---| -------- | ----- | -------------- | ---------- | ------- | ------------ | --------------- |
+| 1 | L5 | 6-HL,37-HL | HL principle (autonomy), author supports = HL | Authority and Power: Obedience, Autonomy and Consent: Free Will | Author | "each person must choose for themselves" | "individual agency and choice" |
+| 2 | L12 | 26-HL,5-HL | HL principle (liberating mercy), author supports = HL | Mercy and Compassion: Forgiveness | Author | "we must show mercy to all" | "compassion for the suffering" |
 
 ### Low Law Aligned (3 statements)
 
-| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
-|---| -------- | ----- | --------------- | ------- | ------------ | ---------- | -------------- |
-| 1 | Line 8 | 17-LL,19-LL | "obey under threat of punishment" | Author | "you must obey or face consequences" | Authority and Power: Obedience | LL principle (divine coercion), author supports = LL |
-| 2 | Line 15 | 25-LL,27-LL | "punishment for transgression" | Author | "the wicked shall be punished" | Justice and Punishment: Divine Justice | LL principle (punitive justice), author supports = LL |
-| 3 | Line 20 | 34-LL,35-LL | "conformity to the standard" | Author | "those who do not conform will be cast out" | Community and Belonging: Unity | LL principle (conformity), author supports = LL |
+| # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |
+|---| -------- | ----- | -------------- | ---------- | ------- | ------------ | --------------- |
+| 1 | L8 | 17-LL,19-LL | LL principle (divine coercion), author supports = LL | Authority and Power: Obedience | Author | "you must obey or face consequences" | "obey under threat of punishment" |
+| 2 | L15-16 | 25-LL,27-LL | LL principle (punitive justice), author supports = LL | Justice and Punishment: Divine Justice | Author | "the wicked shall be punished" | "punishment for transgression" |
+| 3 | L20 | 34-LL,35-LL | LL principle (conformity), author supports = LL | Community and Belonging: Unity | Author | "those who do not conform will be cast out" | "conformity to the standard" |
 
 ---
 
@@ -116,36 +116,20 @@ The document was evaluated for High Law vs Low Law alignment.
 
 STUB_REVIEW = """# Review Result: STUB_REVIEW_RESPONSE
 
-The evaluation has been reviewed against the checklist.
-
-**Changes made during review**: None. The stub evaluation is internally consistent.
-
-**Original counts**: HL=2, LL=3, Score=-2.0
-**Updated counts**: HL=2, LL=3, Score=-2.0
-
-The evaluation report is valid. No changes required.
-
 ## CHANGES SUMMARY
 
-No changes needed.
+**Original counts**: HL=2, LL=3, Score=-2.0
+**Updated counts**: HL=3, LL=3, Score=0.0
+
+- STATEMENTS_ADDED
+- Added 1 High Law statement (statement #3) that was previously missed.
 """
 
 # Unique divider the LLM emits after a regenerated evaluation report.
 # Used by parse_review_updated_eval to reliably extract the full report.
 EVAL_REPORT_END_MARKER = "--- END OF UPDATED EVALUATION REPORT ---"
 
-STUB_REVIEW_WITH_CHANGES = f"""# Review Result: STUB_REVIEW_RESPONSE
-
-The evaluation has been reviewed against the checklist.
-
-**Changes made during review**: Added 1 High Law statement that was previously missed.
-
-**Original counts**: HL=2, LL=3, Score=-2.0
-**Updated counts**: HL=3, LL=3, Score=0.0
-
-## Updated Evaluation Report
-
-# High Law vs Low Law Alignment Evaluation: STUB_DOCUMENT
+STUB_REVIEW_WITH_CHANGES = f"""# High Law vs Low Law Alignment Evaluation: STUB_DOCUMENT
 
 ## Overview
 Updated stub evaluation.
@@ -166,19 +150,19 @@ Updated stub evaluation.
 
 ### High Law Aligned (3 statements)
 
-| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
-|---| -------- | ----- | --------------- | ------- | ------------ | ---------- | -------------- |
-| 1 | Line 5 | 6-HL,37-HL | "individual agency and choice" | Author | "each person must choose for themselves" | Authority and Power: Obedience | HL |
-| 2 | Line 12 | 26-HL,5-HL | "compassion for the suffering" | Author | "we must show mercy to all" | Mercy and Compassion: Forgiveness | HL |
-| 3 | Line 25 | 6-HL | "newly added statement" | Author | "this was missed before" | Autonomy and Consent: Free Will | HL (added during review) |
+| # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |
+|---| -------- | ----- | -------------- | ---------- | ------- | ------------ | --------------- |
+| 1 | Line 5 | 6-HL,37-HL | HL | Authority and Power: Obedience | Author | "each person must choose for themselves" | "individual agency and choice" |
+| 2 | Line 12 | 26-HL,5-HL | HL | Mercy and Compassion: Forgiveness | Author | "we must show mercy to all" | "compassion for the suffering" |
+| 3 | Line 25 | 6-HL | HL (added during review) | Autonomy and Consent: Free Will | Author | "this was missed before" | "newly added statement" |
 
 ### Low Law Aligned (3 statements)
 
-| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
-|---| -------- | ----- | --------------- | ------- | ------------ | ---------- | -------------- |
-| 1 | Line 8 | 17-LL,19-LL | "obey under threat of punishment" | Author | "you must obey or face consequences" | Authority and Power: Obedience | LL |
-| 2 | Line 15 | 25-LL,27-LL | "punishment for transgression" | Author | "the wicked shall be punished" | Justice and Punishment: Divine Justice | LL |
-| 3 | Line 20 | 34-LL,35-LL | "conformity to the standard" | Author | "those who do not conform will be cast out" | Community and Belonging: Unity | LL |
+| # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |
+|---| -------- | ----- | -------------- | ---------- | ------- | ------------ | --------------- |
+| 1 | Line 8 | 17-LL,19-LL | LL | Authority and Power: Obedience | Author | "you must obey or face consequences" | "obey under threat of punishment" |
+| 2 | Line 15 | 25-LL,27-LL | LL | Justice and Punishment: Divine Justice | Author | "the wicked shall be punished" | "punishment for transgression" |
+| 3 | Line 20 | 34-LL,35-LL | LL | Community and Belonging: Unity | Author | "those who do not conform will be cast out" | "conformity to the standard" |
 
 ---
 
@@ -208,12 +192,12 @@ Updated stub evaluation.
 
 ## CHANGES SUMMARY
 
-STATEMENTS ADDED
-
-Added 1 High Law statement (statement #3) that was previously missed.
-
 **Original counts**: HL=2, LL=3, Score=-2.0
 **Updated counts**: HL=3, LL=3, Score=0.0
+
+- STATEMENTS_ADDED
+- Added 1 High Law statement (statement #3) that was previously missed.
+
 """
 
 

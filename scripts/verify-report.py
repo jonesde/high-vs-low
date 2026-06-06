@@ -6,6 +6,50 @@ NOTE: this does not verify the DETAILED sections of the report, those are less i
 """
 import sys, re
 
+def _topic_in_cell(canonical_topic, cell):
+    """Check if a canonical topic name appears as a complete unit in a comma-separated cell.
+
+    Topics in the Key Topics column of statement rows are comma-separated with
+    optional spaces (e.g. "Topic A, Topic B"). Canonical topic names use the
+    format 'RootCategory: SubTopic' and may themselves contain characters that
+    look like separators (colons, ampersands).
+
+    We check for exact match or comma-bounded substring match to avoid splitting
+    on commas that happen to be between two topic names in the same cell.
+    """
+    if canonical_topic == cell:
+        return True
+    # Check all occurrences of the topic in the cell
+    start = 0
+    while True:
+        pos = cell.find(canonical_topic, start)
+        if pos == -1:
+            break
+        end = pos + len(canonical_topic)
+        # Check left boundary: start of string, or preceded by comma (with optional space)
+        if pos == 0:
+            left_ok = True
+        elif cell[pos - 1] == ',':
+            left_ok = True
+        elif pos >= 2 and cell[pos - 1] == ' ' and cell[pos - 2] == ',':
+            left_ok = True
+        else:
+            left_ok = False
+        # Check right boundary: end of string, or followed by comma (with optional space)
+        if end == len(cell):
+            right_ok = True
+        elif cell[end] == ',':
+            right_ok = True
+        elif end + 1 < len(cell) and cell[end] == ' ' and cell[end + 1] == ',':
+            right_ok = True
+        else:
+            right_ok = False
+        if left_ok and right_ok:
+            return True
+        start = pos + 1
+    return False
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python3 verify_report.py <report.md>")
@@ -39,20 +83,26 @@ def main():
     if ll_h and int(ll_h.group(1)) != ll_count:
         issues.append(f"LL header {ll_h.group(1)} != actual {ll_count}")
 
+    # Column indices (new header: # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote)
+    COL_KEY_TOPICS = 4
+    COL_DECISION_NOTES = 3
+    COL_STANCE_QUOTE = 6
+    COL_PRINCIPLE_QUOTE = 7
+
     # 2. Required fields
     for i, row in enumerate(hl_rows + ll_rows):
         parts = [p.strip() for p in row.split('|') if p.strip()]
         if len(parts) < 8:
             issues.append(f"Row {i+1}: only {len(parts)} columns (need 8)")
-        elif not parts[-1].strip():
+        elif not parts[COL_DECISION_NOTES].strip():
             issues.append(f"Row {i+1}: empty Decision Notes")
 
     # 2b. Quote length limits (hard cap 80)
     for i, row in enumerate(hl_rows + ll_rows):
         parts = [p.strip() for p in row.split('|') if p.strip()]
         if len(parts) >= 8:
-            principle_quote = parts[3]
-            stance_quote = parts[5]
+            principle_quote = parts[COL_PRINCIPLE_QUOTE]
+            stance_quote = parts[COL_STANCE_QUOTE]
             for label, quote in [("Principle Quote", principle_quote), ("Stance Quote", stance_quote)]:
                 # Strip surrounding quotes if present
                 q = quote.strip('"').strip("'")
@@ -60,7 +110,7 @@ def main():
                 if word_count > 80:
                     issues.append(f"Row {i+1}: {label} exceeds hard cap ({word_count} words > 80)")
 
-    # 3. Key Topics
+    # 3. Key Topics — parse canonical names from the Key Topics numbered list
     kt_list = []
     kt_section = text.split('## Key Topics\n\n')[1].split('\n\n---\n')[0] if '## Key Topics' in text else ''
     for line in kt_section.split('\n'):
@@ -68,19 +118,25 @@ def main():
         if m:
             kt_list.append(m.group(1))
 
-    all_topic_refs = set()
+    # Extract Key Topic column cells from statement rows
+    all_topic_cells = []
     for row in hl_rows + ll_rows:
         parts = [p.strip() for p in row.split('|') if p.strip()]
-        if len(parts) >= 7:
-            for t in parts[6].split(','):
-                t = t.strip()
-                if t:
-                    all_topic_refs.add(t)
+        if len(parts) > COL_KEY_TOPICS:
+            all_topic_cells.append(parts[COL_KEY_TOPICS])
 
-    if all_topic_refs - set(kt_list):
-        issues.append(f"Topics in statements not in list: {all_topic_refs - set(kt_list)}")
-    if set(kt_list) - all_topic_refs:
-        issues.append(f"Topics in list not in statements: {set(kt_list) - all_topic_refs}")
+    # Match canonical topics against statement cells using boundary-aware matching
+    # This avoids false splits on commas between topic names in the same cell
+    topics_in_statements = set()
+    for cell in all_topic_cells:
+        for topic in kt_list:
+            if _topic_in_cell(topic, cell):
+                topics_in_statements.add(topic)
+
+    topics_only_in_list = set(kt_list) - topics_in_statements
+    if topics_only_in_list:
+        issues.append(f"Topics in list not in statements: {topics_only_in_list}")
+
     if not (7 <= len(kt_list) <= 14):
         issues.append(f"Topic count {len(kt_list)} outside 7-14 range")
 
@@ -106,24 +162,22 @@ def main():
     if score_rows and len(score_rows) != len(kt_list):
         issues.append(f"Score Table rows ({len(score_rows)}) != Key Topics ({len(kt_list)})")
 
-    # Per-topic counts
-    topic_actual = {}
+    # Per-topic counts — match canonical topics against statement cells
+    topic_actual = {topic: {'HL': 0, 'LL': 0} for topic in kt_list}
     for row in hl_rows:
         parts = [p.strip() for p in row.split('|') if p.strip()]
-        if len(parts) >= 7:
-            for t in parts[6].split(','):
-                t = t.strip()
-                if t:
-                    topic_actual.setdefault(t, {'HL': 0, 'LL': 0})
-                    topic_actual[t]['HL'] += 1
+        if len(parts) > COL_KEY_TOPICS:
+            cell = parts[COL_KEY_TOPICS]
+            for topic in kt_list:
+                if _topic_in_cell(topic, cell):
+                    topic_actual[topic]['HL'] += 1
     for row in ll_rows:
         parts = [p.strip() for p in row.split('|') if p.strip()]
-        if len(parts) >= 7:
-            for t in parts[6].split(','):
-                t = t.strip()
-                if t:
-                    topic_actual.setdefault(t, {'HL': 0, 'LL': 0})
-                    topic_actual[t]['LL'] += 1
+        if len(parts) > COL_KEY_TOPICS:
+            cell = parts[COL_KEY_TOPICS]
+            for topic in kt_list:
+                if _topic_in_cell(topic, cell):
+                    topic_actual[topic]['LL'] += 1
 
     for line in score_rows:
         parts = [p.strip() for p in line.split('|') if p]
