@@ -1081,14 +1081,15 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, con
         return (doc_id, doc_title, None, None, None, None, str(exc), None)
 
     stop_wait_timer()
-
     print_progress_done()
-    count_hl, count_ll, score = parse_evaluation_report(result.content)
+
+    eval_report = result.content.lstrip() if result.content else None
+    count_hl, count_ll, score = parse_evaluation_report(eval_report)
     print(f"    Result: HL={count_hl}, LL={count_ll}, Score={score}")
 
     if not dry_run:
-        save_evaluation(conn, table_name, doc_id, result.content, count_hl, count_ll, score)
-        print(f"    Saved to database.")
+        save_evaluation(conn, table_name, doc_id, eval_report, count_hl, count_ll, score)
+        print("    Saved to database.")
 
     # Verify
     record = load_record(conn, table_name, doc_column, doc_id)
@@ -1097,7 +1098,7 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, con
     else:
         print(f"    WARNING: evaluation not found in database after save")
 
-    return (doc_id, doc_title, count_hl, count_ll, score, result.content, None, result)
+    return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
 
 
 def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_run, conn, table_name, doc_column, eval_text=None):
@@ -1180,6 +1181,8 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         # CHANGES SUMMARY section.
         if updated_is_valid_report:
             new_hl, new_ll, new_score = parse_evaluation_report(updated_eval)
+        else:
+            new_hl, new_ll, new_score = None, None, None
 
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
         print(f"      Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
