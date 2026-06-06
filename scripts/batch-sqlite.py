@@ -169,8 +169,6 @@ ProgressCallback = Callable[[int, str, float], None]
 
 def print_progress(token_count: int, content_so_far: str, start_time: float) -> None:
     """Print a single-line progress indicator with token count, elapsed time, and recent text.
-
-    Format: gen... NNN tokens 00:00 | ...recent text filling the rest of the line
     Refreshes at most once per second.
     """
     global _LAST_PROGRESS_TIME
@@ -701,9 +699,9 @@ def parse_review_result(review_text):
     return None, None, None
 
 
-def parse_review_has_changes(review_text):
+def parse_review_has_changes(changes_text):
     """Check if the LLM self-reported adding, moving, or removing statements."""
-    return ("STATEMENTS_ADDED" in review_text or "STATEMENTS_MOVED" in review_text or "STATEMENTS_REMOVED" in review_text)
+    return ("STATEMENTS_ADDED" in changes_text or "STATEMENTS_MOVED" in changes_text or "STATEMENTS_REMOVED" in changes_text)
 
 
 _REPORT_TITLE_PREFIX = "# High Law vs Low Law Alignment Evaluation"
@@ -773,6 +771,19 @@ def parse_review_updated_eval(review_text):
         return candidate
 
     return None
+
+
+def parse_review_changes_section(review_text):
+    """Extract everything after the EVAL_REPORT_END_MARKER.
+
+    The LLM emits the marker to separate the regenerated evaluation report from
+    the CHANGES SUMMARY / review notes.  This function returns the text after
+    the marker (stripped), or an empty string if the marker is not found.
+    """
+    marker_pos = review_text.find(EVAL_REPORT_END_MARKER)
+    if marker_pos == -1:
+        return ""
+    return review_text[marker_pos + len(EVAL_REPORT_END_MARKER):].strip()
 
 
 # ---------------------------------------------------------------------------
@@ -1118,8 +1129,16 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         stop_wait_timer()
         print_progress_done()
 
-        # has_changes defined as presense of LLM self-reported text about STATEMENT changes that is not part of the evaluation report
-        has_changes = parse_review_has_changes(result.content)
+        # Extract the post-marker section (CHANGES SUMMARY / review notes).
+        changes_text = parse_review_changes_section(result.content)
+
+        # has_changes defined as presence of LLM self-reported text about
+        # STATEMENT changes in the CHANGES SUMMARY section only.
+        has_changes = changes_text and parse_review_has_changes(changes_text)
+
+        # Log the changes section for debugging
+        if changes_text:
+            print(f"      Changes summary:\n{changes_text}\n")
 
         # Extract the regenerated report (between title and marker) for saving.
         # If no regenerated report was emitted, the LLM reported no changes and
