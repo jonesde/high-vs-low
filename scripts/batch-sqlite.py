@@ -846,15 +846,15 @@ def parse_review_updated_eval(review_text):
 # Database operations
 # ---------------------------------------------------------------------------
 
-def discover_schema(conn, table_name, doc_column):
+def discover_schema(conn, args):
     """Step 1: Discover schema by querying sqlite_master."""
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (args.table,)
     )
     row = cursor.fetchone()
     if not row:
-        print(f"ERROR: Table '{table_name}' not found in the database.")
+        print(f"ERROR: Table '{args.table}' not found in the database.")
         sys.exit(1)
     schema = row[0]
     print("[DB] Schema discovered:")
@@ -862,7 +862,7 @@ def discover_schema(conn, table_name, doc_column):
     print()
 
     # Verify required columns exist
-    required = {"id", doc_column, "evaluation", "count_hl", "count_ll", "score"}
+    required = {"id", args.document_column, "evaluation", "count_hl", "count_ll", "score"}
     found = {m[0] for m in re.findall(r"(\w+)\s+(TEXT|INTEGER|REAL)", schema, re.IGNORECASE)}
     missing = required - found
     if missing:
@@ -873,20 +873,20 @@ def discover_schema(conn, table_name, doc_column):
     return schema
 
 
-def preview_records(conn, table_name, doc_column, limit=None, start_id=None, where_clause=None):
+def preview_records(conn, args, limit=None, start_id=None, where_clause=None):
     """Step 2: Preview records - check id range, text lengths, evaluation state."""
     cursor = conn.cursor()
 
-    cursor.execute(f"SELECT MIN(id), MAX(id), COUNT(*) FROM {table_name}")
+    cursor.execute(f"SELECT MIN(id), MAX(id), COUNT(*) FROM {args.table}")
     min_id, max_id, total = cursor.fetchone()
 
-    cursor.execute(f"SELECT AVG(LENGTH({doc_column})), MIN(LENGTH({doc_column})), MAX(LENGTH({doc_column})) FROM {table_name}")
+    cursor.execute(f"SELECT AVG(LENGTH({args.document_column})), MIN(LENGTH({args.document_column})), MAX(LENGTH({args.document_column})) FROM {args.table}")
     avg_len, min_len, max_len = cursor.fetchone()
 
-    cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE evaluation IS NOT NULL")
+    cursor.execute(f"SELECT COUNT(*) FROM {args.table} WHERE evaluation IS NOT NULL")
     evaluated = cursor.fetchone()[0]
 
-    cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE evaluation IS NULL")
+    cursor.execute(f"SELECT COUNT(*) FROM {args.table} WHERE evaluation IS NULL")
     unevaluated = cursor.fetchone()[0]
 
     print("Record preview:")
@@ -907,10 +907,10 @@ def preview_records(conn, table_name, doc_column, limit=None, start_id=None, whe
 
     if conditions:
         cursor.execute(
-            f"SELECT COUNT(*) FROM {table_name} WHERE " + " AND ".join(conditions), params
+            f"SELECT COUNT(*) FROM {args.table} WHERE " + " AND ".join(conditions), params
         )
     else:
-        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+        cursor.execute(f"SELECT COUNT(*) FROM {args.table}")
     eligible = cursor.fetchone()[0]
 
     if limit and limit < eligible:
@@ -922,10 +922,10 @@ def preview_records(conn, table_name, doc_column, limit=None, start_id=None, whe
     return min_id, max_id, total
 
 
-def reset_evaluations(conn, table_name, where_clause=None):
+def reset_evaluations(conn, args, where_clause=None):
     """Clean out evaluation, count_hl, count_ll, and score columns."""
     cursor = conn.cursor()
-    query = f"UPDATE {table_name} SET evaluation = NULL, count_hl = NULL, count_ll = NULL, score = NULL"
+    query = f"UPDATE {args.table} SET evaluation = NULL, count_hl = NULL, count_ll = NULL, score = NULL"
     if where_clause is not None:
         query += f" WHERE {where_clause}"
     cursor.execute(query)
@@ -934,7 +934,7 @@ def reset_evaluations(conn, table_name, where_clause=None):
     print()
 
 
-def get_records_to_process(conn, table_name, doc_column, args):
+def get_records_to_process(conn, args):
     """Get the list of (id, doc_title, doc_text) to process."""
     limit = args.limit
     start_id = args.start_id
@@ -954,7 +954,7 @@ def get_records_to_process(conn, table_name, doc_column, args):
         conditions.append("id >= ?")
         params.append(start_id)
 
-    query = f"SELECT id, doc_title, {doc_column} FROM {table_name}"
+    query = f"SELECT id, doc_title, {args.document_column} FROM {args.table}"
 
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
@@ -968,47 +968,67 @@ def get_records_to_process(conn, table_name, doc_column, args):
     return cursor.fetchall()
 
 
-def save_evaluation(conn, table_name, doc_id, evaluation, count_hl, count_ll, score):
+def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
     """Save evaluation results to the database.
 
     Safe partial update — only columns whose corresponding parameter is not None
     are included in the SET clause, so existing values are never accidentally
     nulled out.
     """
-    cursor = conn.cursor()
-    assignments = []
-    params = []
-    if evaluation is not None:
-        assignments.append("evaluation = ?")
-        params.append(evaluation)
-    if count_hl is not None:
-        assignments.append("count_hl = ?")
-        params.append(count_hl)
-    if count_ll is not None:
-        assignments.append("count_ll = ?")
-        params.append(count_ll)
-    if score is not None:
-        assignments.append("score = ?")
-        params.append(score)
-    if not assignments:
-        return  # nothing to update
-    params.append(doc_id)
-    query = f"UPDATE {table_name} SET {', '.join(assignments)} WHERE id = ?"
-    cursor.execute(query, params)
-    conn.commit()
+
+    # Connect to database
+    conn = sqlite3.connect(args.db_path)
+    print(f"[DB] Connected: {args.db_path}")
+
+    try:
+        cursor = conn.cursor()
+        assignments = []
+        params = []
+        if evaluation is not None:
+            assignments.append("evaluation = ?")
+            params.append(evaluation)
+        if count_hl is not None:
+            assignments.append("count_hl = ?")
+            params.append(count_hl)
+        if count_ll is not None:
+            assignments.append("count_ll = ?")
+            params.append(count_ll)
+        if score is not None:
+            assignments.append("score = ?")
+            params.append(score)
+        if not assignments:
+            return  # nothing to update
+        params.append(doc_id)
+        query = f"UPDATE {args.table} SET {', '.join(assignments)} WHERE id = ?"
+        cursor.execute(query, params)
+        conn.commit()
+    finally:
+        conn.close()
+        print()
+        print(f"[DB] Disconnected.")
 
 
-def load_record(conn, table_name, doc_column, doc_id):
+def load_record(args, doc_id):
     """Load a single record's doc_text, doc_title, and evaluation."""
-    cursor = conn.cursor()
-    cursor.execute(
-        f"SELECT id, doc_title, {doc_column}, evaluation FROM {table_name} WHERE id = ?",
-        (doc_id,),
-    )
-    row = cursor.fetchone()
-    if not row:
-        return None
-    return {"id": row[0], "doc_title": row[1], "doc_text": row[2], "evaluation": row[3]}
+
+    # Connect to database
+    conn = sqlite3.connect(args.db_path)
+    print(f"[DB] Connected: {args.db_path}")
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT id, doc_title, {args.document_column}, evaluation FROM {args.table} WHERE id = ?",
+            (doc_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        return {"id": row[0], "doc_title": row[1], "doc_text": row[2], "evaluation": row[3]}
+    finally:
+        conn.close()
+        print()
+        print(f"[DB] Disconnected.")
 
 
 # ---------------------------------------------------------------------------
@@ -1052,7 +1072,7 @@ def _empty_stats():
         "total_completion_tokens": 0, "total_tokens": 0, "total_reasoning_tokens": 0, "total_output_tokens": 0 }
 
 
-def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, conn, table_name, doc_column):
+def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, args):
     """Evaluate a single record. Returns (doc_id, doc_title, hl, ll, score, response, error, chat_result)."""
 
     system_prompt = build_evaluation_system_prompt(detailed)
@@ -1088,11 +1108,11 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, con
         return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
 
     # Save
-    save_evaluation(conn, table_name, doc_id, eval_report, count_hl, count_ll, score)
+    save_evaluation(args, doc_id, eval_report, count_hl, count_ll, score)
     print("    Saved to database.")
 
     # Verify
-    record = load_record(conn, table_name, doc_column, doc_id)
+    record = load_record(args, doc_id)
     if record and record["evaluation"] is not None:
         print(f"    Verified: evaluation populated ({len(record['evaluation'])} chars)")
     else:
@@ -1101,7 +1121,7 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, con
     return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
 
 
-def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_run, conn, table_name, doc_column, eval_text=None):
+def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_run, args, eval_text=None):
     """Review a single record with re-execution loop.
 
     eval_text: optional pre-loaded evaluation text (used in dry-run mode or when
@@ -1123,7 +1143,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
             current_eval = eval_text
             current_doc_text = None  # will be loaded below if needed
         else:
-            record = load_record(conn, table_name, doc_column, doc_id)
+            record = load_record(args, doc_id)
             if not record or record["evaluation"] is None:
                 print(f"      ERROR: evaluation lost during re-review")
                 final_error = "Evaluation lost during re-review"
@@ -1132,7 +1152,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
             current_doc_text = record["doc_text"]
 
         if current_doc_text is None:
-            rec = load_record(conn, table_name, doc_column, doc_id)
+            rec = load_record(args, doc_id)
             current_doc_text = rec["doc_text"] if rec else ""
 
         # Run automated verification on the current evaluation
@@ -1189,7 +1209,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
         if updated_is_valid_report:
             if not dry_run:
-                save_evaluation(conn, table_name, doc_id, updated_eval, new_hl, new_ll, new_score)
+                save_evaluation(args, doc_id, updated_eval, new_hl, new_ll, new_score)
                 print("      Saved updated evaluation + counts/score to database.")
                 print(f"      Updated evaluation length: {len(updated_eval)} chars")
             else:
@@ -1201,7 +1221,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
                 new_hl, new_ll, new_score = parse_evaluation_report(current_eval)
                 if ((new_hl and new_hl != orig_hl) or (new_ll and new_ll != orig_ll) or (new_score and new_score != orig_score)):
                     # NOTE: this relies on save_evalution() remaining "safe" and not nulling columns with None value
-                    save_evaluation(conn, table_name, doc_id, None, new_hl, new_ll, new_score)
+                    save_evaluation(args, doc_id, None, new_hl, new_ll, new_score)
                     print("      Skipped evaluation update (no valid eval text extracted).")
                     print(f"      NOTE: Saved corrected counts/score from current report text, DB values were not correct: DB HL={orig_hl}, LL={orig_ll}, Score={orig_score} REPORT HL={new_hl}, LL={new_ll}, Score={new_score}")
                 else:
@@ -1223,7 +1243,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         final_hl, final_ll, final_score = new_hl, new_ll, new_score
         changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
         if changed and not dry_run:
-            save_evaluation(conn, table_name, doc_id, current_eval, new_hl, new_ll, new_score)
+            save_evaluation(args, doc_id, current_eval, new_hl, new_ll, new_score)
             print(f"      Final: Updated database with counts/score.")
         elif not dry_run:
             print(f"      Final: No changes needed.")
@@ -1232,7 +1252,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         if dry_run:
             print(f"      [DRY RUN] Would verify evaluation in database.")
         else:
-            record = load_record(conn, table_name, doc_column, doc_id)
+            record = load_record(args, doc_id)
             if record and record["evaluation"] is not None:
                 print(f"      Verified: evaluation present ({len(record['evaluation'])} chars)")
             else:
@@ -1243,7 +1263,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
     return (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, result)
 
 
-def process_records_interleaved(conn, table_name, doc_column, client, records, args):
+def process_records_interleaved(client, records, args):
     """Process records: evaluate then review for each record before moving to the next.
 
     Returns (eval_results, review_results) tuples compatible with step5_report.
@@ -1278,16 +1298,9 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
         # --- Step 3: Evaluate (unless skipped) ---
         if skip_evaluation:
             print(f"  [EVAL] SKIPPED (--skip-evaluation)")
-            # Load existing evaluation counts from DB for review
-            record = load_record(conn, table_name, doc_column, doc_id)
-            if record and record["evaluation"] is not None:
-                count_hl, count_ll, score = parse_evaluation_report(record["evaluation"])
-            else:
-                count_hl, count_ll, score = None, None, None
-            eval_results.append((doc_id, doc_title, count_hl, count_ll, score, None, None))
         else:
             print(f"  [EVAL] Evaluating...")
-            er = _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, conn, table_name, doc_column)
+            er = _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, args)
             _, _, count_hl, count_ll, score, response, error, chat_result = er
             if chat_result:
                 _accumulate_stats(eval_stats, chat_result)
@@ -1306,7 +1319,7 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
             rev_orig_ll = count_ll
             rev_orig_score = score
             if rev_orig_hl is None:
-                record = load_record(conn, table_name, doc_column, doc_id)
+                record = load_record(args, doc_id)
                 if record and record["evaluation"] is not None:
                     rev_orig_hl, rev_orig_ll, rev_orig_score = parse_evaluation_report(record["evaluation"])
 
@@ -1318,9 +1331,9 @@ def process_records_interleaved(conn, table_name, doc_column, client, records, a
                 if not skip_evaluation and response is not None:
                     rev_eval_text = response
                 else:
-                    rec = load_record(conn, table_name, doc_column, doc_id)
+                    rec = load_record(args, doc_id)
                     rev_eval_text = rec["evaluation"] if rec else None
-                rr = _review_record(client, doc_id, doc_title, rev_orig_hl, rev_orig_ll, rev_orig_score, dry_run, conn, table_name, doc_column, rev_eval_text)
+                rr = _review_record(client, doc_id, doc_title, rev_orig_hl, rev_orig_ll, rev_orig_score, dry_run, args, rev_eval_text)
                 _, _, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, chat_result = rr
                 if chat_result:
                     _accumulate_stats(review_stats, chat_result)
@@ -1427,36 +1440,34 @@ def main():
     conn = sqlite3.connect(args.db_path)
     print(f"[DB] Connected: {args.db_path}")
 
-    # Resolve table name
-    if args.table:
-        table_name = args.table
-    else:
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-        tables = [row[0] for row in cursor.fetchall()]
-        if len(tables) == 1:
-            table_name = tables[0]
-            print(f"[DB] Auto-detected table: {table_name}")
-        else:
-            print(f"ERROR: Database has {len(tables)} tables. Please specify one with --table.")
-            if tables:
-                print(f"  Available tables: {', '.join(tables)}")
-            sys.exit(1)
-
-    doc_column = args.document_column
-    print(f"[DB] Document column: {doc_column}")
-
     try:
+        # Resolve table name
+        if not args.table:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            tables = [row[0] for row in cursor.fetchall()]
+            if len(tables) == 1:
+                args.table = tables[0]
+                print(f"[DB] Auto-detected table: {args.table}")
+            else:
+                # TODO: if one of the tables is called "documents" then use that one
+                print(f"ERROR: Database has {len(tables)} tables. Please specify one with --table.")
+                if tables:
+                    print(f"  Available tables: {', '.join(tables)}")
+                sys.exit(1)
+
+        print(f"[DB] Document column: {args.document_column}")
+
         # Step 1: Discover schema
-        discover_schema(conn, table_name, doc_column)
+        discover_schema(conn, args)
 
         # Step 2: Preview records
-        preview_records(conn, table_name, doc_column, limit=args.limit, start_id=args.start_id, where_clause=args.where)
+        preview_records(conn, args, limit=args.limit, start_id=args.start_id, where_clause=args.where)
 
         # Reset evaluations (if --reset or --reset-only is passed)
         if args.reset or args.reset_only:
             if not args.dry_run:
-                reset_evaluations(conn, table_name, where_clause=args.where)
+                reset_evaluations(conn, args, where_clause=args.where)
             else:
                 print("[Dry-run] Would reset evaluations.")
                 print()
@@ -1465,40 +1476,40 @@ def main():
                 print("Reset complete. Exiting.")
                 return
 
-        # Initialize client (only needed if not skipping both phases)
-        if args.skip_evaluation and args.skip_review:
-            client = None
-            print("[Config] Skipping both evaluation and review — no client needed")
-        elif args.stub:
-            client = StubClient()
-            print(f"[Config] Using STUB client (constant responses)")
-        else:
-            if not args.endpoint:
-                print("ERROR: --endpoint is required")
-                sys.exit(1)
-            client = OpenAIClient(args.endpoint, args.api_key, args.model)
-            print(f"[Config] Endpoint: {args.endpoint}, Model: {args.model}")
-        print()
-
         # Get records to process
-        records = get_records_to_process(conn, table_name, doc_column, args)
+        records = get_records_to_process(conn, args)
         if not records:
             print("No records to process.")
             return
-
-        print(f"Processing {len(records)} records...")
-        print()
-
-        # Step 3/4: Interleaved evaluation + review per record
-        eval_results, review_results = process_records_interleaved(conn, table_name, doc_column, client, records, args)
-
-        # Step 5: Report
-        step5_report(eval_results, review_results)
-
     finally:
         conn.close()
         print()
         print(f"[DB] Disconnected.")
+
+    # From here use a DB connection per operation so file isn't left open for long periods
+    # Initialize client (only needed if not skipping both phases)
+    if args.skip_evaluation and args.skip_review:
+        client = None
+        print("[Config] Skipping both evaluation and review — no client needed")
+    elif args.stub:
+        client = StubClient()
+        print(f"[Config] Using STUB client (constant responses)")
+    else:
+        if not args.endpoint:
+            print("ERROR: --endpoint is required")
+            sys.exit(1)
+        client = OpenAIClient(args.endpoint, args.api_key, args.model)
+        print(f"[Config] Endpoint: {args.endpoint}, Model: {args.model}")
+    print()
+
+    print(f"Processing {len(records)} records...")
+    print()
+
+    # Step 3/4: Interleaved evaluation + review per record
+    eval_results, review_results = process_records_interleaved(client, records, args)
+
+    # Step 5: Report
+    step5_report(eval_results, review_results)
 
 
 if __name__ == "__main__":
