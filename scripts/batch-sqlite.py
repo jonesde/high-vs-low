@@ -950,8 +950,7 @@ def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
         conn.commit()
     finally:
         conn.close()
-        print()
-        print(f"[DB] Disconnected.")
+        print(f"[DB] Connection closed")
 
 
 def load_record(args, doc_id):
@@ -973,8 +972,7 @@ def load_record(args, doc_id):
         return {"id": row[0], "doc_title": row[1], "doc_text": row[2], "evaluation": row[3]}
     finally:
         conn.close()
-        print()
-        print(f"[DB] Disconnected.")
+        print(f"[DB] Connection closed")
 
 
 # ---------------------------------------------------------------------------
@@ -1072,7 +1070,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
     eval_text: optional pre-loaded evaluation text (used in dry-run mode or when
                 the evaluation was just generated and not yet persisted).
-    Returns (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error).
+    Returns (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, result).
     """
     MAX_REVIEW_ITERATIONS = 3
 
@@ -1392,7 +1390,7 @@ def main():
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    print(f"[DB] Connected: {args.db_path}")
+    print(f"[DB] Connected to: {args.db_path}")
 
     try:
         # Resolve table name
@@ -1437,8 +1435,7 @@ def main():
             return
     finally:
         conn.close()
-        print()
-        print(f"[DB] Disconnected.")
+        print(f"[DB] Connection closed")
 
     # From here use a DB connection per operation so file isn't left open for long periods
     # Initialize client (only needed if not skipping both phases)
