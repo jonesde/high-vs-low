@@ -207,8 +207,8 @@ For **Per-Topic Scores** use the same 3 formulas applied to the HL and LL counts
 ## Step 5: Self-Verification
 
 Before emitting the report, verify:
-1. **No missed stances**: Re-scan every verse/paragraph; watch for multiple distinct normative claims in the same location (2+ separate stances); split them
-2. **No duplicate statements**: Every stance quote must be unique; same location is OK only if the stance claims are different
+1. **No missed stances**: Re-scan every paragraph; watch for multiple distinct normative claims in the same location (2+ separate stances); split them
+2. **No duplicate statements**: A statement is a duplicate only if the *Stance Quote* matches AND the *Location* matches; the same stance quote is OK for multiple statements if the locations are different; the same location is OK for multiple statements if the stance claims are different; a full list of statements present in the text is necessary for accurate counts
 3. Every Key Topic has at least one associated statement; remove any topic with zero statements
 4. Every statement has location, principle quote, speaker, stance quote, 1+ distinction rule references, and 1+ Key Topics
 5. Alignment 2x2 Map was applied to every statement; verify each statement is in the correct section
