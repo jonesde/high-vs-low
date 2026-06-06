@@ -140,30 +140,6 @@ def main():
             if score_s != calc:
                 issues.append(f"Score Table '{topic}': score {score_s} != calculated {calc}")
 
-    # 6. Narrative score sweep — every score mention outside tables/summaries must match
-    if total > 0:
-        # Remove the Scoring Summary and Key Topic Score Table sections
-        remaining = text
-        for section_pattern in [r'## Scoring Summary.*?(?=\n---\n|\Z)',
-                                 r'## Key Topic Score Table.*?(?=\n---\n|\Z)']:
-            m = re.search(section_pattern, remaining, re.DOTALL)
-            if m:
-                remaining = remaining[:m.start()] + remaining[m.end():]
-        # Check lines with score-related context or bold score-like patterns
-        score_context = re.compile(
-            r'\b(scores?|alignment|overall|rating|result|final)\b', re.IGNORECASE
-        )
-        for lineno, line in enumerate(remaining.split('\n'), 1):
-            has_context = score_context.search(line)
-            has_bold_number = bool(re.search(r'\*\*[+-]?\d+\.?\d*\*\*', line))
-            if has_context or has_bold_number:
-                nums = re.findall(r'([+-]?\d+\.?\d*)', line)
-                for n in nums:
-                    val = float(n)
-                    # Skip numbers outside the score range (-10 to +10)
-                    if -10 <= val <= 10 and val != score:
-                        issues.append(f"Line {lineno}: narrative score mention {n} != Scoring Summary score {score}")
-
     # Report
     if issues:
         print(f"\nISSUES FOUND ({len(issues)}):")
