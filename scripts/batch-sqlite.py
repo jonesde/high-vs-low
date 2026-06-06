@@ -253,7 +253,7 @@ def print_progress(token_count: int, content_so_far: str, start_time: float) -> 
     mins = int(elapsed) // 60
     secs = int(elapsed) % 60
     # Left side: "gen... NNN tokens 00:00 | "
-    left = f"gen {token_count} tokens {mins:02d}:{secs:02d} | "
+    left = f"{mins:02d}:{secs:02d} tokens {token_count} | "
     # Available space for text (leave 1 char margin)
     text_width = max(10, term_width - len(left) - 1)
     # Collapse newlines so embedded \n don't break the single-line display
@@ -477,8 +477,8 @@ class OpenAIClient:
                 if completion_tokens is None:
                     completion_tokens = token_count
                 
-                # TODO: comment this out
-                print(f"API response in {elapsed:.1f}s\nUSAGE: {usage}\nCHUNK: {chunk}\nCONTENT: {content}")
+                # NOTE: remember to comment this out after using to debug or whatever
+                # print(f"API response in {elapsed:.1f}s\nUSAGE: {usage}\nCHUNK: {chunk}\nCONTENT: {content}")
 
                 return ChatResult(content=content, elapsed=elapsed, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
                     total_tokens=total_tokens, reasoning_tokens=reasoning_tokens, first_token_elapsed=first_token_time)
@@ -715,22 +715,18 @@ def run_verify_report(evaluation_text):
 def parse_evaluation_report(report_text):
     """Extract count_hl, count_ll, and score from an evaluation report."""
     # Try to get counts from the Scoring Summary table
-    hl_match = re.search(
-        r"High Law Aligned\s+\|?\s+(\d+)", report_text
-    )
-    ll_match = re.search(
-        r"Low Law Aligned\s+\|?\s+(\d+)", report_text
-    )
+
+    if not report_text:
+        return None, None, None
+
+    hl_match = re.search(r"High Law Aligned\s+\|?\s+(\d+)", report_text)
+    ll_match = re.search(r"Low Law Aligned\s+\|?\s+(\d+)", report_text)
 
     # Also try header counts as fallback
     if not hl_match:
-        hl_match = re.search(
-            r"### High Law Aligned \((\d+) statements?\)", report_text
-        )
+        hl_match = re.search(r"### High Law Aligned \((\d+) statements?\)", report_text)
     if not ll_match:
-        ll_match = re.search(
-            r"### Low Law Aligned \((\d+) statements?\)", report_text
-        )
+        ll_match = re.search(r"### Low Law Aligned \((\d+) statements?\)", report_text)
 
     count_hl = int(hl_match.group(1)) if hl_match else 0
     count_ll = int(ll_match.group(1)) if ll_match else 0
@@ -1040,12 +1036,12 @@ def _stats_summary(name, stats, record_count):
     print(f"[{name}] {name} Complete")
     print(f"  Records processed: {record_count}")
     print(f"  Total phase time:  {time.monotonic() - stats['phase_start']:.1f}s")
-    print(f"  Total API time:    {stats['total_elapsed']:.1f}s")
-    if record_count > 0:
+    print(f"  API time:          {stats['total_elapsed']:.1f}s")
+    if record_count > 1:
         print(f"  Avg API time/rec:  {stats['total_elapsed'] / record_count:.1f}s")
     print(f"  Total tokens:      prompt: {stats['total_prompt_tokens']} reasoning: {stats['total_reasoning_tokens']} output: {stats['total_output_tokens']} completion: {stats['total_completion_tokens']} total: {stats['total_tokens']}")
-    if stats["total_generation_time"] > 0:
-        print(f"  Tokens/Second:     completion: {stats['total_completion_tokens'] / stats['total_generation_time']:.1f}")
+    if stats["total_generation_time"]:
+        print(f"  Tokens/Second:     output: {(stats['total_output_tokens'] / stats['total_generation_time']):.1f} (in {stats['total_generation_time']:.1f}s)")
 
 
 def _empty_stats():
@@ -1086,11 +1082,17 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, con
 
     eval_report = result.content.lstrip() if result.content else None
     count_hl, count_ll, score = parse_evaluation_report(eval_report)
-    print(f"    Result: HL={count_hl}, LL={count_ll}, Score={score}")
+    if eval_report:
+        print(f"    Result: HL={count_hl}, LL={count_ll}, Score={score}")
+    else:
+        print("    No evaluation report returned")
 
-    if not dry_run:
-        save_evaluation(conn, table_name, doc_id, eval_report, count_hl, count_ll, score)
-        print("    Saved to database.")
+    if dry_run or not eval_report:
+        return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
+
+    # Save
+    save_evaluation(conn, table_name, doc_id, eval_report, count_hl, count_ll, score)
+    print("    Saved to database.")
 
     # Verify
     record = load_record(conn, table_name, doc_column, doc_id)
