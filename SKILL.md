@@ -120,12 +120,12 @@ Follow these steps in order:
    - **Include**: ALL phrases that express a stance, claim, or opinion on moral/legal principles, both explicit (stated) and implicit (narrative outcomes, presentation bias, etc) 
    - **Exclude**: Statements of fact or principle that do not include a stance, claim, or opinion about them
    - **Target**: ALL normative claims and stances: thoroughly evaluate each source text phrase
-   - **Same-claim grouping**: If multiple clauses in a verse/paragraph are part of the *same* normative claim on the *same* topic, keep them as one statement; if different claims or topics, extract separately
+   - **Same-claim grouping**: If multiple clauses in a sentence or immediately adjacent sentences are part of the *same* normative claim on the *same* topic, keep them as one statement; if different claims or topics, extract separately
    - **Duplicates OK**: If the same underlying claim appears multiple times in different locations, keep ALL instances (for complete count)
    - **Multiple Perspectives**: The Author's stance on someone's actions/beliefs is separate from a person's own statements about their actions/beliefs; if both are present split into separate stances
    - **Extract**
       1. **Stance Quote**: The minimum text needed for the complete normative claim (statement or description of a stance/opinion); **never** truncate moral framing (e.g., removing "for fear of the law" changes coercive compliance into protective obedience); length from 1 phrase if stated explicitly to a few phrases for descriptions and narratives
-      2. **Location**: *If* existing references (like verse numbers) are present in the source text then use them, otherwise *always* use line numbers for location (count new lines)
+      2. **Location**: *If* existing references (like verse numbers) are present in the source text then use them, otherwise *always* use line numbers for location (line # = count of newline characters before the quoted text)
 2. **Verify Stances**
    1. **Data Complete**: Verify that all stances found have a *Stance Quote* and *Location*
    2. **All Stances Found**: Re-evaluate all text not already referenced by location in the stances found, add ALL missing stances
@@ -207,7 +207,7 @@ For **Per-Topic Scores** use the same 3 formulas applied to the HL and LL counts
 ## Step 5: Self-Verification
 
 Before emitting the report, verify:
-1. **No missed stances**: Re-scan every paragraph; watch for multiple distinct normative claims in the same location (2+ separate stances); split them
+1. **No missed stances**: Re-scan every sentence; watch for multiple distinct normative claims in the same location (2+ separate stances); split them
 2. **No duplicate statements**: A statement is a duplicate only if the *Stance Quote* matches AND the *Location* matches; the same stance quote is OK for multiple statements if the locations are different; the same location is OK for multiple statements if the stance claims are different; a full list of statements present in the text is necessary for accurate counts
 3. Every Key Topic has at least one associated statement; remove any topic with zero statements
 4. Every statement has location, principle quote, speaker, stance quote, 1+ distinction rule references, and 1+ Key Topics
