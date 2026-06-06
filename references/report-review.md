@@ -30,7 +30,7 @@ Validate that every normative claim in the original text was captured and classi
 - [ ] **Location references valid** *If* existing references (like verse numbers) are present in the source text then use them, otherwise *always* use line numbers for location (count new lines); check for locations that use a paragraph number or section names instead of actual verse/etc references or lines: For every such statement, search the source text for the stance quote (or distinctive keywords from it) to find the real line number. Record actual line numbers, not paragraph or other numbers. This is essential for reproducibility and auditability.
 - [ ] **Re-scan source text for missed stances**: Identify any verse/etc reference or line number with no `Location` reference in the report. Extract and classify all missing normative claims.
 - [ ] **Split multi-claim locations**: Any source location represented by a single statement but containing **two or more distinct stances** must be split into separate statements.
-- [ ] **Required fields present on every statement**: Confirm each row has `#`, `Location`, `Rules`, `Principle Quote`, `Speaker`, `Stance Quote`, `Key Topics`, and `Decision Notes`.
+- [ ] **Required fields present on every statement**: Confirm each row has `#`, `Location`, `Rules`, `Decision Notes`, `Key Topics`, `Speaker`, `Stance Quote`, and `Principle Quote`.
 - [ ] **Rules are exhaustive**: The `Rules` column must list **all** relevant Distinction Rules by **concept**, not vocabulary.
 - [ ] **Quote length within limits**: Every `Stance Quote` and `Principle Quote` should be under 40 words (target), with a hard cap of 80 words. Use `...` for omissions; preserve original wording and structure.
 - [ ] **Topic count in range**: The numbered `Key Topics` list should contain 7–14 topics. If fewer than 7, check whether distinct themes were merged prematurely. If more than 14, merge similar/related topics.
@@ -51,7 +51,7 @@ Validate the HL and LL tables against each other and against their headers.
 
 - [ ] **HL header count is exact**: `### High Law Aligned (N statements)` - `N` must equal `HL_rows`. Count rows manually; do not trust the header integer.
 - [ ] **LL header count is exact**: `### Low Law Aligned (N statements)` - `N` must equal `LL_rows`. Count rows manually; do not trust the header integer.
-- [ ] **Table structure matches template**: Column order and header text (`| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |`) must match the specification exactly.
+- [ ] **Table structure matches template**: Column order and header text (`| # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |`) must match the specification exactly.
 - [ ] **No empty Decision Notes cells**: Every data row contains a completed decision note. Each note should include the final alignment (HL/LL) and a one-line justification referencing the principle type and stance direction.
 
 ---

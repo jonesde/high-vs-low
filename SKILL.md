@@ -229,7 +229,10 @@ Before emitting the report, verify:
    - `## Statement Quotes`
    - `### High Law Aligned (N statements)`
    - `### Low Law Aligned (N statements)`
-   - Table: `| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |`
+   - Table: `| # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |`
+      - **Location**: Display inline reference numbers (like verses) in the format they are found in the document; display line numbers with an `L` prefix
+      - **Rules**: Comma separated list of {RuleNum}-{HL/LL} like `1-HL,42-LL`
+      - **Key Topics**: The exact name from the Key Topics list; do NOT abbreviate, rephrase, or drop the root category prefix; when a statement covers multiple topics, separate them with `; `
 4. **Scoring Summary** table with Count and Percentage for HL, LL, Total; then the formula and final score
 5. **Key Topic Score Table** columns: `Key Topic | High # | Low # | Score`
 
@@ -292,16 +295,16 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY}}
 
 ### High Law Aligned ({{HL_COUNT}} statements)
 
-| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
-|---| -------- | ----- | --------------- | ------- | ------------ | ---------- | -------------- |
-| 1 | {{LOC_REF}} | {{RULES}} | "{{PRINCIPLE_QUOTE}}" | {{SPEAKER}} | "{{STANCE_QUOTE}}" | {{KEY_TOPICS}} | {{DECISION_NOTES}} |
+| # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |
+|---| -------- | ----- | -------------- | ---------- | ------- | ------------ | --------------- |
+| 1 | {{LOC_REF}} | {{RULES}} | {{DECISION_NOTES}} | {{KEY_TOPICS}} | {{SPEAKER}} | "{{STANCE_QUOTE}}" | "{{PRINCIPLE_QUOTE}}" |
 | ... | ... | ... | ... | ... | ... | ... | ... |
 
 ### Low Law Aligned ({{LL_COUNT}} statements)
 
-| # | Location | Rules | Principle Quote | Speaker | Stance Quote | Key Topics | Decision Notes |
-|---| -------- | ----- | --------------- | ------- | ------------ | ---------- | -------------- |
-| 1 | {{LOC_REF}} | {{RULES}} | "{{PRINCIPLE_QUOTE}}" | {{SPEAKER}} | "{{STANCE_QUOTE}}" | {{KEY_TOPICS}} | {{DECISION_NOTES}} |
+| # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |
+|---| -------- | ----- | -------------- | ---------- | ------- | ------------ | --------------- |
+| 1 | {{LOC_REF}} | {{RULES}} | {{DECISION_NOTES}} | {{KEY_TOPICS}} | {{SPEAKER}} | "{{STANCE_QUOTE}}" | "{{PRINCIPLE_QUOTE}}" |
 | ... | ... | ... | ... | ... | ... | ... | ... |
 
 ---
