@@ -604,7 +604,7 @@ def build_review_system_prompt():
         "\n\n# Task\n\n"
         "You are a High Law vs Low Law evaluation report reviewer.\n\n"
         "Review the provided evaluation report against the original document text.\n"
-        "1. Execute the review checklist from the reference file above, all included instructions in exact order.\n"
+        "1. Execute the Report Review Checklist from the reference file above, all included instructions in exact order.\n"
         "2. If changes are needed, describe them clearly with original and updated counts.\n"
         "3. If no changes are needed, state that explicitly.\n\n"
         "4. If you made any changes, regenerate the entire updated evaluation report.\n"
@@ -612,12 +612,12 @@ def build_review_system_prompt():
         f"```\n{EVAL_REPORT_END_MARKER}\n```\n"
         "This marker tells the parser where the report ends and the summary begins.\n\n"
         "6. After the marker, include a CHANGES SUMMARY section:\n"
-        "- Emit 'STATEMENTS ADDED' if you added any statements\n"
-        "- Emit 'STATEMENTS MOVED' if you moved any statements between categories\n"
-        "- Emit 'STATEMENTS REMOVED' if you removed any statements\n"
         "- Original counts: HL=N, LL=N, Score=X.X\n"
         "- Updated counts: HL=N, LL=N, Score=X.X (same if no changes)\n"
-        "- Description of any changes made"
+        "- If and **ONLY** if you added any statements then emit the EXACT text marker 'STATEMENTS_ADDED'\n"
+        "- If and **ONLY** if you moved any statements between high/low categories then emit the EXACT text marker 'STATEMENTS_MOVED'\n"
+        "- If and **ONLY** if you removed any statements then emit the EXACT text marker 'STATEMENTS_REMOVED'\n"
+        "- Bulleted list of short descriptions of each change made"
     )
 
     return skill_md + "\n" + review_md + instructions
@@ -773,11 +773,7 @@ def parse_review_result(review_text):
 
 def parse_review_has_changes(review_text):
     """Check if the LLM self-reported adding, moving, or removing statements."""
-    return (
-        "STATEMENTS ADDED" in review_text
-        or "STATEMENTS MOVED" in review_text
-        or "STATEMENTS REMOVED" in review_text
-    )
+    return ("STATEMENTS_ADDED" in review_text or "STATEMENTS_MOVED" in review_text or "STATEMENTS_REMOVED" in review_text)
 
 
 _REPORT_TITLE_PREFIX = "# High Law vs Low Law Alignment Evaluation"
@@ -1191,10 +1187,6 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         print(f"      Statement Changes reported: {'YES' if has_changes else 'NO'}")
         print(f"      Valid New Report found: {'YES' if updated_is_valid_report else 'NO'}")
         print(f"      API: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
-
-        if has_changes and not updated_is_valid_report:
-            print(f"      Full Response: {result.content}")
-            break
 
         if updated_is_valid_report:
             if not dry_run:
