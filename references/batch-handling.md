@@ -96,6 +96,7 @@ Common Patterns:
 - **Continue eval on a subset**: `--where "year = 1975" --limit 5`
 - **Preview without modifying**: `--skip-evaluation --skip-review --where "year >= 2000"`
 - **Resume from a specific ID**: `--start-id 500 --limit 10`
+- **Test without an LLM**: `--stub`
 
 The script does NOT reset evaluation columns by default — pass `--reset` to clear them before starting. Use `--where` to target a subset of records for reset or evaluation. It uses `urllib` only (no external dependencies).
 
