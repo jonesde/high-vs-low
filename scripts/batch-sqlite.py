@@ -1240,67 +1240,79 @@ def process_records_interleaved(client, records, args):
     logger.info("  Skip review: %s", skip_review)
     logger.info("")
 
-    for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
-        logger.info("[%s/%s] ID=%s: %s", idx, len(records), doc_id, doc_title)
+    interrupted = False
+    try:
+        for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
+            logger.info("[%s/%s] ID=%s: %s", idx, len(records), doc_id, doc_title)
 
-        response = None  # set by eval step, used by review step
+            response = None  # set by eval step, used by review step
 
-        # --- Step 3: Evaluate (unless skipped) ---
-        if skip_evaluation:
-            logger.info("  [eval] SKIPPED (--skip-evaluation)")
-        else:
-            logger.info("  [eval] Evaluating...")
-            er = _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, args)
-            _, _, count_hl, count_ll, score, response, error, chat_result = er
-            if chat_result:
-                _accumulate_stats(eval_stats, chat_result)
-            eval_results.append((doc_id, doc_title, count_hl, count_ll, score, response, error))
-
-        logger.info("")
-
-        # --- Step 4: Review (unless skipped) ---
-        if skip_review:
-            logger.info("  [review] SKIPPED (--skip-review)")
-            review_results.append((doc_id, doc_title, count_hl, count_ll, score, count_hl, count_ll, score, None))
-        else:
-            logger.info("  [review] Reviewing...")
-            # If we skipped evaluation, parse counts from DB
-            rev_orig_hl = count_hl
-            rev_orig_ll = count_ll
-            rev_orig_score = score
-            if rev_orig_hl is None:
-                record = load_record(args, doc_id)
-                if record and record["evaluation"] is not None:
-                    rev_orig_hl, rev_orig_ll, rev_orig_score = parse_evaluation_report(record["evaluation"])
-
-            if rev_orig_hl is None:
-                logger.info("    SKIPPED: No evaluation found for ID=%s", doc_id)
-                review_results.append((doc_id, doc_title, None, None, None, None, None, None, "No evaluation"))
+            # --- Step 3: Evaluate (unless skipped) ---
+            if skip_evaluation:
+                logger.info("  [eval] SKIPPED (--skip-evaluation)")
             else:
-                # Pass evaluation text directly to review (avoids DB round-trip)
-                if not skip_evaluation and response is not None:
-                    rev_eval_text = response
-                else:
-                    rec = load_record(args, doc_id)
-                    rev_eval_text = rec["evaluation"] if rec else None
-                rr = _review_record(client, doc_id, doc_title, rev_orig_hl, rev_orig_ll, rev_orig_score, dry_run, args, rev_eval_text)
-                _, _, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, chat_result = rr
+                logger.info("  [eval] Evaluating...")
+                er = _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, args)
+                _, _, count_hl, count_ll, score, response, error, chat_result = er
                 if chat_result:
-                    _accumulate_stats(review_stats, chat_result)
-                review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
+                    _accumulate_stats(eval_stats, chat_result)
+                eval_results.append((doc_id, doc_title, count_hl, count_ll, score, response, error))
 
+            logger.info("")
+
+            # --- Step 4: Review (unless skipped) ---
+            if skip_review:
+                logger.info("  [review] SKIPPED (--skip-review)")
+                review_results.append((doc_id, doc_title, count_hl, count_ll, score, count_hl, count_ll, score, None))
+            else:
+                logger.info("  [review] Reviewing...")
+                # If we skipped evaluation, parse counts from DB
+                rev_orig_hl = count_hl
+                rev_orig_ll = count_ll
+                rev_orig_score = score
+                if rev_orig_hl is None:
+                    record = load_record(args, doc_id)
+                    if record and record["evaluation"] is not None:
+                        rev_orig_hl, rev_orig_ll, rev_orig_score = parse_evaluation_report(record["evaluation"])
+
+                if rev_orig_hl is None:
+                    logger.info("    SKIPPED: No evaluation found for ID=%s", doc_id)
+                    review_results.append((doc_id, doc_title, None, None, None, None, None, None, "No evaluation"))
+                else:
+                    # Pass evaluation text directly to review (avoids DB round-trip)
+                    if not skip_evaluation and response is not None:
+                        rev_eval_text = response
+                    else:
+                        rec = load_record(args, doc_id)
+                        rev_eval_text = rec["evaluation"] if rec else None
+                    rr = _review_record(client, doc_id, doc_title, rev_orig_hl, rev_orig_ll, rev_orig_score, dry_run, args, rev_eval_text)
+                    _, _, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, chat_result = rr
+                    if chat_result:
+                        _accumulate_stats(review_stats, chat_result)
+                    review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
+
+            logger.info("")
+
+    except KeyboardInterrupt:
+        stop_wait_timer()
+        print_progress_done()
+        interrupted = True
         logger.info("")
+        logger.info("Interrupted by user after %s records.", idx - 1)
 
-    # Print summaries
-    logger.info("=" * 60)
+    # Print phase summaries (even on interrupt — shows partial stats)
+    if not interrupted:
+        logger.info("=" * 60)
     if not skip_evaluation:
         _stats_summary("Evaluation", eval_stats, len([r for r in eval_results if r[6] is None]))
-        logger.info("=" * 60)
+        if not interrupted:
+            logger.info("=" * 60)
     if not skip_review:
         _stats_summary("Review", review_stats, len([r for r in review_results if r[8] is None]))
-        logger.info("=" * 60)
+        if not interrupted:
+            logger.info("=" * 60)
 
-    return eval_results, review_results
+    return eval_results, review_results, interrupted
 
 
 def step5_report(eval_results, review_results):
@@ -1458,10 +1470,22 @@ def main():
     logger.info("Processing %s records...", len(records))
 
     # Step 3/4: Interleaved evaluation + review per record
-    eval_results, review_results = process_records_interleaved(client, records, args)
+    try:
+        eval_results, review_results, interrupted = process_records_interleaved(client, records, args)
+    except KeyboardInterrupt:
+        eval_results = []
+        review_results = []
+        interrupted = True
+        logger.info("")
+        logger.info("Interrupted.")
 
-    # Step 5: Report
+    # Step 5: Report (always print summary, even after interrupt)
     step5_report(eval_results, review_results)
+
+    if interrupted:
+        logger.info("")
+        logger.info("Exiting gracefully. Partial results saved to database.")
+        sys.exit(130)  # conventional exit code for SIGINT
 
 
 if __name__ == "__main__":
