@@ -27,7 +27,12 @@ Before fixing anything, derive these from the report. These are your source of t
 
 Validate that every normative claim in the original text was captured and classified correctly.
 
-- [ ] **Location references valid** *If* existing references (like verse numbers) are present in the source text then use them, otherwise *always* use line numbers for location (count new lines); check for locations that use a paragraph number or section names instead of actual verse/etc references or lines: For every such statement, search the source text for the stance quote (or distinctive keywords from it) to find the real line number. Record actual line numbers, not paragraph or other numbers. This is essential for reproducibility and auditability.
+- [ ] **Location references valid**
+    - RULE: *If* existing references (like verse numbers) are present in the source text then *always* use them, otherwise *always* use line numbers for location (count new lines)
+    - check for verse numbers or other internal references, if found and there are *any other* type of references in the table then replace each with the associated internal reference
+    - check for locations that use a paragraph number or section names instead of actual verse/etc references or lines, for every such statement:
+        - using whatever text is in the location as a starting point to estimate, search the source text for the stance quote (or distinctive keywords from it) to find the real line number
+        - record actual line numbers, not paragraph or other numbers; this is essential for reproducibility and auditability
 - [ ] **Re-scan source text for missed stances**: Identify any verse/etc reference or line number with no `Location` reference in the report. Extract and classify all missing normative claims.
 - [ ] **Split multi-claim locations**: Any source location represented by a single statement but containing **two or more distinct stances** must be split into separate statements.
 - [ ] **Required fields present on every statement**: Confirm each row has `#`, `Location`, `Rules`, `Decision Notes`, `Key Topics`, `Speaker`, `Stance Quote`, and `Principle Quote`.
