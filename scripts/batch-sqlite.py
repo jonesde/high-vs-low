@@ -917,7 +917,7 @@ def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    logger.info("[db-save] Connected to: %s", args.db_path)
+    logger.info("      [db-save] Connected to: %s", args.db_path)
 
     try:
         cursor = conn.cursor()
@@ -943,7 +943,7 @@ def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
         conn.commit()
     finally:
         conn.close()
-        logger.info("[db-save] Connection closed")
+        logger.info("      [db-save] Connection closed")
 
 
 def load_record(args, doc_id):
@@ -951,7 +951,7 @@ def load_record(args, doc_id):
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    logger.info("[db-load] Connected to: %s", args.db_path)
+    logger.info("      [db-load] Connected to: %s", args.db_path)
 
     try:
         cursor = conn.cursor()
@@ -965,7 +965,7 @@ def load_record(args, doc_id):
         return {"id": row[0], "doc_title": row[1], "doc_text": row[2], "evaluation": row[3]}
     finally:
         conn.close()
-        logger.info("[db-load] Connection closed")
+        logger.info("      [db-load] Connection closed")
 
 
 # ---------------------------------------------------------------------------
