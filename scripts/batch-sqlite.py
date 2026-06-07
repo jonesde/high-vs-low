@@ -53,6 +53,24 @@ from typing import Callable, NamedTuple, Optional
 # Configuration
 # ---------------------------------------------------------------------------
 
+DEFAULT_ENDPOINT = "http://127.0.0.1:1234/v1"
+# Not a URL in --endpoint? add the prefix and suffix to make a URL (NOTE: defaults to local friendly settings for LM Studio)
+DEFAULT_EP_NO_URL_PREFIX = "http://"
+DEFAULT_EP_NO_URL_SUFFIX = ":1234/v1"
+
+DEFAULT_DOCUMENTS_TABLE = "documents"
+DEFAULT_DOCUMENT_COLUMN = "doc_text"
+# TODO: use these in parser.add_argument() calls to add options, then use those from args like args.document_column
+DEFAULT_ID_COLUMN = "id"
+DEFAULT_EVALUTION_COL = "evaluation"
+DEFAULT_COUNT_HL_COLUMN = "count_hl"
+DEFAULT_COUNT_LL_COLUMN = "count_ll"
+DEFAULT_SCORE_COLUMN = "score"
+
+# ---------------------------------------------------------------------------
+# Stubs for --stubs
+# ---------------------------------------------------------------------------
+
 _STUB_EVAL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test-report.md")
 def _load_stub_evaluation() -> str:
     """Load the stub evaluation report from test-report.md in the same directory."""
@@ -558,9 +576,6 @@ def build_review_system_prompt():
 
 def build_evaluation_user_prompt(doc_text, doc_title):
     return f"""Evaluate the following document for High Law vs Low Law alignment.
-
-Document Title: {doc_title}
-
 Document Text:
 ---
 {doc_text}
@@ -581,7 +596,6 @@ Automated Verification Report:
 
 """
     return f"""Review the following evaluation report for the document titled "{doc_title}".
-
 Original Document Text:
 ---
 {doc_text}
@@ -607,7 +621,7 @@ def run_verify_report(evaluation_text):
     verify_script = os.path.join(script_dir, "verify-report.py")
 
     if not os.path.exists(verify_script):
-        print(f"    [Verify] Script not found: {verify_script} — skipping")
+        print(f"    [script] Script not found: {verify_script} — skipping")
         return None
 
     try:
@@ -626,7 +640,6 @@ def run_verify_report(evaluation_text):
             output = result.stdout
             if result.stderr:
                 output += result.stderr
-            print(f"    [Verify] Script Output:\n{output}\n\n")
             return output.strip()
         finally:
             # Clean up temp file
@@ -635,10 +648,10 @@ def run_verify_report(evaluation_text):
             except OSError:
                 pass
     except subprocess.TimeoutExpired:
-        print(f"    [Verify] verify-report.py timed out — skipping")
+        print(f"    [script] verify-report.py timed out — skipping")
         return None
     except Exception as exc:
-        print(f"    [Verify] Error running verify-report.py: {exc} — skipping")
+        print(f"    [script] Error running verify-report.py: {exc} — skipping")
         return None
 
 
@@ -803,7 +816,7 @@ def discover_schema(conn, args):
         print(f"ERROR: Table '{args.table}' not found in the database.")
         sys.exit(1)
     schema = row[0]
-    print("[DB] Schema discovered:")
+    print("[db-init] Schema discovered:")
     print(schema)
     print()
 
@@ -812,9 +825,9 @@ def discover_schema(conn, args):
     found = {m[0] for m in re.findall(r"(\w+)\s+(TEXT|INTEGER|REAL)", schema, re.IGNORECASE)}
     missing = required - found
     if missing:
-        print(f"[DB] ERROR: Missing required columns: {missing}")
+        print(f"[db-init] ERROR: Missing required columns: {missing}")
         sys.exit(1)
-    print(f"[DB] All required columns present: {required}")
+    print(f"[db-init] All required columns present: {required}")
     print()
     return schema
 
@@ -924,7 +937,7 @@ def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    print(f"[DB] Connected: {args.db_path}")
+    print(f"    [db-save] Connected to: {args.db_path}")
 
     try:
         cursor = conn.cursor()
@@ -950,7 +963,7 @@ def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
         conn.commit()
     finally:
         conn.close()
-        print(f"[DB] Connection closed")
+        print(f"    [db-save] Connection closed")
 
 
 def load_record(args, doc_id):
@@ -958,7 +971,7 @@ def load_record(args, doc_id):
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    print(f"[DB] Connected: {args.db_path}")
+    print(f"    [db-load] Connected to: {args.db_path}")
 
     try:
         cursor = conn.cursor()
@@ -972,7 +985,7 @@ def load_record(args, doc_id):
         return {"id": row[0], "doc_title": row[1], "doc_text": row[2], "evaluation": row[3]}
     finally:
         conn.close()
-        print(f"[DB] Connection closed")
+        print(f"    [db-load] Connection closed")
 
 
 # ---------------------------------------------------------------------------
@@ -1038,29 +1051,30 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, arg
     stop_wait_timer()
     print_progress_done()
 
-    eval_report = result.content.lstrip() if result.content else None
-    count_hl, count_ll, score = parse_evaluation_report(eval_report)
-    if eval_report:
-        print(f"    Eval Result: HL={count_hl}, LL={count_ll}, Score={score}")
-    else:
-        print("    No evaluation report returned")
-
     output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
-    print(f"    LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
+    print(f"    [eval] LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
 
-    if dry_run or not eval_report:
+    eval_report = result.content.lstrip() if result.content else None
+    if not eval_report:
+        print("    WARNING: No evaluation report returned")
+        return (doc_id, doc_title, None, None, None, None, "Empty Response", None)
+
+    count_hl, count_ll, score = parse_evaluation_report(eval_report)
+    print(f"    [eval] Result: HL={count_hl}, LL={count_ll}, Score={score}")
+
+    if dry_run:
         return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
 
     # Save
     save_evaluation(args, doc_id, eval_report, count_hl, count_ll, score)
-    print("    Saved to database.")
+    print("    [eval] Saved to database.")
 
     # Verify
     record = load_record(args, doc_id)
     if record and record["evaluation"] is not None:
-        print(f"    Verified: evaluation populated ({len(record['evaluation'])} chars)")
+        print(f"    [eval] Verified: evaluation populated ({len(record['evaluation'])} chars)")
     else:
-        print(f"    WARNING: evaluation not found in database after save")
+        print(f"    [eval] WARNING: evaluation not found in database after save")
 
     return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
 
@@ -1078,7 +1092,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
     final_error = None
 
     for iteration in range(1, MAX_REVIEW_ITERATIONS + 1):
-        iter_label = f"Review pass {iteration}" if iteration > 1 else "Review"
+        iter_label = f"Review Pass {iteration}"
         print(f"    [{iter_label}]")
 
         # In dry-run mode or when eval_text is provided, use it directly;
@@ -1100,12 +1114,9 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
             current_doc_text = rec["doc_text"] if rec else ""
 
         # Run automated verification on the current evaluation
-        print(f"      [Verify] Running verify-report.py...")
+        print(f"    [script] Running verify-report.py...")
         verify_output = run_verify_report(current_eval)
-        if verify_output:
-            # Show a short summary line
-            first_line = verify_output.split("\n")[0]
-            print(f"      [Verify] {first_line}")
+        print(f"    [script] Verify Output:\n      {"\n      ".join(verify_output.split("\n"))}\n")
 
         system_prompt = build_review_system_prompt()
         user_prompt = build_review_user_prompt(
@@ -1138,7 +1149,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
         # Log the changes section for debugging
         if changes_text:
-            print(f"      Changes summary:\n{changes_text}\n")
+            print(f"    [review] LLM Review Notes:\n      {"\n      ".join(changes_text.split("\n"))}\n")
 
         # Extract the regenerated report (between title and marker) for saving.
         # If no regenerated report was emitted, the LLM reported no changes and
@@ -1152,21 +1163,23 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         else:
             new_hl, new_ll, new_score = None, None, None
 
-        print(f"      Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
-        print(f"      Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
-        print(f"      Statement Changes reported: {'YES' if has_changes else 'NO'}")
-        print(f"      Valid New Report found:     {'YES' if updated_is_valid_report else 'NO'}")
+        print(f"    [review] Statement Changes reported: {'YES' if has_changes else 'NO'}")
+        print(f"    [review] Valid New Report found:     {'YES' if updated_is_valid_report else 'NO'}")
+        print(f"    [review] Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
+        print(f"    [review] Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
-        print(f"      LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
+        print(f"    [review] LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
 
         if updated_is_valid_report:
+            # use updated text for next iteration
+            eval_text = updated_eval
+            # save the valid report
             if not dry_run:
                 save_evaluation(args, doc_id, updated_eval, new_hl, new_ll, new_score)
-                print("      Saved updated evaluation + counts/score to database.")
-                print(f"      Updated evaluation length: {len(updated_eval)} chars")
+                print("    [review] Saved updated evaluation + counts/score to database.")
+                print(f"    [review] Updated evaluation length: {len(updated_eval)} chars")
             else:
-                print("      [DRY RUN] Would save updated evaluation + counts/score.")
-            eval_text = updated_eval  # use updated text for next iteration
+                print("    [DRY RUN] Would save updated evaluation + counts/score.")
         else:
             if not dry_run:
                 # Quick check to see if counts/score need to be corrected or filled in
@@ -1182,11 +1195,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
                 print("      [DRY RUN] Would skip evaluation + counts/score update (no valid eval text extracted).")
 
         if has_changes and iteration < MAX_REVIEW_ITERATIONS:
-            # Only save updated_eval if it is actually a valid report.
-            # parse_review_updated_eval already validates, but double-check here
-            # so a short validation message never overwrites the real report.
-            print(f"      -> Re-reviewing with same evaluation...")
-
+            print(f"      -> Re-reviewing with updated evaluation text...")
             orig_hl, orig_ll, orig_score = new_hl, new_ll, new_score
             final_hl, final_ll, final_score = new_hl, new_ll, new_score
             continue
@@ -1194,11 +1203,10 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         # No changes reported or last iteration — finalize
         final_hl, final_ll, final_score = new_hl, new_ll, new_score
         changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
-        if changed and not dry_run:
-            save_evaluation(args, doc_id, current_eval, new_hl, new_ll, new_score)
-            print(f"      Final: Updated database with counts/score.")
-        elif not dry_run:
-            print(f"      Final: No changes needed.")
+        if changed:
+            print(f"    [review] Final: WARNING - Last run still had different counts or score")
+        else:
+            print(f"    [review] Final: No statement changes made")
 
         # Verify
         if dry_run:
@@ -1206,9 +1214,9 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         else:
             record = load_record(args, doc_id)
             if record and record["evaluation"] is not None:
-                print(f"      Verified: evaluation present ({len(record['evaluation'])} chars)")
+                print(f"    [review] Verified: evaluation present ({len(record['evaluation'])} chars)")
             else:
-                print(f"      WARNING: evaluation missing after review")
+                print(f"    [review] WARNING: evaluation missing after review!")
 
         break
 
@@ -1249,9 +1257,9 @@ def process_records_interleaved(client, records, args):
 
         # --- Step 3: Evaluate (unless skipped) ---
         if skip_evaluation:
-            print(f"  [EVAL] SKIPPED (--skip-evaluation)")
+            print("  [eval] SKIPPED (--skip-evaluation)")
         else:
-            print(f"  [EVAL] Evaluating...")
+            print("  [eval] Evaluating...")
             er = _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, args)
             _, _, count_hl, count_ll, score, response, error, chat_result = er
             if chat_result:
@@ -1262,10 +1270,10 @@ def process_records_interleaved(client, records, args):
 
         # --- Step 4: Review (unless skipped) ---
         if skip_review:
-            print(f"  [REVW] SKIPPED (--skip-review)")
+            print("  [review] SKIPPED (--skip-review)")
             review_results.append((doc_id, doc_title, count_hl, count_ll, score, count_hl, count_ll, score, None))
         else:
-            print(f"  [REVW] Reviewing...")
+            print("  [review] Reviewing...\n")
             # If we skipped evaluation, parse counts from DB
             rev_orig_hl = count_hl
             rev_orig_ll = count_ll
@@ -1371,17 +1379,16 @@ def main():
     parser.add_argument("--reset", action="store_true", help="Reset evaluation data before processing")
     parser.add_argument("--reset-only", action="store_true", help="Only reset evaluation data and exit (no eval)")
     parser.add_argument("--where", default=None, help="SQL WHERE clause (without 'WHERE') to filter records")
-    parser.add_argument("--table", default=None, help="Table name to use (default: auto-detect if DB has exactly one table)")
-    parser.add_argument("--document-column", default="doc_text", help="Column containing the document text (default: doc_text)")
+    parser.add_argument("--table", default=None, help=f"Table name to use (default: exactly one table, '{DEFAULT_DOCUMENTS_TABLE}' if found, or must specify)")
+    parser.add_argument("--document-column", default=DEFAULT_DOCUMENT_COLUMN, help=f"Column containing the document text (default: {DEFAULT_DOCUMENT_COLUMN})")
     parser.add_argument("--detailed", action="store_true", help="Produce detailed evaluation reports (default: basic)")
 
     args = parser.parse_args()
 
     # Normalize --endpoint: if it's just an IP/host, build a full URL
-    DEFAULT_ENDPOINT = "http://127.0.0.1:1234/v1"
-    if not args.endpoint.startswith("http://") and not args.endpoint.startswith("https://"):
-        args.endpoint = f"http://{args.endpoint}:1234/v1"
-        print(f"[Config] Normalized endpoint to: {args.endpoint}")
+    if "://" not in args.endpoint:
+        args.endpoint = f"{DEFAULT_EP_NO_URL_PREFIX}{args.endpoint}{DEFAULT_EP_NO_URL_SUFFIX}"
+        print(f"Normalized endpoint to: {args.endpoint}")
 
     # Validate database path
     if not os.path.exists(args.db_path):
@@ -1390,7 +1397,7 @@ def main():
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    print(f"[DB] Connected to: {args.db_path}")
+    print(f"[db-init] Connected to: {args.db_path}")
 
     try:
         # Resolve table name
@@ -1400,15 +1407,19 @@ def main():
             tables = [row[0] for row in cursor.fetchall()]
             if len(tables) == 1:
                 args.table = tables[0]
-                print(f"[DB] Auto-detected table: {args.table}")
+                print(f"[db-init] Auto-detected single table: {args.table}")
             else:
-                # TODO: if one of the tables is called "documents" then use that one
-                print(f"ERROR: Database has {len(tables)} tables. Please specify one with --table.")
-                if tables:
-                    print(f"  Available tables: {', '.join(tables)}")
-                sys.exit(1)
+                # if one of the tables is DEFAULT_DOCUMENTS_TABLE then use that one
+                if tables and DEFAULT_DOCUMENTS_TABLE in tables:
+                    args.table = DEFAULT_DOCUMENTS_TABLE
+                    print(f"[db-init] Using default table name, was found in DB: {args.table}")
+                else:
+                    print(f"ERROR: Database has {len(tables)} tables. Please specify one with --table.")
+                    if tables:
+                        print(f"  Available tables: {', '.join(tables)}")
+                    sys.exit(1)
 
-        print(f"[DB] Document column: {args.document_column}")
+        print(f"[db-init] Document column: {args.document_column}")
 
         # Step 1: Discover schema
         discover_schema(conn, args)
@@ -1435,22 +1446,22 @@ def main():
             return
     finally:
         conn.close()
-        print(f"[DB] Connection closed")
+        print(f"[db-init] Connection closed")
 
     # From here use a DB connection per operation so file isn't left open for long periods
     # Initialize client (only needed if not skipping both phases)
     if args.skip_evaluation and args.skip_review:
         client = None
-        print("[Config] Skipping both evaluation and review — no client needed")
+        print("[llm] Skipping both evaluation and review — no client needed")
     elif args.stub:
         client = StubClient()
-        print(f"[Config] Using STUB client (constant responses)")
+        print(f"[llm] Using STUB client (constant responses)")
     else:
         if not args.endpoint:
             print("ERROR: --endpoint is required")
             sys.exit(1)
         client = OpenAIClient(args.endpoint, args.api_key, args.model)
-        print(f"[Config] Endpoint: {args.endpoint}, Model: {args.model}")
+        print(f"[llm] Endpoint: {args.endpoint}, Model: {args.model}")
     print()
 
     print(f"Processing {len(records)} records...")
