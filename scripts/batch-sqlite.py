@@ -1017,6 +1017,7 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, arg
 
     system_prompt = build_evaluation_system_prompt(detailed)
     user_prompt = build_evaluation_user_prompt(doc_text, doc_title)
+    logger.info("    [eval] Prompt Chars %s (system: %s, user: %s)", len(system_prompt) + len(user_prompt), len(system_prompt), len(user_prompt))
 
     # Start progress display immediately — timer ticks while waiting for first token
     _start_time = time.monotonic()
@@ -1101,15 +1102,11 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         # Run automated verification on the current evaluation
         logger.info("    [script] Running verify-report.py...")
         verify_output = run_verify_report(current_eval)
-        if verify_output:
-            logger.info("    [script] Verify Output:\n      %s", "\n      ".join(verify_output.split("\n")))
-        else:
-            logger.info("    [script] Verify Output: (none)")
+        logger.info("    [script] Verify Output:\n%s", verify_output if verify_output else "(none)")
 
         system_prompt = build_review_system_prompt()
-        user_prompt = build_review_user_prompt(
-            current_doc_text, current_eval, doc_title, verify_output=verify_output
-        )
+        user_prompt = build_review_user_prompt(current_doc_text, current_eval, doc_title, verify_output)
+        logger.info("    [review] Prompt Chars %s (system: %s, user: %s)", len(system_prompt) + len(user_prompt), len(system_prompt), len(user_prompt))
 
         # Start progress display immediately
         _rev_start = time.monotonic()
@@ -1136,8 +1133,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         has_changes = changes_text and parse_review_has_changes(changes_text)
 
         # Log the changes section for debugging
-        if changes_text:
-            logger.info("    [review] LLM Review Notes:\n      %s", "\n      ".join(changes_text.split("\n")))
+        logger.info("    [review] LLM Review Notes:\n%s", changes_text if changes_text else "(none)")
 
         # Extract the regenerated report (between title and marker) for saving.
         # If no regenerated report was emitted, the LLM reported no changes and
