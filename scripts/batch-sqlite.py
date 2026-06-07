@@ -1163,10 +1163,9 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         else:
             new_hl, new_ll, new_score = None, None, None
 
-        print(f"    [review] Statement Changes reported: {'YES' if has_changes else 'NO'}")
-        print(f"    [review] Valid New Report found:     {'YES' if updated_is_valid_report else 'NO'}")
-        print(f"    [review] Original: HL={orig_hl}, LL={orig_ll}, Score={orig_score}")
-        print(f"    [review] Updated:  HL={new_hl}, LL={new_ll}, Score={new_score}")
+        print(f"    [review] Valid New Report Generated? {'YES' if updated_is_valid_report else 'NO'} Statement Changes Reported? {'YES' if has_changes else 'NO'}")
+        print(f"    [review] Original: HL {orig_hl}, LL {orig_ll}, Score {orig_score}")
+        print(f"    [review] Updated:  HL {new_hl}, LL {new_ll}, Score {new_score}")
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
         print(f"    [review] LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
 
@@ -1461,7 +1460,7 @@ def main():
             print("ERROR: --endpoint is required")
             sys.exit(1)
         client = OpenAIClient(args.endpoint, args.api_key, args.model)
-        print(f"[llm] Endpoint: {args.endpoint}, Model: {args.model}")
+        print(f"[llm] Endpoint: {args.endpoint}, Model: {args.model if args.model else "(whatever is loaded or default...)"}")
     print()
 
     print(f"Processing {len(records)} records...")
