@@ -35,6 +35,7 @@ Options:
 
 import argparse
 import json
+import logging
 import os
 import re
 import shutil
@@ -47,6 +48,40 @@ import time
 import urllib.error
 import urllib.request
 from typing import Callable, NamedTuple, Optional
+
+logger = logging.getLogger("batch-sqlite")
+
+
+def setup_logging(db_path: str) -> None:
+    """Configure logging to write to both stdout and a file derived from db_path.
+
+    The log file is named by replacing the .db extension with .eval.log.
+    E.g.  /path/to/foo.db  ->  /path/to/foo.eval.log
+    """
+    # Build log file path
+    base, _ = os.path.splitext(db_path)
+    log_file = base + ".eval.log"
+
+    root = logging.getLogger("batch-sqlite")
+    root.setLevel(logging.DEBUG)
+
+    # Prevent duplicate handlers on repeated calls
+    if root.handlers:
+        return
+
+    fmt = logging.Formatter("%(asctime)s  %(levelname)-7s  %(message)s", datefmt="%H:%M:%S")
+
+    # stdout handler — INFO and above
+    sh = logging.StreamHandler(sys.stdout)
+    sh.setLevel(logging.INFO)
+    sh.setFormatter(fmt)
+    root.addHandler(sh)
+
+    # file handler — DEBUG and above
+    fh = logging.FileHandler(log_file, mode="a", encoding="utf-8")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(fmt)
+    root.addHandler(fh)
 
 
 # ---------------------------------------------------------------------------
@@ -515,7 +550,7 @@ def _read_skill_file(relative_path):
     """Read a file from the skill directory."""
     path = os.path.join(_SKILL_DIR, relative_path)
     if not os.path.exists(path):
-        print(f"WARNING: Skill file not found: {path}")
+        logger.warning("Skill file not found: %s", path)
         return ""
     with open(path, "r", encoding="utf-8") as fl:
         return fl.read()
@@ -620,7 +655,7 @@ def run_verify_report(evaluation_text):
     verify_script = os.path.join(script_dir, "verify-report.py")
 
     if not os.path.exists(verify_script):
-        print(f"    [script] Script not found: {verify_script} — skipping")
+        logger.info("    [script] Script not found: %s — skipping", verify_script)
         return None
 
     try:
@@ -647,10 +682,10 @@ def run_verify_report(evaluation_text):
             except OSError:
                 pass
     except subprocess.TimeoutExpired:
-        print(f"    [script] verify-report.py timed out — skipping")
+        logger.warning("    [script] verify-report.py timed out — skipping")
         return None
     except Exception as exc:
-        print(f"    [script] Error running verify-report.py: {exc} — skipping")
+        logger.warning("    [script] Error running verify-report.py: %s — skipping", exc)
         return None
 
 
@@ -767,22 +802,20 @@ def discover_schema(conn, args):
     )
     row = cursor.fetchone()
     if not row:
-        print(f"ERROR: Table '{args.table}' not found in the database.")
+        logger.error("Table '%s' not found in the database.", args.table)
         sys.exit(1)
     schema = row[0]
-    print("[db-init] Schema discovered:")
-    print(schema)
-    print()
+    logger.info("[db-init] Schema discovered:")
+    logger.info(schema)
 
     # Verify required columns exist
     required = {"id", args.document_column, "evaluation", "count_hl", "count_ll", "score"}
     found = {m[0] for m in re.findall(r"(\w+)\s+(TEXT|INTEGER|REAL)", schema, re.IGNORECASE)}
     missing = required - found
     if missing:
-        print(f"[db-init] ERROR: Missing required columns: {missing}")
+        logger.error("[db-init] Missing required columns: %s", missing)
         sys.exit(1)
-    print(f"[db-init] All required columns present: {required}")
-    print()
+    logger.info("[db-init] All required columns present: %s", required)
     return schema
 
 
@@ -802,12 +835,12 @@ def preview_records(conn, args, limit=None, start_id=None, where_clause=None):
     cursor.execute(f"SELECT COUNT(*) FROM {args.table} WHERE evaluation IS NULL")
     unevaluated = cursor.fetchone()[0]
 
-    print("Record preview:")
-    print(f"  ID range: {min_id} - {max_id}")
-    print(f"  Total records: {total}")
-    print(f"  Text lengths: avg={avg_len:.0f}, min={min_len}, max={max_len}")
-    print(f"  Already evaluated: {evaluated}")
-    print(f"  Unevaluated: {unevaluated}")
+    logger.info("Record preview:")
+    logger.info("  ID range: %s - %s", min_id, max_id)
+    logger.info("  Total records: %s", total)
+    logger.info("  Text lengths: avg=%.0f, min=%s, max=%s", avg_len, min_len, max_len)
+    logger.info("  Already evaluated: %s", evaluated)
+    logger.info("  Unevaluated: %s", unevaluated)
 
     # Determine which records to process
     conditions = []
@@ -829,8 +862,7 @@ def preview_records(conn, args, limit=None, start_id=None, where_clause=None):
     if limit and limit < eligible:
         eligible = limit
 
-    print(f"  Records to process: {eligible}")
-    print()
+    logger.info("  Records to process: %s", eligible)
 
     return min_id, max_id, total
 
@@ -843,8 +875,7 @@ def reset_evaluations(conn, args, where_clause=None):
         query += f" WHERE {where_clause}"
     cursor.execute(query)
     conn.commit()
-    print(f"[Reset] Cleared evaluations for {cursor.rowcount} records.")
-    print()
+    logger.info("[Reset] Cleared evaluations for %s records.", cursor.rowcount)
 
 
 def get_records_to_process(conn, args):
@@ -886,7 +917,7 @@ def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    print(f"    [db-save] Connected to: {args.db_path}")
+    logger.debug("[db-save] Connected to: %s", args.db_path)
 
     try:
         cursor = conn.cursor()
@@ -912,7 +943,7 @@ def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
         conn.commit()
     finally:
         conn.close()
-        print(f"    [db-save] Connection closed")
+        logger.debug("[db-save] Connection closed")
 
 
 def load_record(args, doc_id):
@@ -920,7 +951,7 @@ def load_record(args, doc_id):
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    print(f"    [db-load] Connected to: {args.db_path}")
+    logger.debug("[db-load] Connected to: %s", args.db_path)
 
     try:
         cursor = conn.cursor()
@@ -934,7 +965,7 @@ def load_record(args, doc_id):
         return {"id": row[0], "doc_title": row[1], "doc_text": row[2], "evaluation": row[3]}
     finally:
         conn.close()
-        print(f"    [db-load] Connection closed")
+        logger.debug("[db-load] Connection closed")
 
 
 # ---------------------------------------------------------------------------
@@ -960,16 +991,19 @@ def _accumulate_stats(stats, result):
 
 def _stats_summary(name, stats, record_count):
     """Print a phase summary from accumulated stats."""
-    print(f"[{name}] {name} Complete")
-    print(f"  Records processed: {record_count}")
-    print(f"  Total time:        {time.monotonic() - stats['phase_start']:.1f}s")
-    print(f"  {name} time:   {stats['total_elapsed']:.1f}s")
+    logger.info("[%s] %s Complete", name, name)
+    logger.info("  Records processed: %s", record_count)
+    logger.info("  Total time:        %.1fs", time.monotonic() - stats['phase_start'])
+    logger.info("  %s time:   %.1fs", name, stats['total_elapsed'])
     if record_count > 1:
-        print(f"  Avg time/rec:      {stats['total_elapsed'] / record_count:.1f}s")
+        logger.info("  Avg time/rec:      %.1fs", stats['total_elapsed'] / record_count)
     # completion {stats['total_completion_tokens']} total {stats['total_tokens']}
-    print(f"  Tokens:            prompt {stats['total_prompt_tokens']} reasoning {stats['total_reasoning_tokens']} output {stats['total_output_tokens']}")
+    logger.info("  Tokens:            prompt %s reasoning %s output %s",
+                stats['total_prompt_tokens'], stats['total_reasoning_tokens'], stats['total_output_tokens'])
     if stats["total_generation_time"]:
-        print(f"  Tokens/Second:     output: {(stats['total_output_tokens'] / stats['total_generation_time']):.1f} (in {stats['total_generation_time']:.1f}s)")
+        logger.info("  Tokens/Second:     output: %.1f (in %.1fs)",
+                     stats['total_output_tokens'] / stats['total_generation_time'],
+                     stats['total_generation_time'])
 
 
 def _empty_stats():
@@ -994,36 +1028,38 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, arg
     except RuntimeError as exc:
         stop_wait_timer()
         print_progress_done()
-        print(f"    ERROR: {exc}")
+        logger.error("    %s", exc)
         return (doc_id, doc_title, None, None, None, None, str(exc), None)
 
     stop_wait_timer()
     print_progress_done()
 
     output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
-    print(f"    [eval] LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
+    logger.info("    [eval] LLM API Call: %.1fs | prompt tokens: %s reasoning: %s output: %s completion: %s total: %s",
+                result.elapsed, result.prompt_tokens, result.reasoning_tokens,
+                output_tokens, result.completion_tokens, result.total_tokens)
 
     eval_report = result.content.lstrip() if result.content else None
     if not eval_report:
-        print("    WARNING: No evaluation report returned")
+        logger.warning("    No evaluation report returned")
         return (doc_id, doc_title, None, None, None, None, "Empty Response", None)
 
     count_hl, count_ll, score = parse_evaluation_report(eval_report)
-    print(f"    [eval] Result: HL={count_hl}, LL={count_ll}, Score={score}")
+    logger.info("    [eval] Result: HL=%s, LL=%s, Score=%s", count_hl, count_ll, score)
 
     if dry_run:
         return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
 
     # Save
     save_evaluation(args, doc_id, eval_report, count_hl, count_ll, score)
-    print(f"    [eval] Saved evaluation, counts, and score to database ({len(eval_report)} chars)")
+    logger.info("    [eval] Saved evaluation, counts, and score to database (%s chars)", len(eval_report))
 
     # Verify
     record = load_record(args, doc_id)
     if record and record["evaluation"] is not None:
-        print(f"    [eval] Verified: evaluation populated ({len(record['evaluation'])} chars)")
+        logger.info("    [eval] Verified: evaluation populated (%s chars)", len(record['evaluation']))
     else:
-        print(f"    [eval] WARNING: evaluation not found in database after save")
+        logger.warning("    [eval] evaluation not found in database after save")
 
     return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
 
@@ -1042,7 +1078,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
     for iteration in range(1, MAX_REVIEW_ITERATIONS + 1):
         iter_label = f"Review Pass {iteration}"
-        print(f"    [{iter_label}]")
+        logger.info("    [%s]", iter_label)
 
         # In dry-run mode or when eval_text is provided, use it directly;
         # otherwise reload from DB (may have been updated by previous iteration)
@@ -1052,7 +1088,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         else:
             record = load_record(args, doc_id)
             if not record or record["evaluation"] is None:
-                print(f"      ERROR: evaluation lost during re-review")
+                logger.error("      evaluation lost during re-review")
                 final_error = "Evaluation lost during re-review"
                 break
             current_eval = record["evaluation"]
@@ -1063,9 +1099,12 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
             current_doc_text = rec["doc_text"] if rec else ""
 
         # Run automated verification on the current evaluation
-        print(f"    [script] Running verify-report.py...")
+        logger.info("    [script] Running verify-report.py...")
         verify_output = run_verify_report(current_eval)
-        print(f"    [script] Verify Output:\n      {"\n      ".join(verify_output.split("\n"))}\n")
+        if verify_output:
+            logger.info("    [script] Verify Output:\n      %s", "\n      ".join(verify_output.split("\n")))
+        else:
+            logger.info("    [script] Verify Output: (none)")
 
         system_prompt = build_review_system_prompt()
         user_prompt = build_review_user_prompt(
@@ -1082,7 +1121,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         except RuntimeError as exc:
             stop_wait_timer()
             print_progress_done()
-            print(f"      ERROR: {exc}")
+            logger.error("      %s", exc)
             final_error = str(exc)
             break
 
@@ -1098,7 +1137,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
         # Log the changes section for debugging
         if changes_text:
-            print(f"    [review] LLM Review Notes:\n      {"\n      ".join(changes_text.split("\n"))}\n")
+            logger.info("    [review] LLM Review Notes:\n      %s", "\n      ".join(changes_text.split("\n")))
 
         # Extract the regenerated report (between title and marker) for saving.
         # If no regenerated report was emitted, the LLM reported no changes and
@@ -1112,19 +1151,23 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         else:
             new_hl, new_ll, new_score = None, None, None
 
-        print(f"    [review] Valid New Report Generated? {'YES' if updated_is_valid_report else 'NO'}. Statement Changes Reported? {'YES' if has_changes else 'NO'}.")
-        print(f"    [review] Original: HL {orig_hl}, LL {orig_ll}, Score {orig_score}")
-        print(f"    [review] Updated:  HL {new_hl}, LL {new_ll}, Score {new_score}")
+        logger.info("    [review] Valid New Report Generated? %s. Statement Changes Reported? %s.",
+                     "YES" if updated_is_valid_report else "NO",
+                     "YES" if has_changes else "NO")
+        logger.info("    [review] Original: HL %s, LL %s, Score %s", orig_hl, orig_ll, orig_score)
+        logger.info("    [review] Updated:  HL %s, LL %s, Score %s", new_hl, new_ll, new_score)
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
-        print(f"    [review] LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
+        logger.info("    [review] LLM API Call: %.1fs | prompt tokens: %s reasoning: %s output: %s completion: %s total: %s",
+                     result.elapsed, result.prompt_tokens, result.reasoning_tokens,
+                     output_tokens, result.completion_tokens, result.total_tokens)
 
         if updated_is_valid_report:
             # save the valid report
             if not dry_run:
                 save_evaluation(args, doc_id, updated_eval, new_hl, new_ll, new_score)
-                print(f"    [review] Saved updated evaluation + counts/score to database. Evaluation length: {len(updated_eval)} chars")
+                logger.info("    [review] Saved updated evaluation + counts/score to database. Evaluation length: %d chars", len(updated_eval) if updated_eval else 0)
             else:
-                print("    [DRY RUN] Would save updated evaluation + counts/score.")
+                logger.info("    [DRY RUN] Would save updated evaluation + counts/score.")
         else:
             if not dry_run:
                 # Quick check to see if counts/score need to be corrected or filled in
@@ -1132,12 +1175,13 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
                 if ((new_hl and new_hl != orig_hl) or (new_ll and new_ll != orig_ll) or (new_score and new_score != orig_score)):
                     # NOTE: this relies on save_evalution() remaining "safe" and not nulling columns with None value
                     save_evaluation(args, doc_id, None, new_hl, new_ll, new_score)
-                    print("      Skipped evaluation update (no valid eval text extracted).")
-                    print(f"      NOTE: Saved corrected counts/score from current report text, DB values were not correct: DB HL={orig_hl}, LL={orig_ll}, Score={orig_score} REPORT HL={new_hl}, LL={new_ll}, Score={new_score}")
+                    logger.info("      Skipped evaluation update (no valid eval text extracted).")
+                    logger.info("      NOTE: Saved corrected counts/score from current report text, DB values were not correct: DB HL=%s, LL=%s, Score=%s REPORT HL=%s, LL=%s, Score=%s",
+                                orig_hl, orig_ll, orig_score, new_hl, new_ll, new_score)
                 else:
-                    print("      Skipped evaluation + counts/score update (no valid eval text extracted).")
+                    logger.info("      Skipped evaluation + counts/score update (no valid eval text extracted).")
             else:
-                print("      [DRY RUN] Would skip evaluation + counts/score update (no valid eval text extracted).")
+                logger.info("      [DRY RUN] Would skip evaluation + counts/score update (no valid eval text extracted).")
 
         if has_changes and iteration < MAX_REVIEW_ITERATIONS:
             orig_hl, orig_ll, orig_score = new_hl, new_ll, new_score
@@ -1145,28 +1189,28 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
             if updated_is_valid_report:
                 # use updated text for next iteration
                 eval_text = updated_eval
-                print(f"      -> Re-reviewing with updated evaluation report...")
+                logger.info("      -> Re-reviewing with updated evaluation report...")
             else:
-                print(f"      -> Re-reviewing with the SAME evaluation text (no valid report found)...")
+                logger.info("      -> Re-reviewing with the SAME evaluation text (no valid report found)...")
             continue
 
         # No changes reported or last iteration — finalize
         final_hl, final_ll, final_score = new_hl, new_ll, new_score
         changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
         if changed:
-            print(f"    [review] Final: WARNING - Last run still had different counts or score")
+            logger.warning("    [review] Final: WARNING - Last run still had different counts or score")
         else:
-            print(f"    [review] Final: No statement changes made")
+            logger.info("    [review] Final: No statement changes made")
 
         # Verify
         if dry_run:
-            print(f"      [DRY RUN] Would verify evaluation in database.")
+            logger.info("      [DRY RUN] Would verify evaluation in database.")
         else:
             record = load_record(args, doc_id)
             if record and record["evaluation"] is not None:
-                print(f"    [review] Verified: evaluation present ({len(record['evaluation'])} chars)")
+                logger.info("    [review] Verified: evaluation present (%s chars)", len(record['evaluation']))
             else:
-                print(f"    [review] WARNING: evaluation missing after review!")
+                logger.warning("    [review] evaluation missing after review!")
 
         break
 
@@ -1191,39 +1235,39 @@ def process_records_interleaved(client, records, args):
     eval_stats = _empty_stats()
     review_stats = _empty_stats()
 
-    print("=" * 60)
-    print("Interleaved Evaluation + Review")
-    print("=" * 60)
-    print(f"  Records: {len(records)}")
-    print(f"  Report type: {'detailed' if detailed else 'basic'}")
-    print(f"  Skip evaluation: {skip_evaluation}")
-    print(f"  Skip review: {skip_review}")
-    print()
+    logger.info("=" * 60)
+    logger.info("Interleaved Evaluation + Review")
+    logger.info("=" * 60)
+    logger.info("  Records: %s", len(records))
+    logger.info("  Report type: %s", "detailed" if detailed else "basic")
+    logger.info("  Skip evaluation: %s", skip_evaluation)
+    logger.info("  Skip review: %s", skip_review)
+    logger.info("")
 
     for idx, (doc_id, doc_title, doc_text) in enumerate(records, 1):
-        print(f"[{idx}/{len(records)}] ID={doc_id}: {doc_title}")
+        logger.info("[%s/%s] ID=%s: %s", idx, len(records), doc_id, doc_title)
 
         response = None  # set by eval step, used by review step
 
         # --- Step 3: Evaluate (unless skipped) ---
         if skip_evaluation:
-            print("  [eval] SKIPPED (--skip-evaluation)")
+            logger.info("  [eval] SKIPPED (--skip-evaluation)")
         else:
-            print("  [eval] Evaluating...")
+            logger.info("  [eval] Evaluating...")
             er = _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, args)
             _, _, count_hl, count_ll, score, response, error, chat_result = er
             if chat_result:
                 _accumulate_stats(eval_stats, chat_result)
             eval_results.append((doc_id, doc_title, count_hl, count_ll, score, response, error))
 
-        print()
+        logger.info("")
 
         # --- Step 4: Review (unless skipped) ---
         if skip_review:
-            print("  [review] SKIPPED (--skip-review)")
+            logger.info("  [review] SKIPPED (--skip-review)")
             review_results.append((doc_id, doc_title, count_hl, count_ll, score, count_hl, count_ll, score, None))
         else:
-            print("  [review] Reviewing...\n")
+            logger.info("  [review] Reviewing...")
             # If we skipped evaluation, parse counts from DB
             rev_orig_hl = count_hl
             rev_orig_ll = count_ll
@@ -1234,7 +1278,7 @@ def process_records_interleaved(client, records, args):
                     rev_orig_hl, rev_orig_ll, rev_orig_score = parse_evaluation_report(record["evaluation"])
 
             if rev_orig_hl is None:
-                print(f"    SKIPPED: No evaluation found for ID={doc_id}")
+                logger.info("    SKIPPED: No evaluation found for ID=%s", doc_id)
                 review_results.append((doc_id, doc_title, None, None, None, None, None, None, "No evaluation"))
             else:
                 # Pass evaluation text directly to review (avoids DB round-trip)
@@ -1249,33 +1293,30 @@ def process_records_interleaved(client, records, args):
                     _accumulate_stats(review_stats, chat_result)
                 review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
 
-        print()
+        logger.info("")
 
     # Print summaries
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
     if not skip_evaluation:
         _stats_summary("Evaluation", eval_stats, len([r for r in eval_results if r[6] is None]))
-        print("=" * 60)
-        print()
+        logger.info("=" * 60)
     if not skip_review:
         _stats_summary("Review", review_stats, len([r for r in review_results if r[8] is None]))
-        print("=" * 60)
-        print()
+        logger.info("=" * 60)
 
     return eval_results, review_results
 
 
 def step5_report(eval_results, review_results):
     """Step 5: Report summary."""
-    print("=" * 60)
-    print("Summary Report")
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
+    logger.info("Summary Report")
+    logger.info("=" * 60)
+    logger.info("")
 
-    print("EVALUATION RESULTS:")
-    print(f"  {'ID':>6}  {'Title':<50}  {'HL':>3}  {'LL':>3}  {'Score':>6}  {'Error'}")
-    print("  " + "-" * 100)
+    logger.info("EVALUATION RESULTS:")
+    logger.info("  %6s  %-50s  %3s  %3s  %6s  %s", "ID", "Title", "HL", "LL", "Score", "Error")
+    logger.info("  " + "-" * 100)
     for r in eval_results:
         doc_id, doc_title, hl, ll, score, _, error = r[0], r[1], r[2], r[3], r[4], r[5], r[6]
         title_display = doc_title[:48] if doc_title else "N/A"
@@ -1283,13 +1324,14 @@ def step5_report(eval_results, review_results):
         ll_str = str(ll) if ll is not None else "N/A"
         score_str = f"{score:.1f}" if score is not None else "N/A"
         error_str = error[:20] if error else ""
-        print(f"  {doc_id:>6}  {title_display:<50}  {hl_str:>3}  {ll_str:>3}  {score_str:>6}  {error_str}")
+        logger.info("  %6s  %-50s  %3s  %3s  %6s  %s", doc_id, title_display, hl_str, ll_str, score_str, error_str)
 
     if review_results:
-        print()
-        print("REVIEW RESULTS:")
-        print(f"  {'ID':>6}  {'Title':<50}  {'Orig HL':>7}  {'Orig LL':>7}  {'Orig Score':>10}  {'New HL':>6}  {'New LL':>6}  {'New Score':>9}  {'Error'}")
-        print("  " + "-" * 130)
+        logger.info("")
+        logger.info("REVIEW RESULTS:")
+        logger.info("  %6s  %-50s  %7s  %7s  %10s  %6s  %6s  %9s  %s",
+                     "ID", "Title", "Orig HL", "Orig LL", "Orig Score", "New HL", "New LL", "New Score", "Error")
+        logger.info("  " + "-" * 130)
         for r in review_results:
             doc_id = r[0]
             doc_title = r[1] if len(r) > 1 else ""
@@ -1302,10 +1344,11 @@ def step5_report(eval_results, review_results):
             new_score = f"{r[7]:.1f}" if r[7] is not None else "N/A"
             error = r[8] if len(r) > 8 and r[8] else ""
             error_str = error[:15] if error else ""
-            print(f"  {doc_id:>6}  {title_display:<45}  {orig_hl:>7}  {orig_ll:>7}  {orig_score:>10}  {new_hl:>6}  {new_ll:>6}  {new_score:>9}  {error_str}")
+            logger.info("  %6s  %-50s  %7s  %7s  %10s  %6s  %6s  %9s  %s",
+                         doc_id, title_display, orig_hl, orig_ll, orig_score, new_hl, new_ll, new_score, error_str)
 
-    print()
-    print("Workflow complete.")
+    logger.info("")
+    logger.info("Workflow complete.")
 
 
 # ---------------------------------------------------------------------------
@@ -1335,19 +1378,22 @@ def main():
 
     args = parser.parse_args()
 
+    # Setup logging before any output
+    setup_logging(args.db_path)
+
     # Normalize --endpoint: if it's just an IP/host, build a full URL
     if "://" not in args.endpoint:
         args.endpoint = f"{DEFAULT_EP_NO_URL_PREFIX}{args.endpoint}{DEFAULT_EP_NO_URL_SUFFIX}"
-        print(f"Normalized endpoint to: {args.endpoint}")
+        logger.info("Normalized endpoint to: %s", args.endpoint)
 
     # Validate database path
     if not os.path.exists(args.db_path):
-        print(f"ERROR: Database not found: {args.db_path}")
+        logger.error("Database not found: %s", args.db_path)
         sys.exit(1)
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
-    print(f"[db-init] Connected to: {args.db_path}")
+    logger.info("[db-init] Connected to: %s", args.db_path)
 
     try:
         # Resolve table name
@@ -1357,19 +1403,19 @@ def main():
             tables = [row[0] for row in cursor.fetchall()]
             if len(tables) == 1:
                 args.table = tables[0]
-                print(f"[db-init] Auto-detected single table: {args.table}")
+                logger.info("[db-init] Auto-detected single table: %s", args.table)
             else:
                 # if one of the tables is DEFAULT_DOCUMENTS_TABLE then use that one
                 if tables and DEFAULT_DOCUMENTS_TABLE in tables:
                     args.table = DEFAULT_DOCUMENTS_TABLE
-                    print(f"[db-init] Using default table name, was found in DB: {args.table}")
+                    logger.info("[db-init] Using default table name, was found in DB: %s", args.table)
                 else:
-                    print(f"ERROR: Database has {len(tables)} tables. Please specify one with --table.")
+                    logger.error("Database has %d tables. Please specify one with --table.", len(tables))
                     if tables:
-                        print(f"  Available tables: {', '.join(tables)}")
+                        logger.error("  Available tables: %s", ", ".join(tables))
                     sys.exit(1)
 
-        print(f"[db-init] Document column: {args.document_column}")
+        logger.info("[db-init] Document column: %s", args.document_column)
 
         # Step 1: Discover schema
         discover_schema(conn, args)
@@ -1382,40 +1428,38 @@ def main():
             if not args.dry_run:
                 reset_evaluations(conn, args, where_clause=args.where)
             else:
-                print("[Dry-run] Would reset evaluations.")
-                print()
+                logger.info("[Dry-run] Would reset evaluations.")
 
             if args.reset_only:
-                print("Reset complete. Exiting.")
+                logger.info("Reset complete. Exiting.")
                 return
 
         # Get records to process
         records = get_records_to_process(conn, args)
         if not records:
-            print("No records to process.")
+            logger.info("No records to process.")
             return
     finally:
         conn.close()
-        print(f"[db-init] Connection closed")
+        logger.info("[db-init] Connection closed")
 
     # From here use a DB connection per operation so file isn't left open for long periods
     # Initialize client (only needed if not skipping both phases)
     if args.skip_evaluation and args.skip_review:
         client = None
-        print("[llm] Skipping both evaluation and review — no client needed")
+        logger.info("[llm] Skipping both evaluation and review — no client needed")
     elif args.stub:
         client = StubClient()
-        print(f"[llm] Using STUB client (constant responses)")
+        logger.info("[llm] Using STUB client (constant responses)")
     else:
         if not args.endpoint:
-            print("ERROR: --endpoint is required")
+            logger.error("--endpoint is required")
             sys.exit(1)
         client = OpenAIClient(args.endpoint, args.api_key, args.model)
-        print(f"[llm] Endpoint: {args.endpoint}, Model: {args.model if args.model else "(whatever is loaded or default...)"}")
-    print()
+        logger.info("[llm] Endpoint: %s, Model: %s", args.endpoint, args.model if args.model else "(whatever is loaded or default...)")
 
-    print(f"Processing {len(records)} records...")
-    print()
+    logger.info("")
+    logger.info("Processing %s records...", len(records))
 
     # Step 3/4: Interleaved evaluation + review per record
     eval_results, review_results = process_records_interleaved(client, records, args)
