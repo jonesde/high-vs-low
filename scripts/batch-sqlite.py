@@ -67,6 +67,8 @@ DEFAULT_COUNT_HL_COLUMN = "count_hl"
 DEFAULT_COUNT_LL_COLUMN = "count_ll"
 DEFAULT_SCORE_COLUMN = "score"
 
+_REPORT_TITLE_PREFIX = "# High Law vs Low Law Alignment Evaluation"
+
 # ---------------------------------------------------------------------------
 # Stubs for --stubs
 # ---------------------------------------------------------------------------
@@ -693,30 +695,9 @@ def parse_evaluation_report(report_text):
     return count_hl, count_ll, score
 
 
-def parse_review_result(review_text):
-    """Extract updated counts from a review result.
-
-    Parses the regenerated evaluation report (between the title and
-    EVAL_REPORT_END_MARKER).  The CHANGES SUMMARY section is NOT used — the
-    LLM frequently miscounts there.  The actual statement tables in the
-    regenerated report are the authoritative source.
-
-    Returns (hl, ll, score) from the regenerated report, or (None, None, None)
-    if no regenerated report is present (LLM reported no changes).
-    """
-    updated_eval = parse_review_updated_eval(review_text)
-    if updated_eval is not None:
-        return parse_evaluation_report(updated_eval)
-
-    return None, None, None
-
-
 def parse_review_has_changes(changes_text):
     """Check if the LLM self-reported adding, moving, or removing statements."""
     return ("STATEMENTS_ADDED" in changes_text or "STATEMENTS_MOVED" in changes_text or "STATEMENTS_REMOVED" in changes_text)
-
-
-_REPORT_TITLE_PREFIX = "# High Law vs Low Law Alignment Evaluation"
 
 
 def _is_valid_report(text):
@@ -726,8 +707,6 @@ def _is_valid_report(text):
       1. The text contains "# High Law vs Low Law Alignment Evaluation"
          (after stripping leading whitespace the first line must start with it)
       2. Somewhere in the text "## Scoring Summary" is present
-
-    Returns True only if BOTH conditions are met.
     """
     if not text:
         return False
@@ -745,10 +724,6 @@ def parse_review_updated_eval(review_text):
     Looks for the EVAL_REPORT_END_MARKER emitted by the LLM after the regenerated
     report.  Everything between the evaluation title line and that marker is the
     updated report.
-
-    Only returns the extracted text if it passes _is_valid_report (contains both
-    the report title header and the Scoring Summary section).  If the LLM emitted
-    the marker but only a short validation message, returns None.
     """
     # Find the marker
     marker_pos = review_text.find(EVAL_REPORT_END_MARKER)
@@ -907,12 +882,7 @@ def get_records_to_process(conn, args):
 
 
 def save_evaluation(args, doc_id, evaluation, count_hl, count_ll, score):
-    """Save evaluation results to the database.
-
-    Safe partial update — only columns whose corresponding parameter is not None
-    are included in the SET clause, so existing values are never accidentally
-    nulled out.
-    """
+    """Save evaluation results to the database. Safe partial update — only columns whose corresponding parameter is not None"""
 
     # Connect to database
     conn = sqlite3.connect(args.db_path)
