@@ -203,9 +203,9 @@ def print_progress(char_count: int, content_so_far: str, start_time: float) -> N
     secs = int(elapsed) % 60
     # Left side: "MM:SS thinking..." while waiting, then "MM:SS NNN tokens | "
     if char_count == 0:
-        left = f"{mins:02d}:{secs:02d} reasoning... | "
+        left = f" {mins:02d}:{secs:02d} (reading & reasoning...) | "
     else:
-        left = f"{mins:02d}:{secs:02d} chars {char_count} | "
+        left = f" {mins:02d}:{secs:02d} chars {char_count} | "
     # Available space for text (leave 1 char margin)
     text_width = max(10, term_width - len(left) - 1)
     # Collapse newlines so embedded \n don't break the single-line display
@@ -546,6 +546,16 @@ def build_evaluation_system_prompt(is_detailed):
     return skill_md + instructions
 
 
+def build_evaluation_user_prompt(doc_text, doc_title):
+    return f"""Evaluate the following document{" titled \"" + doc_title + "\"" if doc_title else ""} for High Law vs Low Law Alignment.
+--- BEGIN Document Text ---
+{doc_text}
+--- END Document Text ---
+
+Produce the evaluation report by following the instructions in the **high-vs-low** skill.
+"""
+
+
 def build_review_system_prompt():
     """Build review system prompt: SKILL.md + review checklist + minimal instructions."""
     skill_md = _read_skill_file("SKILL.md")
@@ -574,40 +584,27 @@ def build_review_system_prompt():
     return skill_md + "\n" + review_md + instructions
 
 
-def build_evaluation_user_prompt(doc_text, doc_title):
-    return f"""Evaluate the following document for High Law vs Low Law alignment.
-Document Text:
----
-{doc_text}
----
-
-Produce the evaluation report as specified."""
-
-
 def build_review_user_prompt(doc_text, evaluation, doc_title, verify_output=None):
     verify_section = ""
     if verify_output is not None:
         verify_section = f"""
----
-Automated Verification Report:
----
+--- BEGIN Automated Evaluation Verify Report ---
 {verify_output}
----
+--- END Automated Evaluation Verify Report ---
 
 """
-    return f"""Review the following evaluation report for the document titled "{doc_title}".
-Original Document Text:
----
+    return f"""Review the following evaluation report for this original document{", titled \"" + doc_title + "\"" if doc_title else ""}:
+--- BEGIN Original Document Text ---
 {doc_text}
----
+--- END Original Document Text ---
 
-Existing Evaluation Report:
----
+--- BEGIN Evaluation Report ---
 {evaluation}
----
-{verify_section}Review the evaluation for accuracy, completeness, and consistency.
-If the Automated Verification Report above lists any issues, prioritize fixing those first.
-Report original and updated counts."""
+--- END Evaluation Report ---
+
+{verify_section}
+Review the Evaluation Report of the Original Document Text by following the instructions in "high-vs-low Evaluation Report Review Checklist".
+"""
 
 
 def run_verify_report(evaluation_text):
@@ -742,22 +739,6 @@ def _is_valid_report(text):
     return True
 
 
-def _trim_to_report_header(text):
-    """Strip all characters before the report title header.
-
-    Finds the first occurrence of "# High Law vs Low Law Alignment Evaluation"
-    in the text and returns the substring starting from that "#".  This enforces
-    the report template spec that the title header is the very first thing in
-    the report.
-
-    Returns the trimmed text, or the original text if the header is not found.
-    """
-    idx = text.find(_REPORT_TITLE_PREFIX)
-    if idx == -1:
-        return text
-    return text[idx:]
-
-
 def parse_review_updated_eval(review_text):
     """Extract the full updated evaluation report text from the review response.
 
@@ -778,14 +759,12 @@ def parse_review_updated_eval(review_text):
     # preamble).  Trim to the report title header so "#" is the first character,
     # enforcing the template spec.
     before_marker = review_text[:marker_pos]
-    candidate = _trim_to_report_header(before_marker)
 
-    # If the header was found, candidate now starts with "# High Law ...".
-    # If not, candidate == before_marker and will fail _is_valid_report below.
-    if _is_valid_report(candidate):
-        return candidate
-
-    return None
+    # Strip all characters before the report title header, if found
+    idx = before_marker.find(_REPORT_TITLE_PREFIX)
+    if idx == -1:
+        return before_marker
+    return before_marker[idx:].strip()
 
 
 def parse_review_changes_section(review_text):
@@ -797,7 +776,7 @@ def parse_review_changes_section(review_text):
     """
     marker_pos = review_text.find(EVAL_REPORT_END_MARKER)
     if marker_pos == -1:
-        return ""
+        return review_text
     return review_text[marker_pos + len(EVAL_REPORT_END_MARKER):].strip()
 
 
@@ -1067,7 +1046,7 @@ def _evaluate_record(client, doc_id, doc_title, doc_text, dry_run, detailed, arg
 
     # Save
     save_evaluation(args, doc_id, eval_report, count_hl, count_ll, score)
-    print("    [eval] Saved to database.")
+    print(f"    [eval] Saved evaluation, counts, and score to database ({len(eval_report)} chars)")
 
     # Verify
     record = load_record(args, doc_id)
@@ -1163,20 +1142,17 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         else:
             new_hl, new_ll, new_score = None, None, None
 
-        print(f"    [review] Valid New Report Generated? {'YES' if updated_is_valid_report else 'NO'} Statement Changes Reported? {'YES' if has_changes else 'NO'}")
+        print(f"    [review] Valid New Report Generated? {'YES' if updated_is_valid_report else 'NO'}. Statement Changes Reported? {'YES' if has_changes else 'NO'}.")
         print(f"    [review] Original: HL {orig_hl}, LL {orig_ll}, Score {orig_score}")
         print(f"    [review] Updated:  HL {new_hl}, LL {new_ll}, Score {new_score}")
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
         print(f"    [review] LLM API Call: {result.elapsed:.1f}s | prompt tokens: {result.prompt_tokens} reasoning: {result.reasoning_tokens} output: {output_tokens} completion: {result.completion_tokens} total: {result.total_tokens}")
 
         if updated_is_valid_report:
-            # use updated text for next iteration
-            eval_text = updated_eval
             # save the valid report
             if not dry_run:
                 save_evaluation(args, doc_id, updated_eval, new_hl, new_ll, new_score)
-                print("    [review] Saved updated evaluation + counts/score to database.")
-                print(f"    [review] Updated evaluation length: {len(updated_eval)} chars")
+                print(f"    [review] Saved updated evaluation + counts/score to database. Evaluation length: {len(updated_eval)} chars")
             else:
                 print("    [DRY RUN] Would save updated evaluation + counts/score.")
         else:
@@ -1194,9 +1170,14 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
                 print("      [DRY RUN] Would skip evaluation + counts/score update (no valid eval text extracted).")
 
         if has_changes and iteration < MAX_REVIEW_ITERATIONS:
-            print(f"      -> Re-reviewing with updated evaluation text...")
             orig_hl, orig_ll, orig_score = new_hl, new_ll, new_score
             final_hl, final_ll, final_score = new_hl, new_ll, new_score
+            if updated_is_valid_report:
+                # use updated text for next iteration
+                eval_text = updated_eval
+                print(f"      -> Re-reviewing with updated evaluation report...")
+            else:
+                print(f"      -> Re-reviewing with the SAME evaluation text (no valid report found)...")
             continue
 
         # No changes reported or last iteration — finalize
