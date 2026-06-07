@@ -34,6 +34,7 @@ Options:
 """
 
 import argparse
+from datetime import datetime
 import json
 import logging
 import os
@@ -51,16 +52,15 @@ from typing import Callable, NamedTuple, Optional
 
 logger = logging.getLogger("batch-sqlite")
 
-
 def setup_logging(db_path: str) -> None:
     """Configure logging to write to both stdout and a file derived from db_path.
 
-    The log file is named by replacing the .db extension with .eval.log.
-    E.g.  /path/to/foo.db  ->  /path/to/foo.eval.log
+    The log file is named by replacing the .db extension with .eval.%Y-%m-%d-%H-%M.log.
     """
     # Build log file path
     base, _ = os.path.splitext(db_path)
-    log_file = base + ".eval.log"
+    ts = datetime.now().strftime("%Y-%m-%d-%H-%M")
+    log_file = base + f".eval.{ts}.log"
 
     root = logging.getLogger("batch-sqlite")
     root.setLevel(logging.DEBUG)
