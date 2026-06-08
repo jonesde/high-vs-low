@@ -1194,7 +1194,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         final_hl, final_ll, final_score = new_hl, new_ll, new_score
         changed = (new_hl != orig_hl) or (new_ll != orig_ll) or (new_score != orig_score)
         if changed:
-            logger.warning("    [review] Final: WARNING - Last run still had different counts or score")
+            logger.warning("    [review] Final: WARNING - Last run still had different counts or score (make sure it was something like counts or score were wrong, not that LLM failed to report added, moved, or removed statements)")
         else:
             logger.info("    [review] Final: No statement changes made")
 
