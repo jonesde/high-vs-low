@@ -601,12 +601,12 @@ def build_review_system_prompt():
     instructions = (
         "\n\n# Task\n\n"
         "You are a High Law vs Low Law evaluation report reviewer.\n\n"
-        "Review the provided evaluation report against the original document text.\n"
+        "Review the provided evaluation report against the original document text by executing the following **in order**:\n"
         "1. Execute the Report Review Checklist from the reference file above, all included instructions in exact order.\n"
         "2. Do NOT verify the DETAILED sections if they are not present, and do NOT generate the DETAILED sections if they are not present.\n"
         "3. If changes are needed, describe them clearly with original and updated counts. If no changes are needed, state that explicitly.\n"
-        "4. If you made any changes, regenerate the entire updated evaluation report.\n"
-        "5. If you regenerated an updated evaluation report, **ALWAYS** emit the following marker **EXACTLY** on its own line:\n"
+        "4. If any changes are needed, **FIRST** regenerate the entire updated evaluation report.\n"
+        "5. If you regenerated an updated evaluation report, **ALWAYS** emit the following **EXACT** marker on its own line after the report:\n"
         f"```\n{EVAL_REPORT_END_MARKER}\n```\n"
         "This marker tells the parser where the report ends and the summary begins.\n"
         "6. After the marker, include a CHANGES SUMMARY section:\n"
@@ -621,15 +621,25 @@ def build_review_system_prompt():
     return skill_md + "\n" + review_md + instructions
 
 
-def build_review_user_prompt(doc_text, evaluation, doc_title, verify_output=None):
+def build_review_user_prompt(doc_text, evaluation, doc_title, verify_output=None, prev_llm_notes=None):
     verify_section = ""
     if verify_output is not None:
         verify_section = f"""
+Check and correct all issues in this verify report from a script:
 --- BEGIN Automated Evaluation Verify Report ---
 {verify_output}
 --- END Automated Evaluation Verify Report ---
 
 """
+    if prev_llm_notes is not None:
+        prev_llm_section = f"""
+The Changes Summary from the previous LLM Review is work already done, make sure all changes were actually needed and actually done:
+--- BEGIN Previous LLM Review Changes Summary ---
+{prev_llm_notes}
+--- END Previous LLM Review Changes Summary ---
+
+"""
+
     return f"""Review the following evaluation report for this original document{", titled \"" + doc_title + "\"" if doc_title else ""}:
 --- BEGIN Original Document Text ---
 {doc_text}
@@ -1076,6 +1086,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
     final_hl, final_ll, final_score = orig_hl, orig_ll, orig_score
     final_error = None
+    previous_changes_text = None
 
     for iteration in range(1, MAX_REVIEW_ITERATIONS + 1):
         iter_label = f"Review Pass {iteration}"
@@ -1105,7 +1116,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         logger.info("    [script] Verify Output:\n%s", verify_output if verify_output else "(none)")
 
         system_prompt = build_review_system_prompt()
-        user_prompt = build_review_user_prompt(current_doc_text, current_eval, doc_title, verify_output)
+        user_prompt = build_review_user_prompt(current_doc_text, current_eval, doc_title, verify_output, previous_changes_text)
         logger.info("    [review] Prompt Chars %s (system: %s, user: %s)", len(system_prompt) + len(user_prompt), len(system_prompt), len(user_prompt))
 
         # Start progress display immediately
@@ -1127,6 +1138,7 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
 
         # Extract the post-marker section (CHANGES SUMMARY / review notes).
         changes_text = parse_review_changes_section(result.content)
+        previous_changes_text = changes_text
 
         # has_changes defined as presence of LLM self-reported text about
         # STATEMENT changes in the CHANGES SUMMARY section only.
