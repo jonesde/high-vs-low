@@ -153,7 +153,14 @@ def main():
         parts = [p.strip() for p in line.split('|') if p]
         if len(parts) >= 4:
             topic = parts[0]
-            hl_s, ll_s, score_s = int(parts[1]), int(parts[2]), float(parts[3])
+            try:
+                hl_s, ll_s = int(parts[1]), int(parts[2])
+            except ValueError:
+                hl_s, ll_s = 0, 0
+            try:
+                score_s = float(parts[3])
+            except ValueError:
+                score_s = 0.0
             actual = topic_actual.get(topic, {'HL': 0, 'LL': 0})
             if hl_s != actual['HL']:
                 issues.append(f"Score Table '{topic}': HL {hl_s} != actual {actual['HL']}")
