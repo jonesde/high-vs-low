@@ -1258,6 +1258,7 @@ def process_records_interleaved(client, records, args):
             logger.info("[%s/%s] ID=%s: %s", idx, len(records), doc_id, doc_title)
 
             response = None  # set by eval step, used by review step
+            count_hl, count_ll, score = None, None, None
 
             # --- Step 3: Evaluate (unless skipped) ---
             if skip_evaluation:
@@ -1279,9 +1280,7 @@ def process_records_interleaved(client, records, args):
             else:
                 logger.info("  [review] Reviewing...")
                 # If we skipped evaluation, parse counts from DB
-                rev_orig_hl = count_hl
-                rev_orig_ll = count_ll
-                rev_orig_score = score
+                rev_orig_hl, rev_orig_ll, rev_orig_score = count_hl, count_ll, score
                 if rev_orig_hl is None:
                     record = load_record(args, doc_id)
                     if record and record["evaluation"] is not None:
