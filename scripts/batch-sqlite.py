@@ -1419,11 +1419,24 @@ def process_merge_review_interleaved(client, source_db_path, args):
                 sys.exit(1)
         logger.info("  Source table: %s", source_table)
 
-        # Get all records from source that have evaluations
-        source_cursor.execute(
+        # Get all records from source that have evaluations, applying same --where / --start-id / --limit filters
+        source_conditions = ["evaluation IS NOT NULL"]
+        source_params = []
+        if args.where is not None:
+            source_conditions.append(args.where)
+        if args.start_id is not None:
+            source_conditions.append("id >= ?")
+            source_params.append(args.start_id)
+
+        source_query = (
             f"SELECT id, doc_title, {args.document_column}, evaluation, count_hl, count_ll, score "
-            f"FROM {source_table} WHERE evaluation IS NOT NULL ORDER BY id"
+            f"FROM {source_table} WHERE " + " AND ".join(source_conditions) + " ORDER BY id"
         )
+        if args.limit:
+            source_query += " LIMIT ?"
+            source_params.append(args.limit)
+
+        source_cursor.execute(source_query, source_params)
         source_records = source_cursor.fetchall()
         logger.info("  Source records with evaluations: %s", len(source_records))
         logger.info("")
