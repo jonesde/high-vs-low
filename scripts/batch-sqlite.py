@@ -646,15 +646,16 @@ def build_merge_system_prompt():
         "existing evaluation reports for the same document.\n\n"
         "You will receive:\n"
         "1. The original document text\n"
-        "2. Evaluation A (from the source database)\n"
-        "3. Evaluation B (from the target database)\n\n"
+        "2. Evaluation A (from the source database, merge from)\n"
+        "3. Evaluation B (from the target database, merge into)\n\n"
         "Your job is to produce a single **merged evaluation report** that:\n\n"
-        "- Combines all valid statements from both evaluations\n"
+        "- Adds all valid statements from Evaluation A to Evaluation B, combining statements with the same stance and location\n"
+        "- Combines all valid distinction rules for each combined statement to make a single distinct list containing all rules from both statements\n"
         "- Removes duplicate statements (same Stance Quote AND same Location)\n"
-        "- Keeps the stronger classification when both evals cover the same statement\n"
-        "  (use your judgment based on the Distinction Rules and Decision Notes)\n"
-        "- Merges Key Topics from both evaluations, normalizing names\n"
-        "- Recalculates all counts, percentages, and scores from the merged statement set\n"
+        "- Sides with Evaluation B (target) over Evaluation A (source) when evals cover the same statement but have opposite HL/LL alignment, AND\n"
+        "  uses your judgment based on the Distinction Rules and Decision Notes to verify decisions\n"
+        "- Merges all Key Topics from Evaluation A into Evaluation B, normalizing names as needed\n"
+        "- Recalculates all counts, percentages, and scores from the merged HL and LL statement sets\n"
         "- Follows the full Report Specification and template from the skill file above\n\n"
         "- Does NOT include the DETAILED sections unless they are present in one or both evaluations\n"
         "Execute the Self-Verification and Post-Report Self-Check before emitting the final report.\n"
@@ -837,11 +838,13 @@ def parse_review_updated_eval(review_text):
     # Find the marker
     marker_pos = review_text.find(EVAL_REPORT_END_MARKER)
     if marker_pos == -1:
+        # See if text has report but no end marker
+        review_text = review_text.lstrip()
+        if _REPORT_TITLE_PREFIX in review_text and "## Key Topic Score Table" in review_text:
+            return review_text
         return None
 
-    # Everything before the marker is the candidate report text (possibly with
-    # preamble).  Trim to the report title header so "#" is the first character,
-    # enforcing the template spec.
+    # Everything before the marker is the candidate report text (possibly with preamble).
     before_marker = review_text[:marker_pos]
 
     # Strip all characters before the report title header, if found
