@@ -87,8 +87,9 @@ Argument options:
 - `--stub`: Use a stub client that returns constant responses — useful for testing
 - `--reset`: Clean out evaluation/count/score columns before processing (opt-in; without this flag, existing evaluations are preserved)
 - `--reset-only`: Clean out evaluation/count/score columns and then exit (no evaluation or review)
+- `--merge-from DB`: Merge evaluations from another database by record ID. For each record in the source DB's documents table: if the target has no evaluation, copy the source evaluation directly; if both have evaluations, perform an AI-prompted merge combining both into a single report. Merge and review are interleaved per-record (merge first, then immediately review that record before moving to the next). **IMPORTANT: make a backup copy of the target DB first** (e.g., `cp target.db target.db.backup`) to retain original data.
 
-NOTE: the script never does an evaluation if there is already an evaluation in place (filters by evaluation is null)
+NOTE: the script never does an evaluation if there is already an evaluation in place (filters by evaluation is null). Exception: `--merge-from` processes ALL records from the source DB regardless of whether the target already has evaluations — records with existing evals trigger AI merge, records without get a direct copy.
 
 Common Patterns:
 - **Easy Common Case (do 10 not yet done)**: `python3 batch-sqlite.py my.db --limit 10`
@@ -97,6 +98,8 @@ Common Patterns:
 - **Preview without modifying**: `--skip-evaluation --skip-review --where "year >= 2000"`
 - **Resume from a specific ID**: `--start-id 500 --limit 10`
 - **Test without an LLM**: `--stub`
+- **Merge evaluations from another DB**: `python3 batch-sqlite.py target.db --merge-from source.db` (back up target.db first!)
+- **Merge + skip review**: `python3 batch-sqlite.py target.db --merge-from source.db --skip-review`
 
 The script does NOT reset evaluation columns by default — pass `--reset` to clear them before starting. Use `--where` to target a subset of records for reset or evaluation. It uses `urllib` only (no external dependencies).
 

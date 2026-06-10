@@ -24,6 +24,10 @@ Options:
   --stub             Use a stub AI that returns a constant response
   --skip-review      Skip the review phase
   --skip-evaluation  Skip the evaluation phase
+  --merge-from DB    Merge evaluations from another database by record ID.
+                     For each record: if target has no eval, copy from source.
+                     If both have evals, AI-prompted merge. Then review.
+                     IMPORTANT: make a backup copy of the target DB first.
   --dry-run          Print what would be done without modifying the database
   --reset            Clean out evaluation/count/score columns before processing
   --reset-only       Only clean out evaluation/count/score columns and exit
@@ -349,6 +353,7 @@ class OpenAIClient:
             ],
             "reasoning_effort": "high",
             "max_completion_tokens": 40000,
+            "max_tokens": 40000,
         }
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
@@ -404,7 +409,7 @@ class OpenAIClient:
             # make excessive for normal use (most 5-15k with reasoning+output)
             # avoid looping crazy runs like a 100k+ ones that happens sometimes...
             "max_completion_tokens": 40000,
-            # alt: "max_tokens": 40000,
+            "max_tokens": 40000,
         }
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
@@ -489,11 +494,15 @@ class StubClient:
     def __init__(self):
         self.call_count = 0
         self.review_call_count = 0
+        self.merge_call_count = 0
 
     def chat(self, system_prompt, user_prompt):
         self.call_count += 1
         # Distinguish by user prompt — system prompts now both contain SKILL.md
-        if user_prompt.lower().startswith("review"):
+        if user_prompt.lower().startswith("merge"):
+            self.merge_call_count += 1
+            content = STUB_REVIEW_WITH_CHANGES
+        elif user_prompt.lower().startswith("review"):
             self.review_call_count += 1
             # First review call: report changes (triggers re-execution loop)
             # Subsequent review calls: no changes (exits loop)
@@ -514,7 +523,10 @@ class StubClient:
 
     def chat_stream(self, system_prompt, user_prompt, progress_cb=None):
         self.call_count += 1
-        if user_prompt.lower().startswith("review"):
+        if user_prompt.lower().startswith("merge"):
+            self.merge_call_count += 1
+            content = STUB_REVIEW_WITH_CHANGES
+        elif user_prompt.lower().startswith("review"):
             self.review_call_count += 1
             if self.review_call_count == 1:
                 content = STUB_REVIEW_WITH_CHANGES
@@ -624,6 +636,55 @@ def build_review_system_prompt():
     )
 
     return skill_md + "\n" + review_md + instructions
+
+
+def build_merge_system_prompt():
+    """Build merge system prompt: SKILL.md + merge instructions."""
+    skill_md = _read_skill_file("SKILL.md")
+
+    instructions = (
+        "\n\n# Task\n\n"
+        "You are a High Law vs Low Law alignment evaluator performing a **merge** of two "
+        "existing evaluation reports for the same document.\n\n"
+        "You will receive:\n"
+        "1. The original document text\n"
+        "2. Evaluation A (from the source database)\n"
+        "3. Evaluation B (from the target database)\n\n"
+        "Your job is to produce a single **merged evaluation report** that:\n\n"
+        "- Combines all valid statements from both evaluations\n"
+        "- Removes duplicate statements (same Stance Quote AND same Location)\n"
+        "- Keeps the stronger classification when both evals cover the same statement\n"
+        "  (use your judgment based on the Distinction Rules and Decision Notes)\n"
+        "- Merges Key Topics from both evaluations, normalizing names\n"
+        "- Recalculates all counts, percentages, and scores from the merged statement set\n"
+        "- Follows the full Report Specification and template from the skill file above\n\n"
+        "- Does NOT include the DETAILED sections unless they are present in one or both evaluations\n"
+        "Execute the Self-Verification and Post-Report Self-Check before emitting the final report.\n"
+    )
+
+    return skill_md + instructions
+
+
+def build_merge_user_prompt(doc_text, doc_title, eval_a, eval_b, source_a, source_b):
+    """Build merge user prompt with both evaluations."""
+    return f"""Merge the following two evaluation reports for the same document{", titled \"" + doc_title + "\"" if doc_title else ""}:
+
+--- BEGIN Original Document Text ---
+{doc_text}
+--- END Original Document Text ---
+
+--- BEGIN Evaluation A ({source_a}) ---
+{eval_a}
+--- END Evaluation A ---
+
+--- BEGIN Evaluation B ({source_b}) ---
+{eval_b}
+--- END Evaluation B ---
+
+Produce a single merged evaluation report by following the instructions above.
+Include ALL valid statements from both evaluations, removing duplicates and resolving
+any classification conflicts using the Distinction Rules.
+"""
 
 
 def build_review_user_prompt(doc_text, evaluation, doc_title, verify_output=None, prev_llm_notes=None):
@@ -1230,6 +1291,227 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
     return (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, result)
 
 
+def _merge_record(client, doc_id, doc_title, doc_text, eval_source, eval_target, dry_run, args):
+    """Merge two evaluations for the same record.
+
+    If target has no evaluation, copy source evaluation directly.
+    If both have evaluations, call AI to produce a merged report.
+
+    Returns (doc_id, doc_title, hl, ll, score, merged_eval, error, chat_result).
+    """
+    # Case 1: target has no evaluation — direct copy from source
+    if eval_target is None:
+        logger.info("    [merge] Target has no evaluation — copying from source")
+        count_hl, count_ll, score = parse_evaluation_report(eval_source)
+        if not dry_run:
+            save_evaluation(args, doc_id, eval_source, count_hl, count_ll, score)
+            logger.info("    [merge] Copied source evaluation to target (%s chars)", len(eval_source))
+        else:
+            logger.info("    [DRY RUN] Would copy source evaluation to target.")
+        # Verify
+        if not dry_run:
+            record = load_record(args, doc_id)
+            if record and record["evaluation"] is not None:
+                logger.info("    [merge] Verified: evaluation populated (%s chars)", len(record["evaluation"]))
+            else:
+                logger.warning("    [merge] evaluation not found after copy")
+        return (doc_id, doc_title, count_hl, count_ll, score, eval_source, None, None)
+
+    # Case 2: both have evaluations — AI merge
+    logger.info("    [merge] Both source and target have evaluations — performing AI merge")
+
+    system_prompt = build_merge_system_prompt()
+    user_prompt = build_merge_user_prompt(
+        doc_text, doc_title, eval_source, eval_target, "source DB", "target DB"
+    )
+    logger.info("    [merge] Prompt Chars %s (system: %s, user: %s)",
+                len(system_prompt) + len(user_prompt), len(system_prompt), len(user_prompt))
+
+    # Start progress display
+    _merge_start = time.monotonic()
+    merge_start_fn, merge_wrapped_cb = make_streaming_callback(print_progress)
+    merge_start_fn(_merge_start)
+
+    try:
+        result = client.chat_stream(system_prompt, user_prompt, progress_cb=merge_wrapped_cb)
+    except RuntimeError as exc:
+        stop_wait_timer()
+        print_progress_done()
+        logger.error("    %s", exc)
+        return (doc_id, doc_title, None, None, None, None, str(exc), None)
+
+    stop_wait_timer()
+    print_progress_done()
+
+    output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
+    logger.info("    [merge] LLM API Call: %.1fs | prompt tokens: %s reasoning: %s output: %s completion: %s total: %s",
+                result.elapsed, result.prompt_tokens, result.reasoning_tokens,
+                output_tokens, result.completion_tokens, result.total_tokens)
+
+    merged_eval = result.content.lstrip() if result.content else None
+    if not merged_eval or not _is_valid_report(merged_eval):
+        logger.warning("    [merge] AI did not return a valid merged report — keeping target evaluation")
+        count_hl, count_ll, score = parse_evaluation_report(eval_target)
+        return (doc_id, doc_title, count_hl, count_ll, score, eval_target, "Invalid merged report", result)
+
+    count_hl, count_ll, score = parse_evaluation_report(merged_eval)
+    logger.info("    [merge] Result: HL=%s, LL=%s, Score=%s", count_hl, count_ll, score)
+
+    if not dry_run:
+        save_evaluation(args, doc_id, merged_eval, count_hl, count_ll, score)
+        logger.info("    [merge] Saved merged evaluation to target (%s chars)", len(merged_eval))
+    else:
+        logger.info("    [DRY RUN] Would save merged evaluation to target.")
+
+    # Verify
+    if not dry_run:
+        record = load_record(args, doc_id)
+        if record and record["evaluation"] is not None:
+            logger.info("    [merge] Verified: merged evaluation populated (%s chars)", len(record["evaluation"]))
+        else:
+            logger.warning("    [merge] merged evaluation not found after save")
+
+    return (doc_id, doc_title, count_hl, count_ll, score, merged_eval, None, result)
+
+
+def process_merge_review_interleaved(client, source_db_path, args):
+    """Merge then review for each record before moving to the next.
+
+    For each record in the source DB's documents table:
+      1. Merge: if target has no eval, copy from source; if both have evals, AI merge
+      2. Review: run the review phase on the merged result
+
+    Returns (merge_results, review_results, interrupted) tuples compatible with step5_report.
+    merge_results: (doc_id, doc_title, hl, ll, score, response, error)
+    review_results: (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error)
+    """
+    dry_run = args.dry_run
+    skip_review = args.skip_review
+    merge_results = []
+    review_results = []
+
+    merge_stats = _empty_stats()
+    review_stats = _empty_stats()
+
+    logger.info("=" * 60)
+    logger.info("Interleaved Merge + Review: %s -> %s", source_db_path, args.db_path)
+    logger.info("=" * 60)
+    logger.info("  Skip review: %s", skip_review)
+    logger.info("")
+
+    # Open source database
+    source_conn = sqlite3.connect(source_db_path)
+    try:
+        source_cursor = source_conn.cursor()
+
+        # Discover source table
+        if args.table:
+            source_table = args.table
+        else:
+            source_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            source_tables = [r[0] for r in source_cursor.fetchall()]
+            if len(source_tables) == 1:
+                source_table = source_tables[0]
+            elif DEFAULT_DOCUMENTS_TABLE in source_tables:
+                source_table = DEFAULT_DOCUMENTS_TABLE
+            else:
+                logger.error("Source DB has %d tables. Specify --table.", len(source_tables))
+                sys.exit(1)
+        logger.info("  Source table: %s", source_table)
+
+        # Get all records from source that have evaluations
+        source_cursor.execute(
+            f"SELECT id, doc_title, {args.document_column}, evaluation, count_hl, count_ll, score "
+            f"FROM {source_table} WHERE evaluation IS NOT NULL ORDER BY id"
+        )
+        source_records = source_cursor.fetchall()
+        logger.info("  Source records with evaluations: %s", len(source_records))
+        logger.info("")
+
+    except Exception as exc:
+        logger.error("Failed to read source database: %s", exc)
+        source_conn.close()
+        sys.exit(1)
+
+    interrupted = False
+    try:
+        for idx, (doc_id, doc_title, doc_text, eval_source, _, _, _) in enumerate(source_records, 1):
+            logger.info("[%s/%s] ID=%s: %s", idx, len(source_records), doc_id,
+                        doc_title[:60] if doc_title else "N/A")
+
+            # Load target record
+            target_record = load_record(args, doc_id)
+            eval_target = target_record["evaluation"] if target_record else None
+            target_doc_text = target_record["doc_text"] if target_record else None
+
+            # If target doesn't have this record at all, skip
+            if target_record is None:
+                logger.info("    [merge] SKIPPED — record ID %s not found in target DB", doc_id)
+                continue
+
+            # Use target doc_text if available, otherwise source
+            use_doc_text = target_doc_text if target_doc_text else doc_text
+
+            # --- Phase 1: Merge ---
+            logger.info("  [merge] Merging...")
+            mr = _merge_record(client, doc_id, doc_title, use_doc_text, eval_source, eval_target, dry_run, args)
+            _, _, count_hl, count_ll, score, merged_eval, merge_error, merge_chat_result = mr
+            if merge_chat_result:
+                _accumulate_stats(merge_stats, merge_chat_result)
+            merge_results.append((doc_id, doc_title, count_hl, count_ll, score, merged_eval, merge_error))
+
+            logger.info("")
+
+            # --- Phase 2: Review (unless skipped) ---
+            if skip_review:
+                logger.info("  [review] SKIPPED (--skip-review)")
+                review_results.append((doc_id, doc_title, count_hl, count_ll, score, count_hl, count_ll, score, None))
+            else:
+                logger.info("  [review] Reviewing...")
+                # Parse counts from merged result
+                rev_orig_hl, rev_orig_ll, rev_orig_score = count_hl, count_ll, score
+                if rev_orig_hl is None:
+                    record = load_record(args, doc_id)
+                    if record and record["evaluation"] is not None:
+                        rev_orig_hl, rev_orig_ll, rev_orig_score = parse_evaluation_report(record["evaluation"])
+
+                if rev_orig_hl is None:
+                    logger.info("    SKIPPED: No evaluation found for ID=%s", doc_id)
+                    review_results.append((doc_id, doc_title, None, None, None, None, None, None, "No evaluation"))
+                else:
+                    # Pass merged evaluation text directly to review (avoids DB round-trip)
+                    rev_eval_text = merged_eval
+                    rr = _review_record(client, doc_id, doc_title, rev_orig_hl, rev_orig_ll, rev_orig_score, dry_run, args, rev_eval_text)
+                    _, _, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error, review_chat_result = rr
+                    if review_chat_result:
+                        _accumulate_stats(review_stats, review_chat_result)
+                    review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
+
+            logger.info("")
+
+    except KeyboardInterrupt:
+        stop_wait_timer()
+        print_progress_done()
+        interrupted = True
+        logger.info("")
+        logger.info("Interrupted by user after %s records.", idx - 1)
+
+    source_conn.close()
+
+    # Print phase summaries (even on interrupt — shows partial stats)
+    if not interrupted:
+        logger.info("=" * 60)
+    _stats_summary("Merge", merge_stats, len([r for r in merge_results if r[6] is None]))
+    if not interrupted:
+        logger.info("=" * 60)
+    if not skip_review:
+        _stats_summary("Review", review_stats, len([r for r in review_results if r[8] is None]))
+        if not interrupted:
+            logger.info("=" * 60)
+
+    return merge_results, review_results, interrupted
+
+
 def process_records_interleaved(client, records, args):
     """Process records: evaluate then review for each record before moving to the next.
 
@@ -1392,6 +1674,11 @@ def main():
     parser.add_argument("--stub", action="store_true", help="Use stub AI client (constant response)")
     parser.add_argument("--skip-review", action="store_true", help="Skip the review phase")
     parser.add_argument("--skip-evaluation", action="store_true", help="Skip the evaluation phase")
+    parser.add_argument("--merge-from", default=None, metavar="DB",
+        help="Merge evaluations from another database by record ID. "
+             "For each record: if target has no eval, copy from source. "
+             "If both have evals, AI-prompted merge. Then review. "
+             "IMPORTANT: make a backup copy of the target DB first.")
     parser.add_argument("--dry-run", action="store_true", help="Print actions without modifying database")
     parser.add_argument("--reset", action="store_true", help="Reset evaluation data before processing")
     parser.add_argument("--reset-only", action="store_true", help="Only reset evaluation data and exit (no eval)")
@@ -1460,9 +1747,19 @@ def main():
 
         # Get records to process
         records = get_records_to_process(conn, args)
-        if not records:
+        if not records and not args.merge_from:
             logger.info("No records to process.")
             return
+
+        # --- Merge mode: merge from source DB, then review ---
+        if args.merge_from:
+            logger.info("")
+            logger.warning("WARNING: --merge-from will modify the target database: %s", args.db_path)
+            logger.warning("WARNING: Make a backup copy of the target DB first to retain original data.")
+            logger.warning("  Example: cp %s %s.backup", args.db_path, args.db_path)
+            if args.dry_run:
+                logger.info("[Dry-run] No changes will be made.")
+            logger.info("")
     finally:
         conn.close()
         logger.info("[db-init] Connection closed")
@@ -1485,15 +1782,43 @@ def main():
     logger.info("")
     logger.info("Processing %s records...", len(records))
 
-    # Step 3/4: Interleaved evaluation + review per record
-    try:
-        eval_results, review_results, interrupted = process_records_interleaved(client, records, args)
-    except KeyboardInterrupt:
-        eval_results = []
-        review_results = []
-        interrupted = True
-        logger.info("")
-        logger.info("Interrupted.")
+    # --- Merge mode: merge from source DB, interleaved with review ---
+    if args.merge_from:
+        # Validate source DB
+        if not os.path.exists(args.merge_from):
+            logger.error("Source database not found: %s", args.merge_from)
+            sys.exit(1)
+
+        # Client is required for AI merge (direct copies don't need it, but we can't know upfront)
+        if client is None:
+            if args.stub:
+                client = StubClient()
+                logger.info("[llm] Using STUB client for merge")
+            else:
+                if not args.endpoint:
+                    logger.error("--endpoint is required for merge")
+                    sys.exit(1)
+                client = OpenAIClient(args.endpoint, args.api_key, args.model)
+                logger.info("[llm] Endpoint: %s, Model: %s", args.endpoint, args.model if args.model else "(default)")
+
+        try:
+            eval_results, review_results, interrupted = process_merge_review_interleaved(client, args.merge_from, args)
+        except KeyboardInterrupt:
+            eval_results = []
+            review_results = []
+            interrupted = True
+            logger.info("")
+            logger.info("Interrupted.")
+
+    else:
+        try:
+            eval_results, review_results, interrupted = process_records_interleaved(client, records, args)
+        except KeyboardInterrupt:
+            eval_results = []
+            review_results = []
+            interrupted = True
+            logger.info("")
+            logger.info("Interrupted.")
 
     # Step 5: Report (always print summary, even after interrupt)
     step5_report(eval_results, review_results)
