@@ -110,6 +110,10 @@ DEFAULT_SCORE_COLUMN = "score"
 _REPORT_TITLE_PREFIX = "# High Law vs Low Law Alignment Evaluation"
 _REPORT_LATE_HEADER = "## Key Topic Score Table"
 
+# Unique divider the LLM emits after a regenerated evaluation report.
+# Used by parse_review_updated_eval to reliably extract the full report.
+EVAL_REPORT_END_MARKER = "_END_OF_UPDATED_REPORT_"
+
 # ---------------------------------------------------------------------------
 # Stubs for --stubs
 # ---------------------------------------------------------------------------
@@ -132,10 +136,6 @@ STUB_REVIEW = """# Review Result: STUB_REVIEW_RESPONSE
 - Moved 3 statements from HL to LL
 - Removed 7 invalid HL statements
 """
-
-# Unique divider the LLM emits after a regenerated evaluation report.
-# Used by parse_review_updated_eval to reliably extract the full report.
-EVAL_REPORT_END_MARKER = "--- END OF UPDATED EVALUATION REPORT ---"
 
 STUB_REVIEW_WITH_CHANGES = f"""# High Law vs Low Law Alignment Evaluation: STUB_DOCUMENT
 
