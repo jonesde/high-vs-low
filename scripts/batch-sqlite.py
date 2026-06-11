@@ -106,7 +106,9 @@ DEFAULT_COUNT_HL_COLUMN = "count_hl"
 DEFAULT_COUNT_LL_COLUMN = "count_ll"
 DEFAULT_SCORE_COLUMN = "score"
 
+# Beginning of report must match this exactly, if an LLM cannot do this consistently it is a bad sign, best to not use:
 _REPORT_TITLE_PREFIX = "# High Law vs Low Law Alignment Evaluation"
+_REPORT_LATE_HEADER = "## Key Topic Score Table"
 
 # ---------------------------------------------------------------------------
 # Stubs for --stubs
@@ -811,19 +813,13 @@ def parse_review_has_changes(changes_text):
 
 
 def _is_valid_report(text):
-    """Check if text looks like a real evaluation report.
-
-    Verifies two mandatory section headers from the report template:
-      1. The text contains "# High Law vs Low Law Alignment Evaluation"
-         (after stripping leading whitespace the first line must start with it)
-      2. Somewhere in the text "## Scoring Summary" is present
-    """
+    """Check if text looks like a real evaluation report."""
     if not text:
         return False
-    first_line = text.lstrip().split("\n")[0]
-    if not first_line.startswith(_REPORT_TITLE_PREFIX):
+    text_stripped = text.lstrip()
+    if not text_stripped.startswith(_REPORT_TITLE_PREFIX):
         return False
-    if "## Scoring Summary" not in text:
+    if _REPORT_LATE_HEADER not in text:
         return False
     return True
 
@@ -835,23 +831,24 @@ def parse_review_updated_eval(review_text):
     report.  Everything between the evaluation title line and that marker is the
     updated report.
     """
+    # Find the report title, the beginning; if found strip to there, if not found return None
+    title_pos = review_text.find(_REPORT_TITLE_PREFIX)
+    if title_pos == -1:
+        return None
+
+    # Strip up to title begin, and then strip() for good measure
+    candidate = review_text[title_pos:].strip()
+
     # Find the marker
-    marker_pos = review_text.find(EVAL_REPORT_END_MARKER)
+    marker_pos = candidate.find(EVAL_REPORT_END_MARKER)
     if marker_pos == -1:
-        # See if text has report but no end marker
-        review_text = review_text.lstrip()
-        if _REPORT_TITLE_PREFIX in review_text and "## Key Topic Score Table" in review_text:
-            return review_text
+        # See if text has report but no end marker, strict header text near the end
+        if _REPORT_LATE_HEADER in candidate:
+            return candidate
         return None
 
     # Everything before the marker is the candidate report text (possibly with preamble).
-    before_marker = review_text[:marker_pos]
-
-    # Strip all characters before the report title header, if found
-    idx = before_marker.find(_REPORT_TITLE_PREFIX)
-    if idx == -1:
-        return before_marker
-    return before_marker[idx:].strip()
+    return candidate[:marker_pos]
 
 
 def parse_review_changes_section(review_text):
@@ -1226,9 +1223,8 @@ def _review_record(client, doc_id, doc_title, orig_hl, orig_ll, orig_score, dry_
         else:
             new_hl, new_ll, new_score = None, None, None
 
-        logger.info("    [review] Valid New Report Generated? %s. Statement Changes Reported? %s.",
-                     "YES" if updated_is_valid_report else "NO",
-                     "YES" if has_changes else "NO")
+        logger.info("    [review] Valid New Report Generated? %s", "YES" if updated_is_valid_report else "NO")
+        logger.info("    [review] Statement Changes Reported? %s.", "YES" if has_changes else "NO")
         logger.info("    [review] Original: HL %s, LL %s, Score %s", orig_hl, orig_ll, orig_score)
         logger.info("    [review] Updated:  HL %s, LL %s, Score %s", new_hl, new_ll, new_score)
         output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
