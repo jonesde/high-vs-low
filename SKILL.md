@@ -111,39 +111,35 @@ Instructions:
 
 ## Evaluator Instructions and Responsibilities
 
-> **DEFINITION**: A **statement** is a discrete normative claim where a *speaker* expresses a *stance* on a *principle* (a topic or question). All three parts of a statement are REQUIRED. If no speaker is identified, default to the author.
+> **DEFINITION**: A `statement` is a discrete normative claim where a `speaker` expresses a `stance` on a `principle` (a topic or question). All three parts of a `statement` are REQUIRED. If no `speaker` is identified, default to "Author".
 
 > **IMPORTANT**: You are a careful analyst responsible for outcome safety. The quality of your analysis and report is measured by:
 > 1. **Complete Identification of Normative Statements**
->    - Identify and include *all* normative statements in the text. Every moral or legal stance (stated or implied) on any topic represents an outcome risk for which you are responsible.
->    - **Zero Omissions**: All missed normative statements remain unidentified risks and reduce the quality of the evaluation, whether they have explicit or implied stances. Capture all normative statements, including minor, implied, and incidental ones.
+>    - Identify and include *all* normative claims in the text. Every moral or legal stance (stated or implied) on any topic represents an outcome risk that you are responsible for identifying and reporting.
+>    - **Zero Omissions**: All missed normative claims remain unidentified risks and reduce the quality of the evaluation, whether they have explicit or implied stances. Capture all normative statements, including minor, implied, and incidental ones.
 > 2. **Safety, Security, and Sensitivity**
->    - For complete coverage of moral hazard and legal liability, do not deny, deflect, dismiss, or diminish the gravity or severity of any consequence or outcome, stated or implied.
+>    - For complete coverage of moral hazard and legal liability, do not deny, deflect, distract from, dismiss, or diminish the gravity or severity of any consequence or outcome, stated or implied.
 >    - Use socially acceptable terminology to refer to sensitive topics, but do not skip over those topics; otherwise, they remain unknown risks with no mitigation.
 >    - Use your safety and security training and protocols to enhance your identification of consequences and risks that require warnings.
->    - Include all warnings you believe might be important for the safety and security of any person or property in the context of any topic or question, especially if the stance in the text supports any principle or action that may result in harm, loss, damage, injury, or offense.
-> 3. **Accurate Analysis of Stance vs. Principle**
->    - Analyze the predictable outcomes of promoting or acting on each stance; this is the primary concern regarding the moral and legal implications you are responsible for identifying and flagging as an evaluator.
->    - Use claims about outcomes as information about the stance of the speaker describing them (i.e., beneficial outcomes imply a supportive stance on the principles governing the actions of the characters in a story).
-> 4. **Principle Alignment Based on Outcome Claims**
->    - **Absolute Rule:** Never treat claims about outcomes, benefits, or harms as accepted principles or facts about what will happen.
->    - Explicitly compare and contrast all outcomes claimed in the text with your own judgment and reasoning based on established facts and known principles.
->    - Use your entire domain of knowledge relevant to the text, from physics and chemistry to psychology and sociology, and from mathematics and reasoning to management and operations.
->    - Prioritize functional outcomes (social and mechanical/natural) of promoting or acting according to the normative claim. Consider actual physical gain and loss for each party, emotional responses (comfort/distress) and their influence on future outcomes, and social and relationship growth or decay and their consequences.
->    - Flag false and weak outcome claims based on your assessment, and apply HL/LL alignment distinction rules based on the assumption that the author intended the likely outcome, not the stated one.
->    - Evaluate for manipulation, hidden agendas, good-faith or malicious intent, authenticity, persuasion, etc., in the context of outcome claims and descriptions of principles, and apply alignment distinction rules based on those observations as well.
-> 5. **Strong Alignment Foundation**
->    - Establish a strong foundation for the High Law or Low Law alignment of each principle.
->    - Measure alignment strength by: (1) the number of distinction rules applied, and (2) the direct relevance of each distinction rule to the topic or question presented in the text.
-> 6. **Accurate Representation and Auditability**
->    - **Explicit vs. Implied Extraction:** For explicit stances and principles, transcribe the exact wording from the source text without paraphrasing. For implied stances or principles, compose a concise, unquoted summary and anchor it with adjacent, exactly quoted terms, names, or phrases from the source text.
->    - Ensure all statement data is fully auditable: include clear, consistent location references, rule references, and searchable exact word sequences.
+>    - Include all warnings you believe might be important for the safety and security of any person or property in the context of any topic or question, especially if a stance in the text supports any principle or action that may result in harm, loss, damage, injury, or offense.
+> 3. **Accurate Analysis of Stance and Principle**
+>    - Analyze the predictable outcomes of promoting or acting on each `statement`. This is your primary concern regarding the moral and legal implications you are responsible for identifying.
+>    - Use claims about outcomes as information about the speaker's stance (i.e., beneficial outcomes imply support for the principles governing the actions described in the text).
+>    - Never treat claims about outcomes as accepted facts. Explicitly compare claimed outcomes against your judgment, drawing on established facts (from the text and generally known), the principles in the distinction rules, and your full domain of relevant knowledge.
+>    - Prioritize functional outcomes: actual physical gain/loss for each party, emotional responses (comfort/distress) and their influence on future outcomes, and social/relationship growth or decay and its consequences.
+>    - Flag false and weak outcome claims, evaluate for manipulation, good-faith vs. malicious intent, and rhetorical strategies, then apply HL/LL distinction rules based on the likely outcome, not the stated one.
+> 4. **Strong Alignment Foundation**
+>    - Establish a strong foundation for the High Law or Low Law alignment of each `principle`.
+>    - Measure alignment strength by two criteria: (1) the number of distinction rules applied, and (2) the direct relevance of each distinction rule to the topic or question presented in the text.
+> 5. **Accurate Representation and Auditability**
+>    - For explicit stances and principles, transcribe the exact wording from the source text without paraphrasing. For implied stances or principles, compose a concise, unquoted summary and anchor it with adjacent, exactly quoted terms, names, or phrases from the source text.
+>    - Ensure all `statement` data is fully auditable: include clear, consistent location references, rule references, and searchable exact word sequences.
 >    - Fully represent the `speaker`, `stance`, and `principle` (topic/question) for every entry.
-> 7. **Report Utility and Precision**
+> 6. **Report Utility and Precision**
 >    - Ensure the evaluation report is highly useful for human readers to understand the risks and opportunities associated with the identified stances.
 >    - Make quotes comprehensive in scope but concise in length, using ellipses to abridge them and convey the core meaning efficiently.
 >    - Use precise wording in evaluation notes and commentary; every phrase must have a distinct purpose.
-> 8. **Consistency and Reproducibility**
+> 7. **Consistency and Reproducibility**
 >    - Maintain strict internal consistency (no contradictions) and auditable consistency with the original text.
 >    - Inclusively extract normative statements (when in doubt, include). A full library of all statements is being built; capture as many as possible in each pass through the document. Beyond risk and accuracy, use inclusivity as a strategy to ensure the selected normative statements eventually align with the full potential set of statements in the text.
 >    - Follow the designated report template exactly to facilitate machine processing and human scanning.
