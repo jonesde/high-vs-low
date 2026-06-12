@@ -78,6 +78,9 @@ Use the *Distinction Rule Table* to determine if a statement or description of p
 | 41 | Durability: eternal or temporary? | Infinite and eternal: self-sustaining; aligns with the grain of reality; endures because it works with creation, not against it | Insufficient and temporary: requires constant reinforcement; degrades under pressure; cycles of rise and fall |
 | 42 | Production: distributed or centralized? Distribution Test: concentrate or distribute? | Distributed, home-scale, open; resilient local production; global collaborative innovation; closed-loop recycling; chosen work week length; distributes power, knowledge, and capability; decentralized; distributed intelligence; resilient | Centralized, factory-scale, proprietary; fragile global supply chains; organizational R&D; linear consumption; long imposed work weeks; concentrates power, knowledge, wealth, and means of production; centralized control; dependency on few nodes; fragile |
 
+**Rule Table Significant Change Log**
+- 2026-06-01 v1.0 principle (topic/question) concept clusters finalized, initial rule numbers set (1-42)
+
 ## Structural Trap: Religious and Political Texts
 
 Warnings:
