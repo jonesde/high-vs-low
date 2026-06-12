@@ -56,6 +56,9 @@ def extract_statements(evaluation, doc_id):
             cells = [c.strip() for c in line.split("|")[1:-1]]
             if len(cells) < 8:
                 continue
+            if not len(cells[0]) or not cells[0][0].isdigit():
+                print(f"-- skipping empty/invalid row: {line}")
+                continue
             seq += 1
             rules_str = cells[2]
             statements.append((doc_id, law_group, seq, rules_str, cells[3], cells[4], cells[5], cells[6], cells[7]))
