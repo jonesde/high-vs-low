@@ -399,8 +399,8 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY_N}}
 
 | Key Topic | High Law | Low Law |
 | --------- | -------- | ------- |
-| **{{TOPIC_1}}** | - {{HL_POINT_1}}<br>- ... | - {{LL_POINT_1}}<br>- ... |
-| **{{TOPIC_N}}** | - {{HL_POINT_N}}<br>- ... | - {{LL_POINT_N}}<br>- ... |
+| **{{TOPIC_1}}** | - {{HL_POINT_1_1}}<br>- {{HL_POINT_1_N}} | - {{LL_POINT_1_1}}<br>- {{LL_POINT_1_N}} |
+| **{{TOPIC_N}}** | - {{HL_POINT_N_1}}<br>- {{HL_POINT_N_N}} | - {{LL_POINT_N}}<br>- {{LL_POINT_N_N}} |
 
 ---
 
