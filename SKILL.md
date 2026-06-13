@@ -281,7 +281,7 @@ Before drafting the report, verify:
    - **Key Topics with Strongest Alignment**: strongest HL and strongest LL topics
    - **High Law Terminology Used for Low Law Principles** (numbered list)
    - **Low Law Terminology Used for High Law Principles** (numbered list)
-   - **Comparisons Between High and Low Law Principles**: table across applicable dimensions, consider the primary distinctions: Justice, Mercy, Judgment, Consequences, Dominion, Authority, Suffering, Sacrifice, Perfecting, Unity, Fruit, Safeguards, Durability, Production
+   - **Comparisons Between High and Low Law Principles**: table across applicable distinction rules; in `Rule Topic/Question` include the distinction rule number and the Topic/Question text for easy reference
 7. **Key Topic Evaluation Table** columns: `Key Topic | High Law | Low Law`. Use `<br>-` for bullet points inside cells. Use `(none)` if no presence
 8. **Key Topic Details**: one section per topic, containing:
    - **Summary** (one paragraph)
@@ -325,15 +325,15 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY_N}}
 
 | # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |
 |---| -------- | ----- | -------------- | ---------- | ------- | ------------ | --------------- |
-| 1 | {{LOC_REF}} | {{RULES}} | {{DECISION_NOTES}} | {{KEY_TOPICS}} | {{SPEAKER}} | "{{STANCE_QUOTE}}" | "{{PRINCIPLE_QUOTE}}" |
-| ... | ... | ... | ... | ... | ... | ... | ... |
+| 1 | {{LOC_REF_1}} | {{RULES_1}} | {{DECISION_NOTES_1}} | {{KEY_TOPICS_1}} | {{SPEAKER_1}} | "{{STANCE_QUOTE_1}}" | "{{PRINCIPLE_QUOTE_1}}" |
+| N | {{LOC_REF_N}} | {{RULES_N}} | {{DECISION_NOTES_N}} | {{KEY_TOPICS_N}} | {{SPEAKER_N}} | "{{STANCE_QUOTE_N}}" | "{{PRINCIPLE_QUOTE_N}}" |
 
 ### Low Law Aligned ({{LL_COUNT}} statements)
 
 | # | Location | Rules | Decision Notes | Key Topics | Speaker | Stance Quote | Principle Quote |
 |---| -------- | ----- | -------------- | ---------- | ------- | ------------ | --------------- |
-| 1 | {{LOC_REF}} | {{RULES}} | {{DECISION_NOTES}} | {{KEY_TOPICS}} | {{SPEAKER}} | "{{STANCE_QUOTE}}" | "{{PRINCIPLE_QUOTE}}" |
-| ... | ... | ... | ... | ... | ... | ... | ... |
+| 1 | {{LOC_REF_1}} | {{RULES_1}} | {{DECISION_NOTES_1}} | {{KEY_TOPICS_1}} | {{SPEAKER_1}} | "{{STANCE_QUOTE_1}}" | "{{PRINCIPLE_QUOTE_1}}" |
+| N | {{LOC_REF_N}} | {{RULES_N}} | {{DECISION_NOTES_N}} | {{KEY_TOPICS_N}} | {{SPEAKER_N}} | "{{STANCE_QUOTE_N}}" | "{{PRINCIPLE_QUOTE_N}}" |
 
 ---
 
@@ -388,19 +388,19 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY_N}}
 
 ### Comparisons Between High and Low Law Principles
 
-| Dimension | High Law in Text | Low Law in Text |
-|-----------|------------------|-----------------|
-| **{{DIMENSION}}** | {{HL_CONTENT}} | {{LL_CONTENT}} |
-| ... | ... | ... |
+| Rule Topic/Question | High Law in Text | Low Law in Text |
+| ------------------- | ---------------- | --------------- |
+| **{{RULE_TOPIC_QUESTION_1}}** | {{HL_CONTENT_1}} | {{LL_CONTENT_1}} |
+| **{{RULE_TOPIC_QUESTION_N}}** | {{HL_CONTENT_N}} | {{LL_CONTENT_N}} |
 
 ---
 
 ## Key Topic Evaluation Table
 
 | Key Topic | High Law | Low Law |
-|-----------|----------|---------|
-| **{{TOPIC}}** | - {{HL_POINT}}<br>- ... | - {{LL_POINT}}<br>- ... |
-| ... | ... | ... |
+| --------- | -------- | ------- |
+| **{{TOPIC_1}}** | - {{HL_POINT_1}}<br>- ... | - {{LL_POINT_1}}<br>- ... |
+| **{{TOPIC_N}}** | - {{HL_POINT_N}}<br>- ... | - {{LL_POINT_N}}<br>- ... |
 
 ---
 
@@ -415,8 +415,8 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY_N}}
 **Contradictions to Primary Alignment**: {{CONTRADICTIONS}}
 
 **Key Quotes in Context**:
-- "{{QUOTE}}" ({{REF}}) - {{CONTEXT}}
-- ...
+- "{{QUOTE_1}}" ({{LOCATION_1}}) - {{CONTEXT_1}}
+- "{{QUOTE_N}}" ({{LOCATION_N}}) - {{CONTEXT_N}}
 
 **Detailed Evaluation**
 

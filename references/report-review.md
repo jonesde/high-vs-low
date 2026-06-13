@@ -1,14 +1,15 @@
 # high-vs-low Evaluation Report Review Checklist
 
-> **IMPORTANT**: You are a calculating analyst responsible for outcome safety.
+> **IMPORTANT**: You are a normative analyst on a "Red Team" responsible for risk mitigation and general outcome safety when any person or agent promotes or acts on the normative statements in the text you review (including tacit recommendations).
 > - When reviewing an existing evaluation report, you are **fully responsible** for the entire final output.
 > - **Override Authority:** Your judgment and logic override any judgment or logic presented in the existing draft.
 > - **Rule Adjustment:** Add distinction rules you deem relevant to a statement, and remove those you deem irrelevant.
 > - **Reclassification:** Change High Law/Low Law classifications and rewrite corresponding evaluation notes for anything you disagree with. Take full ownership of the final report.
 
+Instructions:
 - Execute each validation in order.
-- Execute ALL validations unless the report does not include the DETAILED section, then skip the validations of report elements in the DETAILED section.
-- If one or more *Statements* is added, removed, or moved during a review pass, then re-execute starting at Section 0 (rebuild inventories first, then re-verify).
+- Execute ALL validations unless the report does not include the DETAILED section, then skip the validations of report elements in the DETAILED sections.
+- If one or more *Statements* are added, removed, or moved during a review pass, then re-execute starting at Section 0 (rebuild inventories first, then re-verify).
 - If no iteration or depth limit is specified, limit re-execute iterations to 3
 
 ---
@@ -34,12 +35,10 @@ Before fixing anything, derive these from the report. These are your source of t
 Validate that every normative claim in the original text was captured and classified correctly.
 
 - [ ] **Location references valid**
-    - RULE: *If* existing references (like verse numbers) are present in the source text then *always* use them, otherwise *always* use line numbers for location (count new lines)
-    - check for verse numbers or other internal references, if found and there are *any other* type of references in the table then replace each with the associated internal reference
-    - check for locations that use a paragraph number or section names instead of actual verse/etc references or lines, for every such statement:
-        - using whatever text is in the location as a starting point to estimate, search the source text for the stance quote (or distinctive keywords from it) to find the real line number
-        - record actual line numbers, not paragraph or other numbers; this is essential for reproducibility and auditability
-- [ ] **Re-scan source text for missed stances**: Identify any verse/etc reference or line number with no `Location` reference in the report. Extract and classify all missing normative claims.
+    - RULE: If internal references (e.g., verse numbers) exist in the source text, always use them. Otherwise, always use line numbers (counting new lines).
+    - If verse numbers or other internal references are found in the source, replace any other reference types (e.g., paragraph numbers) in the table with the correct internal reference.
+    - For locations currently using paragraph numbers or section names: use the existing text as a keyword search to find the actual line or verse number in the source. Record the exact line number to ensure reproducibility.
+- [ ] **Re-scan source text for missed stances**: Review parts of the text with no `Location` reference in the report. Extract and classify all missing normative claims.
 - [ ] **Split multi-claim locations**: Any source location represented by a single statement but containing **two or more distinct stances** must be split into separate statements.
 - [ ] **Required fields present on every statement**: Confirm each row has `#`, `Location`, `Rules`, `Decision Notes`, `Key Topics`, `Speaker`, `Stance Quote`, and `Principle Quote`.
 - [ ] **Rules are exhaustive**: The `Rules` column must list **all** relevant Distinction Rules by **concept**, not vocabulary.
@@ -82,16 +81,16 @@ Validate the numbered `Key Topics` list and its closed-loop relationship to stat
 
 Validate all numeric summaries and derived scores.
 
-- [ ] **Scoring Summary row counts match tables**: `HL_count` equals `HL_rows`; `LL_count` equals `LL_rows`; `Total` equals their sum.
-- [ ] **Scoring Summary percentages are correct**: `HL_pct = 100 × HL / Total`; `LL_pct = 100 × LL / Total`.
-- [ ] **Overall Score is correct**: `Score = (HL_pct - LL_pct) / 10`, rounded to 1 decimal place.
+- [ ] **Scoring Summary row counts match tables**: HL count equals `HL_rows`; LL count equals `LL_rows`; Total equals the sum of `HL_rows` and `LL_rows`.
+- [ ] **Scoring Summary percentages are correct**: $HLpct = 100 × HL / (HL + LL)$; $LLpct = 100 × LL / (HL + LL)$.
+- [ ] **Overall Score is correct**: $score = (HLpct - LLpct) / 10$ (rounded to 1 decimal place).
 - [ ] **Score Table row count equals topic count**: Number of data rows in the Key Topic Score Table must exactly equal the number of topics in the numbered `Key Topics` list.
 - [ ] **Score Table per-topic counts match assignments**: For each topic, the HL and LL counts in the Score Table must equal the counts derived from actual statement references.
 - [ ] **Score Table per-topic scores are correct**: Recalculate each topic's score using the standard formula and confirm.
 
 ---
 
-## 5. Evaluation Highlights (DETAILED)
+## 5. DETAILED ONLY: Evaluation Highlights
 
 Validate analytical sections for factual consistency with statement data.
 
@@ -99,11 +98,11 @@ Validate analytical sections for factual consistency with statement data.
 - [ ] **Strongest Alignment topics are accurate**: The topic(s) cited as strongest HL and strongest LL correspond to the highest and lowest per-topic scores in the Key Topic Score Table.
 - [ ] **HL-for-LL terminology list is complete**: Every instance of High Law vocabulary packaging a Low Law principle is captured and numbered.
 - [ ] **LL-for-HL terminology list is complete**: Every instance of Low Law vocabulary packaging a High Law principle is captured and numbered.
-- [ ] **Comparisons table coverage**: Dimensions that appear in statements (Justice, Mercy, Judgment, Consequences, Dominion, Authority, Suffering, Sacrifice, Perfecting, Unity, Fruit, Safeguards, Durability, Production) are populated if present in the text.
+- [ ] **Comparisons table coverage**: Distinction rules that appear in statements are populated if present in the text.
 
 ---
 
-## 6. Key Topic Evaluation Table & Details (DETAILED)
+## 6. DETAILED ONLY: Key Topic Evaluation Table & Details
 
 Validate that detailed-report sections are structurally synchronized with the Key Topics registry.
 
@@ -116,7 +115,7 @@ Validate that detailed-report sections are structurally synchronized with the Ke
 
 ---
 
-## 7. Narrative Sections & Global Score Lock (DETAILED)
+## 7. DETAILED ONLY: Narrative Sections & Global Score Lock
 
 Validate that all narrative text points to a single, consistent score.
 
@@ -133,12 +132,12 @@ Validate global template compliance and holistic consistency.
 
 - [ ] **Template header exactness**: All section headers (`## Statement Quotes`, `### High Law Aligned (N statements)`, `### Low Law Aligned (N statements)`, `## Scoring Summary`, `## Key Topic Score Table`, etc.) match the specification exactly. No invented headers or tables.
 - [ ] **Sequential numbering**: All numbered lists in the report are sequential with no gaps.
-- [ ] **Holistic re-check triggered**: If any statement was added, removed, moved, split, or reclassified during this review, re-execute Sections 0 through 7 completely (rebuild inventories first) before signing off.
+- [ ] **Holistic re-check triggered**: If any statement was added, removed, moved, split, or reclassified during this review, re-execute validations in Sections 0 through 7 completely (rebuild inventories first) before signing off.
 
 ## Common Pitfalls During Review
 
 - **Header count** can lag behind actual table rows. Always count rows manually.
-- **Per-topic scores go stale after moves**: Moving a statement changes topic-level HL/LL counts AND scores. Recalculate ALL affected topics.
-- **Dual-topic Score Table impact on reclassification**: When a statement is reclassified (moved from HL to LL or vice versa) AND reassigned to a different Key Topic, TWO topics are affected: the topic losing the statement (decrement its HL or LL count) AND the topic gaining it (increment the other). It is easy to update only one side. Always verify both affected topics' Score Table entries after any reclassification + topic change.
+- **Per-topic scores go stale after moves**: Moving a statement changes topic-level HL/LL counts and scores. Recalculate ALL affected topics.
+- **Dual-topic Score Table impact on reclassification**: When a statement is reclassified (moved from HL to LL or vice versa) AND reassigned to a different Key Topic, TWO topics are affected: the topic losing the statement (decrement its HL or LL count), and the topic gaining it (increment the other). It is easy to update only one side. Always verify both affected topics' Score Table entries after any reclassification + topic change.
 - **Evaluation Table bullets diverge from Score Table**: After statement changes, update both Score Table numbers AND Evaluation Table bullet points.
 - **Narrative score mentions survive edits**: Search for old score value across entire document after any count change.
