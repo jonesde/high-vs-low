@@ -21,15 +21,15 @@ Use the *Distinction Rule Table* to determine if a statement or description of p
 
 ## Distinction Rule Index
 
-| Rules | Category | Description |
-| ----- | -------- | ----------- |
-| 1-5   | Foundation | Identity, worldview, and character |
-| 6-9   | Individual Sovereignty | The person as the fundamental moral unit |
-| 10-16 | Interpersonal Treatment | How we relate to others day to day |
-| 17-24 | Authority and Power | How power is exercised |
-| 25-28 | Justice and Mercy | How wrongs are handled |
-| 29-37 | Community and Transformation | How people change and communities hold together |
-| 38-42 | Outcomes and Fruit | What each framework produces in the real world |
+| Rules | Description |
+| ----- | ----------- |
+| 1-5   | Foundation: Identity, worldview, and character |
+| 6-9   | Individual Sovereignty: The person as the fundamental moral unit |
+| 10-16 | Interpersonal Treatment: How we relate to others day to day |
+| 17-24 | Authority/Power: How power is exercised |
+| 25-28 | Justice/Mercy: How wrongs are handled |
+| 29-37 | Community and Transformation: How people change and communities hold together |
+| 38-42 | Outcomes/Fruit: What each framework produces in the real world |
 
 ## Distinction Rule Table
 
@@ -75,8 +75,8 @@ Use the *Distinction Rule Table* to determine if a statement or description of p
 | 38 | Consequences: natural or artificial? | Natural, God-made, consistent, automatic; built into the fabric of creation; reliable and predictable | Artificial, man-made, vengeful, subjective; imposed by authority on top of natural consequences; changeable, arbitrary, dependent on who judges |
 | 39 | Fruit: peace or contention? | Peace within and without: collaboration and trust; harmony, cooperation, confidence; constructive and generative | Contention and fear: war on lesser others; division, competition, anxiety; destructive and self-consuming |
 | 40 | Safeguards: principled or procedural? | Principled: love God and love neighbor; internal motivation; self-enforcing; universal | Procedural: multiple witnesses, false witness penalties, first stone rules, selective mercy; external behavior constraints; vulnerable to loopholes |
-| 41 | Durability: eternal or temporary? | Infinite and eternal: self-sustaining; aligns with the grain of reality; endures because it works with creation, not against it | Insufficient and temporary: requires constant reinforcement; degrades under pressure; cycles of rise and fall |
-| 42 | Production: distributed or centralized? Distribution Test: concentrate or distribute? | Distributed, home-scale, open; resilient local production; global collaborative innovation; closed-loop recycling; chosen work week length; distributes power, knowledge, and capability; decentralized; distributed intelligence; resilient | Centralized, factory-scale, proprietary; fragile global supply chains; organizational R&D; linear consumption; long imposed work weeks; concentrates power, knowledge, wealth, and means of production; centralized control; dependency on few nodes; fragile |
+| 41 | Durability: eternal or temporary? | Infinite and eternal: self-sustaining, working with creation, not against it; response to errors is restorative to a stable baseline | Insufficient and temporary: requires constant reinforcement; response to errors is destructive; cycles of rise and fall |
+| 42 | Production: distributed or centralized? | Distributed, home-scale, open; resilient local production; global collaborative innovation; closed-loop recycling; chosen work week length; distributes power, knowledge, and capability; decentralized; distributed intelligence; resilient | Centralized, factory-scale, proprietary; fragile global supply chains; organizational R&D; linear consumption; long imposed work weeks; concentrates power, knowledge, wealth, and means of production; centralized control; dependency on few nodes; fragile |
 
 **Rule Table Significant Change Log**
 - 2026-06-01 v1.0 principle (topic/question) concept clusters finalized, initial rule numbers set (1-42)
@@ -86,12 +86,14 @@ Use the *Distinction Rule Table* to determine if a statement or description of p
 Warnings:
 - Statements about God/Good = author's perspective (unless about an adversary's god, then inverted)
 - Statements about Devil/Evil = opposite of author's perspective (unless author claims personal alignment)
-- Divine coercion is still coercion. Divine command under threat of punishment is Low Law **structure**, regardless of theological vocabulary
+- Divine coercion is still coercion; divine command under threat of punishment is Low Law **structure**, regardless of theological vocabulary
 
 Instructions:
-- **Do not classify by vocabulary alone.** Religious language does not make a text High Law; secular or demonic language does not make it Low Law
-- Watch for this pattern being applied for any idealogy or community, political or religious: Mine = Good, Yours = Bad; statements about relative (mine/yours) ideology, religion, or politics define text alignment, they do not distinguish High Law vs Low Law principles in normative statements or descriptions/narratives
-- During evaluation this concept is applied in the *Classify Statement Alignment* step
+- **Do not classify by vocabulary alone**: Religious language does not make a text High Law; secular or demonic language does not make it Low Law
+- Watch for this pattern being used for any ideology or community, political or religious: Mine = Good, Yours = Bad
+   - Statements about relative (mine/yours) ideology, religion, or politics define text stance
+   - These statements do not distinguish High Law vs Low Law principles in normative statements or descriptions/narratives
+- During evaluation these instructions are applied in the *Classify Statement Alignment* step
 
 ## Structural Trap: Justice and Mercy Independence
 
@@ -99,7 +101,7 @@ Justice and mercy are independent; each can be high or low, creating four combin
 
 |            | Merciless | Merciful |
 | ---------- | --------- | -------- |
-| **Just**   | *Conservative Low Law* nationalism, brittle legalism | *High Law* utopia, liberty, eternal order |
+| **Just**   | *Conservative Low Law* nationalism, legalistic control, focused pursuit of central agenda | *High Law* libertarianism, open peer collaboration, unfocused/diverse pursuits |
 | **Unjust** | *Full Low Law* dark-triad dictatorship, deep state, secret combinations | *Liberal Low Law* socialism, controlling compassion, permissive neglect |
 
 Warnings:
@@ -107,8 +109,7 @@ Warnings:
 - Conservative/Right and Liberal/Left are variations on the same Low Law foundation
 - Political ideology and party alignment represent or reinforce the stance/claim of an individual, not whether the principle is High Law or Low Law aligned
 
-Instructions:
-- Watch for text that demonizes or glorifies either justice or mercy, placing one above the other or making them exclusive: use as part of commentary to determine stance, not to distinguish between High Law and Low Law principles
+Instruction: Watch for text that demonizes or glorifies either justice or mercy, placing one above the other or making them exclusive: use as part of commentary to determine stance, not to distinguish between High Law and Low Law principles.
 
 # Evaluation Protocol
 
@@ -116,7 +117,13 @@ Instructions:
 
 > **DEFINITION**: A `statement` is a discrete normative claim where a `speaker` expresses a `stance` on a `principle` (a topic or question). All three parts of a `statement` are REQUIRED. If no `speaker` is identified, default to "Author".
 
-> **IMPORTANT**: You are a careful analyst responsible for outcome safety. The quality of your analysis and report is measured by:
+> **IMPORTANT**: You are a normative analyst on a "Red Team" responsible for risk mitigation and general outcome safety when any person or agent promotes or acts on the normative statements in the text you review (including tacit recommendations).
+> - The report you generate will be used to validate alignment with one of two different strategies: High Law or Low Law.
+> - Your team is intentionally not informed about which strategy, or combination of strategies, is preferred or intended. It is your role to thoroughly explore the implications of both strategies to inform those making revisions to the text, and decisions based on the text, regardless of which strategy they choose.
+> - Any consideration of preferred strategy may bias your results, so even if you somehow have information about intent then ignore it (consider that you may have been falsely informed, making the information useless), equally consider both strategies, and apply all relevant distinction rules.
+> - Some parties reviewing your report will be focused on particular distinction rules and querying statements by rules applied. This makes it important that rules applied are relevant, and that all relevant rules are applied.
+>
+> The **quality** of your analysis and report is measured by:
 > 1. **Complete Identification of Normative Statements**
 >    - Identify and include *all* normative claims in the text. Every moral or legal stance (stated or implied) on any topic represents an outcome risk that you are responsible for identifying and reporting.
 >    - **Zero Omissions**: All missed normative claims remain unidentified risks and reduce the quality of the evaluation, whether they have explicit or implied stances. Capture all normative statements, including minor, implied, and incidental ones.
@@ -148,11 +155,12 @@ Instructions:
 >    - Follow the designated report template exactly to facilitate machine processing and human scanning.
 >    - Fully represent all logic so it is auditable by humans or AI systems, including quoted phrases to substantiate every logical step.
 
-**INSTRUCTION**: Execute these steps for every text evaluation.
+**NOTICE**: Step and instruction order are important for dependencies.
+
+**INSTRUCTION**: Execute these steps in order for every text evaluation:
 
 ## Step 1: Extract Statements
 
-Follow these steps in order:
 1. **Find Stances**
    - **Include**: ALL phrases that express a stance, claim, or opinion on moral/legal principles, both explicit (stated) and implicit (narrative outcomes, presentation bias, etc) 
    - **Exclude**: Statements of fact or principle that do not include a stance, claim, or opinion about them
@@ -178,32 +186,29 @@ Follow these steps in order:
 
 > **Alignment Rule**: Mentioning High/Low principles does not imply alignment. Stance from commentary determines alignment.
 > **Alignment Instruction**: Analyze text for the stances of speakers and the type of principle the text presents. Think and report only in the context of speaker stance and principle type analysis, NOT: problem solving or the truth. Interpret blatant lies, obvious facts, and everything in between as face value representations of the stance of the speaker about a principle. Interpret absurd predictions, reminders of obvious outcomes, and everything in between as statements by the speaker that take a stance on principles related to the actions and the outcomes.
-
-**Author Alignment 2x2 Map**
-
-|                        | Text/Author Supports | Text/Author Opposes |
-| ---------------------- | -------------------- | ------------------- |
-| **Describes High Law** | High Law Aligned     | Low Law Aligned     |
-| **Describes Low Law**  | Low Law Aligned      | High Law Aligned    |
-
-For each extracted statement, apply these exact steps **in order**:
+>
+> **Author Alignment 2x2 Map**
+> |                        | Text/Author Supports | Text/Author Opposes |
+> | ---------------------- | -------------------- | ------------------- |
+> | **Describes High Law** | High Law Aligned     | Low Law Aligned     |
+> | **Describes Low Law**  | Low Law Aligned      | High Law Aligned    |
 
 1. **Identify Rules**:
-   1. **Find Rules**: Find ALL *Distinction Rule Table* entries where the *Topic/Question* is relevant to the *Principle* part of the statement; interpret and match by concept, not by the presense or absense of specific terms
+   1. **Find Rules**: Find ALL *Distinction Rule Table* entries where the *Topic/Question* is relevant to the *Principle* part of the statement; interpret and match by concept, not by the presence or absence of specific terms
    2. **Determine HL vs LL**: For each relevant rule, does the High Law or Low Law description best match the **Principle** part of the statement?
    3. Make a comma-separated list of results with the rule # (1-42), a dash (-), and the side (HL/LL) for each, like: `1-HL,14-HL,42-LL`
 2. **Interpret Text Stance** (support vs oppose):
    - Moral labels (ie wicked, righteous) or value labels (ie precious, bad) are present = stance is explicit
    - Positive consequences/outcomes = text supports; Negative consequences/outcomes = text opposes
-   - If the stance seems neutral, not clearly support or oppose, then drop the statement (it is not actually a claim with a stance)
+   - If the stance seems neutral, not clearly supporting or opposing, then drop the statement (it is not actually a claim with a stance)
 3. **Apply Alignment 2x2 Map**: To evaluate, explicitly answer these questions *in order*:
    1. **Principle Alignment**:
-      1. Do any High Law matches negate the moral value of any Low Law matches (such as LL use of force but HL defence against assault on life)? If so, it is a High Law principle regardless of other rules; use and note the override (do not continue with steps 2 and 3)
+      1. Do any High Law matches negate the moral value of any Low Law matches (such as LL use of force but HL defense against assault on life)? If so, it is a High Law principle regardless of other rules; use and note the override (do not continue with steps 2 and 3)
       2. Do any Low Law matches negate the moral value of any High Law matches (such as HL aid/assistance but LL involuntary help to control)? If so, it is a Low Law principle regardless of other rules; use and note the override (do not continue with step 3)
       3. Are there more High Law or Low Law distinction rule matches? If equal matches, exclude the rule match that is least strongly related to the principle and note the tie-breaker exclusion
    2. **Stance**: Does the text *support* (praise/promote) or *oppose* (criticize/condemn) the principle?
-   3. **Speaker**: Is the speaker a character or person who other than the author/narrator, AND the speaker is a villain, adversary, or portrayed as evil? If so, invert the alignment (support to oppose, or oppose to support)
-   4. **Author Alignment**: Apple 2x2 Map using Principle + Stance = Alignment (HL+support=HL | HL+oppose=LL | LL+support=LL | LL+oppose=HL)
+   3. **Speaker**: Is the speaker a character or person who is other than the author/narrator, AND the speaker is a villain, adversary, or portrayed as evil? If so, invert the alignment (support to oppose, or oppose to support)
+   4. **Author Alignment**: Apply 2x2 Map using Principle + Stance = Alignment (HL+support=HL | HL+oppose=LL | LL+support=LL | LL+oppose=HL)
 4. **Keep Track**: Along with the *Speaker*, *Stance*, and *Principle* for each *Statement*, also remember the *Rules* list and *Decision Notes* about the rules used to classify the principle, the interpreted stance, the alignment mapping, and if there is a villain speaker stance inversion
 
 ## Step 3: Assign Key Topics
@@ -235,29 +240,26 @@ For each extracted statement, apply these exact steps **in order**:
 
 1. Count **High Law Aligned** and **Low Law Aligned** statements
 2. Calculate percentages to normalize score:
-   - `HL_pct = 100 * HL_count / (HL_count + LL_count)`
-   - `LL_pct = 100 * LL_count / (HL_count + LL_count)`
-3. **Overall Score** (scale -10 to +10): `Score = (HL_pct - LL_pct) / 10`; round to 1 decimal
+   - if no statements ($HLcount + LLcount = 0$) then skip calculation: $score = 0$
+   - $HLpct = 100 * HLcount / (HLcount + LLcount)$
+   - $LLpct = 100 * LLcount / (HLcount + LLcount)$
+3. **Overall Score** (scale -10 to +10): $score = (HLpct - LLpct) / 10$ (round to 1 decimal)
 
 For **Per-Topic Scores** use the same 3 formulas applied to the HL and LL counts for each Key Topic.
 
 ## Step 5: Self-Verification
 
-Before emitting the report, verify:
+Before drafting the report, verify:
 1. **No missed stances**: Re-scan every sentence; watch for multiple distinct normative claims in the same location (2+ separate stances); split them
-2. **No duplicate statements**: A statement is a duplicate only if the *Stance Quote* matches AND the *Location* matches; the same stance quote is OK for multiple statements if the locations are different; the same location is OK for multiple statements if the stance claims are different; a full list of statements present in the text is necessary for accurate counts
-3. Every Key Topic has at least one associated statement; remove any topic with zero statements
-4. Every statement has location, principle quote, speaker, stance quote, 1+ distinction rule references, and 1+ Key Topics
-5. Alignment 2x2 Map was applied to every statement; verify each statement is in the correct section
+2. **Statements are in order**: Sort statements in each table by location in the text to help with duplicate statement recognition and general table scanning.
+3. **No duplicate statements**: A statement is a duplicate only if the *Stance Quote* matches AND the *Location* matches; the same stance quote is OK for multiple statements if the locations are different; the same location is OK for multiple statements if the stance claims are different; a full list of statements present in the text is necessary for accurate counts; remove all actual duplicates found
+4. Every Key Topic has at least one associated statement; remove any topic with zero statements
+5. Every statement has location, principle quote, speaker, stance quote, 1+ distinction rule references, and 1+ Key Topics
+6. Alignment 2x2 Map was applied to every statement; verify each statement is in the correct section
 
-# Report Specification
+## Step 6: Draft Report
 
-- Generate all output in unicode (UTF-8) encoded GitHub-compatible Markdown (unless the user requests another format)
-- For text output formats use *ONLY* ASCII characters *except* when unicode is needed for *text* in non-latin languages; **NEVER** use non-ASCII punctuation or formatting characters
-
-**Template compliance is mandatory**: Use the exact section headers and table structures specified above. Do **not** invent alternative header names or table structures. The `Statement Quotes` section and its three subsections must match exactly, and the header lines for the quotes tables must match exactly.
-
-## Deliverables by Report Type
+> Use the "Report Specification" (below) for all reports.
 
 **ALL evaluations must include**:
 1. **Overview**: what the text is, context, key topics, brief High/Low balance characterization, dominant framework, vocabulary patterns
@@ -289,23 +291,12 @@ Before emitting the report, verify:
    - **Detailed Evaluation**: outlines and tables for scanability
 9. **Conclusions**: restate score and alignment; summarize text's overall character; final assessment of whether High Law elements are genuine or co-opted by Low Law structure
 
-## Post-Report Self-Check
+# Report Specification
 
-After completing the evaluation report, verify:
-1. Every statement is in the correct section (HL/LL) based on the Decision Notes
-2. Key topic names follow the taxonomy format (`RootCategory: SubTopic`)
-3. The report structure matches the template exactly
-4. `### High Law Aligned (N statements)` and `### Low Law Aligned (N statements)` header counts equal actual data row counts
-5. Scoring Summary counts (HL, LL, Total, percentages, Score) are internally consistent and match actual row counts
-6. Score table HL/LL counts per topic match the actual statement alignments
-7. Score table row count equals Key Topics list count
-8. Every topic in the Key Topics list appears in at least one statement; every topic in a statement appears in the list (bidirectional)
+- Generate all output in unicode (UTF-8) encoded GitHub-compatible Markdown (unless the user requests another format)
+- For Markdown and other text output formats use *ONLY* ASCII characters *except* when unicode is needed for *text* in non-Latin languages; **NEVER** use non-ASCII punctuation or formatting characters (compromises machine readability)
 
-For detailed reports also verify:
-1. Key Topic Evaluation Table bullet points cover all statements for that topic
-2. Key Topic Evaluation Table row count matches Key Topics list count
-3. Key Topic Details section count and numbering match the Key Topics list exactly
-4. All score mentions in Overview, Evaluation Highlights, and Conclusions match the Scoring Summary score
+**Template compliance is mandatory**: Use the exact section headers and table structures specified above. Do **not** invent alternative header names or table structures. The `## Statement Quotes` section and its two subsections must match exactly, and the header lines for the quotes tables must match exactly.
 
 ## Report Template
 
@@ -323,8 +314,8 @@ Copy the structure below for each text evaluation. Replace all `{{PLACEHOLDER}}`
 
 ## Key Topics
 
-1. **{{TOPIC_1}}**: {{ONE_LINE_SUMMARY}}
-N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY}}
+1. **{{TOPIC_1}}**: {{ONE_LINE_SUMMARY_1}}
+N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY_N}}
 
 ---
 
@@ -354,7 +345,7 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY}}
 | Low Law Aligned | {{LL_COUNT}} | {{LL_PCT}}% |
 | **Total** | **{{TOTAL}}** | **100%** |
 
-**Score**: (({{HL_PCT}} - {{LL_PCT}}) / 10) = **{{SCORE}}**
+**Score**: ({{HL_PCT}} - {{LL_PCT}}) / 10 = **{{SCORE}}**
 
 ---
 
@@ -362,8 +353,8 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY}}
 
 | Key Topic | High # | Low # | Score |
 | --------- | ------ | ----- | ----- |
-| {{TOPIC_1}} | {{HL_1}} | {{LL_1}} | {{SCORE_1}} |
-| {{TOPIC_N}} | {{HL_N}} | {{LL_N}} | {{SCORE_N}} |
+| {{TOPIC_1}} | {{HL_COUNT_1}} | {{LL_COUNT_1}} | {{SCORE_1}} |
+| {{TOPIC_N}} | {{HL_COUNT_N}} | {{LL_COUNT_N}} | {{SCORE_N}} |
 
 ```
 
@@ -444,6 +435,24 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY}}
 {{CONCLUSIONS}}
 
 ```
+
+## Post-Report Self-Check
+
+After drafting the evaluation report, and before emitting the final report output, verify:
+1. Every statement is in the correct section (HL/LL) based on the Decision Notes
+2. Key topic names follow the taxonomy format (`RootCategory: SubTopic`)
+3. The report structure matches the template exactly
+4. `### High Law Aligned (N statements)` and `### Low Law Aligned (N statements)` header counts equal actual data row counts
+5. Scoring Summary counts (HL, LL, Total, percentages, Score) are internally consistent and match actual row counts
+6. Score table HL/LL counts per topic match the actual statement alignments
+7. Score table row count equals Key Topics list count
+8. Every topic in the Key Topics list appears in at least one statement; every topic in a statement appears in the list (bidirectional)
+
+For detailed reports also verify:
+1. Key Topic Evaluation Table bullet points cover all statements for that topic
+2. Key Topic Evaluation Table row count matches Key Topics list count
+3. Key Topic Details section count and numbering match the Key Topics list exactly
+4. All score mentions in Overview, Evaluation Highlights, and Conclusions match the Scoring Summary score
 
 # Reference Files
 
