@@ -371,12 +371,12 @@ N. **{{TOPIC_N}}**: {{ONE_LINE_SUMMARY_N}}
 ### Key Topics with Strongest Alignment
 
 **Strongest High Law Alignment:**
-- **{{TOPIC}}**: {{EXPLANATION}}
-- ...
+- **{{TOPIC_1}}**: {{EXPLANATION_1}}
+- **{{TOPIC_N}}**: {{EXPLANATION_N}}
 
 **Strongest Low Law Alignment:**
-- **{{TOPIC}}**: {{EXPLANATION}}
-- ...
+- **{{TOPIC_1}}**: {{EXPLANATION_1}}
+- **{{TOPIC_N}}**: {{EXPLANATION_N}}
 
 ### High Law Terminology Used for Low Law Principles
 
