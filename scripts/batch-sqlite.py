@@ -1469,6 +1469,8 @@ def process_merge_review_interleaved(client, source_db_path, args):
             if merge_chat_result:
                 _accumulate_stats(merge_stats, merge_chat_result)
             merge_results.append((doc_id, doc_title, count_hl, count_ll, score, merged_eval, merge_error))
+            if merge_error:
+                break
 
             logger.info("")
 
@@ -1496,6 +1498,8 @@ def process_merge_review_interleaved(client, source_db_path, args):
                     if review_chat_result:
                         _accumulate_stats(review_stats, review_chat_result)
                     review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
+                    if final_error:
+                        break
 
             logger.info("")
 
@@ -1567,6 +1571,8 @@ def process_records_interleaved(client, records, args):
                 if chat_result:
                     _accumulate_stats(eval_stats, chat_result)
                 eval_results.append((doc_id, doc_title, count_hl, count_ll, score, response, error))
+                if error:
+                    break
 
             logger.info("")
 
@@ -1598,6 +1604,8 @@ def process_records_interleaved(client, records, args):
                     if chat_result:
                         _accumulate_stats(review_stats, chat_result)
                     review_results.append((doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, final_error))
+                    if final_error:
+                        break
 
             logger.info("")
 
