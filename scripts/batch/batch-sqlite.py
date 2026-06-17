@@ -561,13 +561,15 @@ class StubClient:
 # Prompt builders — load skill files dynamically
 # ---------------------------------------------------------------------------
 
-_SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# script lives in high-vs-low/scripts/batch/batch-sqlite.py, so from file get dir 3 times to get the skill dir
+_SKILL_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def _read_skill_file(relative_path):
     """Read a file from the skill directory."""
     path = os.path.join(_SKILL_DIR, relative_path)
     if not os.path.exists(path):
         logger.warning("Skill file not found: %s", path)
+        # TODO: maybe better to quit if not found, sort of matters...
         return ""
     with open(path, "r", encoding="utf-8") as fl:
         return fl.read()
