@@ -1,0 +1,128 @@
+# ---------------------------------------------------------------------------
+# Example configuration for run-sqlite.py
+# ---------------------------------------------------------------------------
+# Usage:
+#   python3 run-sqlite.py run-example-config.yml
+#
+# All fields are optional. CLI arguments override YAML values.
+# Fields with defaults shown as comments indicate the fallback value.
+# ---------------------------------------------------------------------------
+
+# Database file path (required unless --db passed via CLI)
+db: my_documents.db
+
+# ---------------------------------------------------------------------------
+# Main endpoint configuration
+# ---------------------------------------------------------------------------
+
+# API endpoint (IP, hostname, or full URL)
+# Default: $OPENAI_ENDPOINT or "http://127.0.0.1:1234/v1"
+endpoint: "http://127.0.0.1:1234/v1"
+
+# API key, default: $OPENAI_API_KEY or ""
+api-key: ""
+
+# Model name (passed to the LLM client), default: ""
+model: ""
+
+# Human-readable name for this endpoint (shown in progress lines), default: "main"
+name: "main"
+
+# Number of parallel threads for the main endpoint, default: 1
+parallel: 1
+
+# Number of review iterations per record (0 = skip review phase), default: 3
+reviews: 3
+
+# ---------------------------------------------------------------------------
+# Record selection
+# ---------------------------------------------------------------------------
+
+# Process only the first N matching records, default: None (no limit)
+limit: 100
+
+# Start processing from this record ID (inclusive), default: None (start from beginning)
+start-id: 0
+
+# Custom SQL WHERE clause (without the "WHERE" keyword), default: None (no filter)
+where: ""
+
+# ---------------------------------------------------------------------------
+# Table and column configuration
+# ---------------------------------------------------------------------------
+
+# Table name containing documents, default: auto-detected from DB (falls back to "documents")
+table: documents
+
+# Column containing the document text to evaluate, default: "doc_text"
+document-column: doc_text
+
+# TODO: add support for id-column, and the 4 eval cols (count_hl, count_ll, score, evaluation)
+
+# ---------------------------------------------------------------------------
+# Operation mode flags
+# ---------------------------------------------------------------------------
+
+# Use stub AI client for testing (deterministic responses, no LLM calls), default: false
+stub: false
+
+# Skip the evaluation phase entirely (only do reviews/merges), default: false
+skip-evaluation: false
+
+# Skip the review phase (equivalent to reviews: 0), default: false
+skip-review: false
+
+# Merge records from another database into this one, default: None (no merge)
+# merge-from: other_database.db
+
+# Print planned actions without modifying the database, default: false
+dry-run: false
+
+# Reset all evaluation data before processing, default: false
+reset: false
+
+# Only reset evaluation data and exit (do not process), default: false
+reset-only: false
+
+# Produce detailed evaluation reports (longer LLM calls, more context), default: false
+detailed: false
+
+# ---------------------------------------------------------------------------
+# Draft endpoints
+# ---------------------------------------------------------------------------
+# Draft mode: send documents to secondary LLM endpoints for parallel
+# evaluation. Each draft endpoint gets its own thread pool and review
+# iterations. After all drafts complete, a merge thread consolidates
+# results into the main evaluation.
+#
+# When 'drafts' is non-empty, the script runs in draft mode:
+#   - Draft endpoints process documents (eval + review)
+#   - A merge thread consolidates draft results into main eval
+#   - The main endpoint config above is used only for the merge step
+#
+# Each draft endpoint supports these fields:
+
+drafts:
+  # --- Draft endpoint 1 ---
+  - endpoint: "http://10.1.0.243:8080/v1"
+    api-key: ""
+    model: ""
+    name: "Gemma4 12B"
+    parallel: 2
+    reviews: 1
+
+  # --- Draft endpoint 2 ---
+  - endpoint: "http://10.1.0.191:1234/v1"
+    api-key: ""
+    model: ""
+    name: "Qwen3.6 35B"
+    parallel: 1
+    reviews: 2
+
+  # --- Draft endpoint 3 (example with skip review) ---
+  # - endpoint: "10.1.0.100"
+  #   api-key: ""
+  #   model: ""
+  #   name: "Small Model"
+  #   parallel: 1
+  #   reviews: 0    # Skips review phase for this endpoint

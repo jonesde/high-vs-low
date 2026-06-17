@@ -68,7 +68,7 @@ Do *NOT* use this script unless the user explicitly requests it. This script is 
 
 Usage:
 ```
-python3 high-vs-low/scripts/batch-sqlite.py <db_path> [options]
+python3 high-vs-low/scripts/batch/batch-sqlite.py <db_path> [options]
 ```
 
 Argument options:
@@ -95,7 +95,6 @@ Common Patterns:
 - **Easy Common Case (do 10 not yet done)**: `python3 batch-sqlite.py my.db --limit 10`
 - **Reset and re-eval a subset**: `--reset --where "year = 1975" --limit 5`
 - **Continue eval on a subset**: `--where "year = 1975" --limit 5`
-- **Preview without modifying**: `--skip-evaluation --skip-review --where "year >= 2000"`
 - **Resume from a specific ID**: `--start-id 500 --limit 10`
 - **Test without an LLM**: `--stub`
 - **Merge evaluations from another DB**: `python3 batch-sqlite.py target.db --merge-from source.db` (back up target.db first!)

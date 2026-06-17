@@ -1,0 +1,24 @@
+db: test_docs.db
+endpoint: '10.1.0.243'
+api-key: ''
+model: ''
+name: 'Qwen3.6 27B q6'
+parallel: 1
+reviews: 1
+start-id: 345
+limit: 5
+stub: true
+
+drafts:
+  - endpoint: 'http://10.1.0.243:8080/v1'
+    api-key: ''
+    model: ''
+    name: 'Gemma4 12B qat q4'
+    parallel: 1
+    reviews: 1
+  - endpoint: '10.1.0.191'
+    api-key: ''
+    model: ''
+    name: 'Qwen3.6 35B A3B q8'
+    parallel: 2
+    reviews: 1
