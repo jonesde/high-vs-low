@@ -81,8 +81,6 @@ Use the *Distinction Rule Table* to determine if a statement or description of p
 **Rule Table Significant Change Log**
 - 2026-06-01 v1.0 principle (topic/question) concept clusters finalized, initial rule numbers set (1-42)
 
-(humanote merge candidates, some differences but lots of overlap: 7+15+16 on responses to conflict/harm/loss, 6+17+18 autonomy/persuasion, 34+35 or actually this is 3 principles: perfecting, unity, and righteousness)
-
 ## Structural Trap: Religious and Political Texts
 
 Warnings:
