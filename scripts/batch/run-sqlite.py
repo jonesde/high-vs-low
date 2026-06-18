@@ -86,7 +86,7 @@ DRAFT_MERGE_COMPLETE = 6
 
 # Directories for other files used (SKILL.md, report-review.md, verify-report.py, etc), relative to script file (use dir structure from git repo)
 _BATCH_DIR = os.path.dirname(os.path.abspath(__file__))
-_SCRIPTS_DIR = os.path.dirname(_SCRIPTS_DIR)
+_SCRIPTS_DIR = os.path.dirname(_BATCH_DIR)
 _SKILL_DIR = os.path.dirname(_SCRIPTS_DIR)
 
 # ---------------------------------------------------------------------------
@@ -613,7 +613,7 @@ Review the Evaluation Report of the Original Document Text by following the inst
 def run_verify_report(evaluation_text: str) -> Optional[str]:
     verify_script = os.path.join(_SCRIPTS_DIR, "verify-report.py")
     if not os.path.exists(verify_script):
-        logger.info("    [script] Script not found: %s — skipping", verify_script)
+        logger.info("    [script] Script not found: %s - skipping", verify_script)
         return None
     try:
         fd, tmp_path = tempfile.mkstemp(suffix=".md", text=True)
@@ -631,10 +631,10 @@ def run_verify_report(evaluation_text: str) -> Optional[str]:
             except OSError:
                 pass
     except subprocess.TimeoutExpired:
-        logger.warning("    [script] verify-report.py timed out — skipping")
+        logger.warning("    [script] verify-report.py timed out - skipping")
         return None
     except Exception as exc:
-        logger.warning("    [script] Error running verify-report.py: %s — skipping", exc)
+        logger.warning("    [script] Error running verify-report.py: %s - skipping", exc)
         return None
 
 
@@ -706,6 +706,7 @@ def parse_review_changes_section(review_text: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _get_conn(db_path: str) -> sqlite3.Connection:
+    logger.info("    [db] _get_conn %s", db_path)
     conn = sqlite3.connect(db_path, timeout=30)
     # TODO: is WAL a good idea? necessary for the multi-threads? gets set permanently on file once used...
     conn.execute("PRAGMA journal_mode=WAL")
@@ -714,6 +715,7 @@ def _get_conn(db_path: str) -> sqlite3.Connection:
 
 def _get_write_conn(db_path: str) -> sqlite3.Connection:
     """Get a connection with BEGIN IMMEDIATE for atomic claim operations."""
+    logger.info("    [db] _get_write_conn %s", db_path)
     conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)
     # TODO: is WAL a good idea? necessary for the multi-threads? gets set permanently on file once used...
     conn.execute("PRAGMA journal_mode=WAL")
@@ -1033,10 +1035,12 @@ def _do_eval(client, doc_id: int, doc_title: Optional[str], doc_text: str, dry_r
         if isinstance(conn_or_path, sqlite3.Connection):
             _save_eval_to_table(conn_or_path, table, doc_id, eval_report, count_hl, count_ll, score)
         else:
+            logger.info("    [db] _do_eval open %s", conn_or_path)
             conn = _get_conn(conn_or_path)
             try:
                 _save_eval_to_table(conn, table, doc_id, eval_report, count_hl, count_ll, score)
             finally:
+                logger.info("    [db] _do_eval close %s", conn_or_path)
                 conn.close()
         logger.info("    [eval] Saved to DB (%s chars)", len(eval_report))
 
@@ -1093,10 +1097,12 @@ def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
                 if isinstance(conn_or_path, sqlite3.Connection):
                     _save_eval_to_table(conn_or_path, table, doc_id, updated_eval, new_hl, new_ll, new_score)
                 else:
+                    logger.info("    [db] _do_review open %s", conn_or_path)
                     conn = _get_conn(conn_or_path)
                     try:
                         _save_eval_to_table(conn, table, doc_id, updated_eval, new_hl, new_ll, new_score)
                     finally:
+                        logger.info("    [db] _do_review close %s", conn_or_path)
                         conn.close()
             current_eval = updated_eval
             final_hl, final_ll, final_score = new_hl, new_ll, new_score
@@ -1118,20 +1124,22 @@ def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval
     """Merge two evaluations. Returns (doc_id, hl, ll, score, merged_eval, error, chat_result).
     conn_or_path: either a sqlite3.Connection or a db_path string."""
     if eval_target is None:
-        logger.info("    [merge] Target has no eval — copying from source")
+        logger.info("    [merge] Target has no eval - copying from source")
         count_hl, count_ll, score = parse_evaluation_report(eval_source)
         if not dry_run:
             if isinstance(conn_or_path, sqlite3.Connection):
                 _save_eval_to_table(conn_or_path, table, doc_id, eval_source, count_hl, count_ll, score)
             else:
+                logger.info("    [db] _do_merge copy open %s", conn_or_path)
                 conn = _get_conn(conn_or_path)
                 try:
                     _save_eval_to_table(conn, table, doc_id, eval_source, count_hl, count_ll, score)
                 finally:
+                    logger.info("    [db] _do_merge copy close %s", conn_or_path)
                     conn.close()
         return (doc_id, count_hl, count_ll, score, eval_source, None, None)
 
-    logger.info("    [merge] Both have evals — AI merge")
+    logger.info("    [merge] Both have evals - AI merge")
     system_prompt = build_merge_system_prompt()
     user_prompt = build_merge_user_prompt(doc_text, doc_title, eval_source, eval_target,
                                           source_name, target_name)
@@ -1145,7 +1153,7 @@ def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval
 
     merged_eval = result.content.lstrip() if result.content else None
     if not merged_eval or not _is_valid_report(merged_eval):
-        logger.warning("    [merge] Invalid merged report — keeping target")
+        logger.warning("    [merge] Invalid merged report - keeping target")
         count_hl, count_ll, score = parse_evaluation_report(eval_target)
         return (doc_id, count_hl, count_ll, score, eval_target, "Invalid merged report", result)
 
@@ -1156,10 +1164,12 @@ def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval
         if isinstance(conn_or_path, sqlite3.Connection):
             _save_eval_to_table(conn_or_path, table, doc_id, merged_eval, count_hl, count_ll, score)
         else:
+            logger.info("    [db] _do_merge save merged open %s", conn_or_path)
             conn = _get_conn(conn_or_path)
             try:
                 _save_eval_to_table(conn, table, doc_id, merged_eval, count_hl, count_ll, score)
             finally:
+                logger.info("    [db] _do_merge save merged close %s", conn_or_path)
                 conn.close()
 
     return (doc_id, count_hl, count_ll, score, merged_eval, None, result)
@@ -1171,16 +1181,18 @@ def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str
     conn_or_path: either a sqlite3.Connection or a db_path string.
     Returns (hl, ll, score, merged_eval, error, chat_result)."""
     if main_eval is None:
-        logger.info("    [draft-merge] No main eval — copying draft")
+        logger.info("    [draft-merge] No main eval - copying draft")
         count_hl, count_ll, score = parse_evaluation_report(draft_eval)
         if not dry_run:
             if isinstance(conn_or_path, sqlite3.Connection):
                 _save_eval_to_table(conn_or_path, table, doc_id, draft_eval, count_hl, count_ll, score)
             else:
+                logger.info("    [db] _do_draft_merge copy open %s", conn_or_path)
                 conn = _get_conn(conn_or_path)
                 try:
                     _save_eval_to_table(conn, table, doc_id, draft_eval, count_hl, count_ll, score)
                 finally:
+                    logger.info("    [db] _do_draft_merge copy close %s", conn_or_path)
                     conn.close()
         return (count_hl, count_ll, score, draft_eval, None, None)
 
@@ -1198,7 +1210,7 @@ def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str
 
     merged_eval = result.content.lstrip() if result.content else None
     if not merged_eval or not _is_valid_report(merged_eval):
-        logger.warning("    [draft-merge] Invalid merged report — keeping main")
+        logger.warning("    [draft-merge] Invalid merged report - keeping main")
         count_hl, count_ll, score = parse_evaluation_report(main_eval)
         return (count_hl, count_ll, score, main_eval, "Invalid merged report", result)
 
@@ -1209,10 +1221,12 @@ def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str
         if isinstance(conn_or_path, sqlite3.Connection):
             _save_eval_to_table(conn_or_path, table, doc_id, merged_eval, count_hl, count_ll, score)
         else:
+            logger.info("    [db] _do_draft_merge save merged open %s", conn_or_path)
             conn = _get_conn(conn_or_path)
             try:
                 _save_eval_to_table(conn, table, doc_id, merged_eval, count_hl, count_ll, score)
             finally:
+                logger.info("    [db] _do_draft_merge save merged close %s", conn_or_path)
                 conn.close()
 
     return (count_hl, count_ll, score, merged_eval, None, result)
@@ -1262,11 +1276,13 @@ class ThreadStats:
 
 def _update_status(db_path: str, table: str, doc_id: int, status: int):
     """Update eval_status for a record."""
+    logger.info("    [db] _update_status open %s", db_path)
     conn = _get_conn(db_path)
     try:
         conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (status, doc_id))
         conn.commit()
     finally:
+        logger.info("    [db] _update_status close %s", db_path)
         conn.close()
 
 
@@ -1365,7 +1381,9 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str, doc
     # Only thread 0 runs the merge-plan step to avoid concurrent updates
     if line_idx == 0:
         logger.info("%s [merge-plan] Planning merges from %s", prefix, source_db_path)
+        logger.info("[db] worker_main_merge source open %s", source_db_path)
         src_conn = _get_conn(source_db_path)
+        logger.info("[db] worker_main_merge target open %s", db_path)
         tgt_conn = _get_conn(db_path)
         try:
             src_cursor = src_conn.cursor()
@@ -1400,7 +1418,9 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str, doc
                 tgt_conn.commit()
                 logger.info("[merge-plan] Planned %d merges", tgt_cursor.rowcount)
         finally:
+            logger.info("[db] worker_main_merge source close %s", source_db_path)
             src_conn.close()
+            logger.info("[db] worker_main_merge target close %s", db_path)
             tgt_conn.close()
 
     while not stop_event.is_set():
@@ -1436,6 +1456,7 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str, doc
                 logger.info("%s [merge] ID=%s: %s", prefix, doc_id, (doc_title or "N/A")[:50])
                 display.update_line(line_idx, f"{prefix} merging ID={doc_id} ...")
 
+                logger.info("[db] worker_main_merge loop source open %s", source_db_path)
                 src_conn = _get_conn(source_db_path)
                 try:
                     src_cursor = src_conn.cursor()
@@ -1443,6 +1464,7 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str, doc
                     src_row = src_cursor.fetchone()
                     eval_source = src_row[0] if src_row else None
                 finally:
+                    logger.info("[db] worker_main_merge loop source close %s", source_db_path)
                     src_conn.close()
 
                 if eval_source:
@@ -1491,6 +1513,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
         doc_text = None
         draft_eval = None
         claimed = False
+        logger.info("[db] worker_draft_eval loop open %s", db_path)
         conn = _get_conn(db_path)
         try:
             cursor = conn.cursor()
@@ -1512,6 +1535,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
                         break
                     _, doc_title, doc_text = doc_row
         finally:
+            logger.info("[db] worker_draft_eval loop close %s", db_path)
             conn.close()
 
         if claimed and doc_id is not None:
@@ -1565,6 +1589,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
             doc_id = None
             doc_title = None
             doc_text = None
+            logger.info("[db] worker_draft_eval loop find drafts open %s", db_path)
             conn = _get_conn(db_path)
             try:
                 cursor = conn.cursor()
@@ -1583,9 +1608,10 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
                             break
                         _, doc_title, doc_text = doc_row
                     else:
-                        # Lost race to another thread — break and retry from loop top
+                        # Lost race to another thread - break and retry from loop top
                         break
             finally:
+                logger.info("[db] worker_draft_eval loop find drafts close %s", db_path)
                 conn.close()
 
             if doc_id is not None:
@@ -1645,10 +1671,12 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
 
     while not stop_event.is_set():
         # Phase 0: Check if any docs are in drafts-in-progress
+        logger.info("[db] worker_draft_merge outer open %s", db_path)
         conn = _get_conn(db_path)
         try:
             in_progress = conn.execute(f"SELECT COUNT(*) FROM {table} WHERE eval_status = ?", (STATUS_DRAFTS_IN_PROGRESS,)).fetchone()[0]
         finally:
+            logger.info("[db] worker_draft_merge outer close %s", db_path)
             conn.close()
 
         if in_progress == 0:
@@ -1664,6 +1692,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
         found_merge = False
         work_item = None  # (doc_id, doc_title, doc_text, main_eval, draft_evals, is_retry)
         for draft_seq in all_draft_seqs:
+            logger.info("[db] worker_draft_merge find review-complete loop open %s", db_path)
             conn = _get_conn(db_path)
             try:
                 cursor = conn.cursor()
@@ -1673,11 +1702,13 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
                     (draft_seq, DRAFT_REVIEW_COMPLETE, STATUS_DRAFTS_IN_PROGRESS))
                 rows = cursor.fetchall()
             finally:
+                logger.info("[db] worker_draft_merge find review-complete loop close %s", db_path)
                 conn.close()
 
             for row in rows:
                 doc_id = row[0]
                 # Collect data needed for merge/review
+                logger.info("[db] worker_draft_merge inner inner loop doc id %s open %s", doc_id, db_path)
                 conn = _get_conn(db_path)
                 try:
                     cursor = conn.cursor()
@@ -1719,6 +1750,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
                             found_merge = True
                             break
                 finally:
+                    logger.info("[db] worker_draft_merge inner inner loop doc id %s close %s", doc_id, db_path)
                     conn.close()
 
                 if found_merge:
@@ -1734,8 +1766,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
 
                 if reviews > 0:
                     _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                        client, doc_id, doc_title, doc_text, main_eval, dry_run,
-                        db_path, table, reviews, progress_cb)
+                        client, doc_id, doc_title, doc_text, main_eval, dry_run, db_path, table, reviews, progress_cb)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_review()
@@ -1745,22 +1776,26 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
                         time.sleep(2)
                         continue
                     else:
+                        logger.info("[db] worker_draft_merge merge status review-complete doc id %s open %s", doc_id, db_path)
                         conn = _get_conn(db_path)
                         try:
                             _save_eval_to_table(conn, table, doc_id, main_eval, fhl, fll, fscore)
                             conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_COMPLETE, doc_id))
                             conn.commit()
                         finally:
+                            logger.info("[db] worker_draft_merge merge status review-complete doc id %s close %s", doc_id, db_path)
                             conn.close()
                         display.update_line(line_idx, f"{prefix} retry review done doc={doc_id}")
                         idle_iterations = 0
                         continue
                 else:
+                    logger.info("[db] worker_draft_merge merge status drafts-complete doc id %s open %s", doc_id, db_path)
                     conn = _get_conn(db_path)
                     try:
                         conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_DRAFTS_COMPLETE, doc_id))
                         conn.commit()
                     finally:
+                        logger.info("[db] worker_draft_merge merge status drafts-complete doc id %s close %s", doc_id, db_path)
                         conn.close()
                     display.update_line(line_idx, f"{prefix} done (no review) doc={doc_id}")
                     idle_iterations = 0
@@ -1784,27 +1819,33 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
                         stats.inc_error()
                     current_eval = merged
                     if not dry_run:
+                        logger.info("[db] worker_draft_merge merge save merged eval doc id %s open %s", doc_id, db_path)
                         conn = _get_conn(db_path)
                         try:
                             _save_eval_to_table(conn, table, doc_id, merged, hl, ll, score)
                         finally:
+                            logger.info("[db] worker_draft_merge merge save merged eval doc id %s close %s", doc_id, db_path)
                             conn.close()
 
             # Mark all drafts as merge-complete
+            logger.info("[db] worker_draft_merge mark drafts merge-complete for doc id %s open %s", doc_id, db_path)
             conn = _get_conn(db_path)
             try:
                 for ds in all_draft_seqs:
                     conn.execute("UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?", (DRAFT_MERGE_COMPLETE, doc_id, ds))
                 conn.commit()
             finally:
+                logger.info("[db] worker_draft_merge mark drafts merge-complete for doc id %s close %s", doc_id, db_path)
                 conn.close()
 
             if reviews > 0:
+                logger.info("[db] worker_draft_merge status review-in-progress doc id %s open %s", doc_id, db_path)
                 conn = _get_conn(db_path)
                 try:
                     conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_IN_PROGRESS, doc_id))
                     conn.commit()
                 finally:
+                    logger.info("[db] worker_draft_merge status review-in-progress doc id %s close %s", doc_id, db_path)
                     conn.close()
 
                 logger.info("%s [draft-review] doc_id=%s: post-draft review", prefix, doc_id)
@@ -1817,25 +1858,31 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
                 stats.inc_review()
                 if err:
                     stats.inc_error()
+                    logger.info("[db] worker_draft_merge status review-in-progress on error doc id %s open %s", doc_id, db_path)
                     conn = _get_conn(db_path)
                     try:
                         conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_IN_PROGRESS, doc_id))
                         conn.commit()
                     finally:
+                        logger.info("[db] worker_draft_merge status review-in-progress on error doc id %s close %s", doc_id, db_path)
                         conn.close()
                 else:
+                    logger.info("[db] worker_draft_merge status review-complete doc id %s open %s", doc_id, db_path)
                     conn = _get_conn(db_path)
                     try:
                         conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_COMPLETE, doc_id))
                         conn.commit()
                     finally:
+                        logger.info("[db] worker_draft_merge status review-complete doc id %s close %s", doc_id, db_path)
                         conn.close()
             else:
+                logger.info("[db] worker_draft_merge status drafts-complete doc id %s open %s", doc_id, db_path)
                 conn = _get_conn(db_path)
                 try:
                     conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_DRAFTS_COMPLETE, doc_id))
                     conn.commit()
                 finally:
+                    logger.info("[db] worker_draft_merge status drafts-complete doc id %s close %s", doc_id, db_path)
                     conn.close()
 
             display.update_line(line_idx, f"{prefix} merge+review done doc={doc_id}")
@@ -1843,28 +1890,28 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
             continue
 
         # Phase 2: Check if any drafts are still in progress
+        logger.info("[db] worker_draft_merge check for drafts in-progress doc id %s open %s", doc_id, db_path)
         conn = _get_conn(db_path)
         try:
             pending = conn.execute(
                 "SELECT COUNT(*) FROM doc_eval_draft d JOIN documents doc ON d.doc_id = doc.id WHERE doc.eval_status = ? AND d.draft_status < 4",
                 (STATUS_DRAFTS_IN_PROGRESS,)).fetchone()[0]
         finally:
+            logger.info("[db] worker_draft_merge check for drafts in-progress doc id %s close %s", doc_id, db_path)
             conn.close()
 
         if pending > 0:
             idle_iterations += 1
             if idle_iterations >= max_idle_iterations:
-                logger.warning("%s drafts stuck for %d iterations, aborting",
-                               prefix, idle_iterations)
+                logger.warning("%s drafts stuck for %d iterations, aborting", prefix, idle_iterations)
+                logger.info("[db] worker_draft_merge setting to review-complete from drafts-in-progress open %s", db_path)
                 conn = _get_conn(db_path)
                 try:
-                    conn.execute(
-                        "UPDATE doc_eval_draft SET draft_status = ? "
-                        "WHERE draft_status IN (1, 2) AND doc_id IN ("
-                        f"SELECT id FROM {table} WHERE eval_status = ?)",
-                        (DRAFT_REVIEW_COMPLETE, STATUS_DRAFTS_IN_PROGRESS))
+                    conn.execute("UPDATE doc_eval_draft SET draft_status = ? WHERE draft_status IN (1, 2) AND doc_id IN ("
+                        f"SELECT id FROM {table} WHERE eval_status = ?)", (DRAFT_REVIEW_COMPLETE, STATUS_DRAFTS_IN_PROGRESS))
                     conn.commit()
                 finally:
+                    logger.info("[db] worker_draft_merge setting to review-complete from drafts-in-progress close %s", db_path)
                     conn.close()
                 display.update_line(line_idx, f"{prefix} drafts timed out, marking complete")
                 continue
@@ -2184,6 +2231,7 @@ def print_summary(results: list, thread_stats: List[tuple], db_path: str, table:
 
 def print_final_status(db_path: str, table: str):
     """Print final status distribution."""
+    logger.info("[db] print_final_status open %s", db_path)
     conn = _get_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -2213,6 +2261,7 @@ def print_final_status(db_path: str, table: str):
                 label = draft_names.get(status, f"unknown({status})")
                 logger.info("  status %s (%s): %d", status, label, count)
     finally:
+        logger.info("[db] print_final_status close %s", db_path)
         conn.close()
 
 
@@ -2260,6 +2309,7 @@ def main():
         logger.error("Database not found: %s", db_path)
         sys.exit(1)
 
+    logger.info("[db] main get tables open %s", db_path)
     conn = _get_conn(db_path)
     try:
         # Resolve table name
@@ -2296,6 +2346,7 @@ def main():
             prepare_drafts(conn, args.table, args.document_column, drafts_config, args.start_id, args.where, args.limit)
 
     finally:
+        logger.info("[db] main get tables close %s", db_path)
         conn.close()
 
     # Determine mode
@@ -2305,12 +2356,14 @@ def main():
     # Compute max_id for limit enforcement (not for draft mode since drafts handle their own limit)
     max_id: Optional[int] = None
     if args.limit and not is_draft_mode:
+        logger.info("[db] main get max id open %s", db_path)
         conn = _get_conn(db_path)
         try:
             max_id = _compute_max_id_for_limit(conn, args.table, args.document_column, args.start_id, args.where, args.limit)
             if max_id:
                 logger.info("[limit] Will process records with id <= %s (limit %d)", max_id, args.limit)
         finally:
+            logger.info("[db] main get max id close %s", db_path)
             conn.close()
 
     # Normalize draft endpoints
@@ -2318,8 +2371,7 @@ def main():
         if isinstance(draft_cfg, dict):
             ep = draft_cfg.get("endpoint", "")
             draft_cfg["endpoint"] = normalize_endpoint(ep)
-            draft_cfg.setdefault("api_key", draft_cfg.get("api-key",
-                os.environ.get("OPENAI_API_KEY", "")))
+            draft_cfg.setdefault("api_key", draft_cfg.get("api-key", os.environ.get("OPENAI_API_KEY", "")))
             draft_cfg.setdefault("model", "")
             draft_cfg.setdefault("name", f"draft-{i}")
             draft_cfg.setdefault("parallel", 1)
@@ -2377,17 +2429,21 @@ def main():
                 sys.exit(1)
 
             # Resolve source table
+            logger.info("[db] main merge-from get tables open %s", args.merge_from)
             src_conn = _get_conn(args.merge_from)
-            src_cursor = src_conn.cursor()
-            src_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-            src_tables = [row[0] for row in src_cursor.fetchall()]
-            if len(src_tables) == 1:
-                source_table = src_tables[0]
-            elif DEFAULT_DOCUMENTS_TABLE in src_tables:
-                source_table = DEFAULT_DOCUMENTS_TABLE
-            else:
-                source_table = args.table
-            src_conn.close()
+            try:
+                src_cursor = src_conn.cursor()
+                src_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+                src_tables = [row[0] for row in src_cursor.fetchall()]
+                if len(src_tables) == 1:
+                    source_table = src_tables[0]
+                elif DEFAULT_DOCUMENTS_TABLE in src_tables:
+                    source_table = DEFAULT_DOCUMENTS_TABLE
+                else:
+                    source_table = args.table
+            finally:
+                logger.info("[db] main merge-from get tables close %s", args.merge_from)
+                src_conn.close()
 
             logger.info("Merge mode: %s -> %s (%d threads)",
                          args.merge_from, db_path, args.parallel)
