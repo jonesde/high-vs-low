@@ -1463,7 +1463,7 @@ class ThreadStats:
 
 def _update_status(db_path: str, table: str, doc_id: int, status: int):
     """Update eval_status for a record."""
-    logger.info("    [db] _update_status open %s", db_path)
+    logger.info("    [db] _update_status on doc id %s to %s open %s", doc_id, status, db_path)
     conn = _get_conn(db_path)
     try:
         conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (status, doc_id))
