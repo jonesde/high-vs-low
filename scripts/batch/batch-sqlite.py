@@ -409,7 +409,7 @@ class OpenAIClient:
             "stream_options": {"include_usage": True},
             # make excessive for normal use (most 5-15k with reasoning+output)
             # avoid looping crazy runs like a 100k+ ones that happens sometimes...
-            "max_completion_tokens": 40000, "max_tokens": 40000,
+            "max_completion_tokens": 32768, "max_tokens": 32768,
         }
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
