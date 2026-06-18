@@ -328,8 +328,8 @@ class OpenAIClient:
             "reasoning": "on",
             "stream": stream,
             "stream_options": {"include_usage": True} if stream else None,
-            "max_completion_tokens": 40000,
-            "max_tokens": 40000,
+            "max_completion_tokens": 32768,
+            "max_tokens": 32768,
         }
 
     def chat(self, system_prompt: str, user_prompt: str) -> ChatResult:
@@ -706,19 +706,19 @@ def parse_review_changes_section(review_text: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _get_conn(db_path: str) -> sqlite3.Connection:
-    logger.info("    [db] _get_conn %s", db_path)
+    # logger.info("    [db] _get_conn %s", db_path)
     conn = sqlite3.connect(db_path, timeout=30)
     # TODO: is WAL a good idea? necessary for the multi-threads? gets set permanently on file once used...
-    conn.execute("PRAGMA journal_mode=WAL")
+    # conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
 
 def _get_write_conn(db_path: str) -> sqlite3.Connection:
     """Get a connection with BEGIN IMMEDIATE for atomic claim operations."""
-    logger.info("    [db] _get_write_conn %s", db_path)
+    # logger.info("    [db] _get_write_conn %s", db_path)
     conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)
     # TODO: is WAL a good idea? necessary for the multi-threads? gets set permanently on file once used...
-    conn.execute("PRAGMA journal_mode=WAL")
+    # conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("BEGIN IMMEDIATE")
     return conn
 
@@ -740,6 +740,7 @@ def _claim_record_for_eval(db_path: str, table: str, doc_col: str, start_id: Opt
         conditions.append("id <= ?")
         params.append(max_id)
     query = f"SELECT id, doc_title, {doc_col} FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1"
+    logger.info("    [db] _claim_record_for_eval write open %s", db_path)
     conn = _get_write_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -755,6 +756,9 @@ def _claim_record_for_eval(db_path: str, table: str, doc_col: str, start_id: Opt
     except Exception:
         conn.rollback()
         raise
+    finally:
+        logger.info("    [db] _claim_record_for_eval write close %s", db_path)
+        conn.close()
 
 
 def _claim_record_for_review(db_path: str, table: str, doc_col: str, start_id: Optional[int], where: Optional[str],
@@ -773,6 +777,8 @@ def _claim_record_for_review(db_path: str, table: str, doc_col: str, start_id: O
         conditions.append("id <= ?")
         params.append(max_id)
     query = f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1"
+
+    logger.info("    [db] _claim_record_for_review write open %s", db_path)
     conn = _get_write_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -788,6 +794,9 @@ def _claim_record_for_review(db_path: str, table: str, doc_col: str, start_id: O
     except Exception:
         conn.rollback()
         raise
+    finally:
+        logger.info("    [db] _claim_record_for_review write close %s", db_path)
+        conn.close()
 
 
 def _claim_record_for_merge_review(db_path: str, table: str, doc_col: str, start_id: Optional[int], where: Optional[str],
@@ -804,6 +813,8 @@ def _claim_record_for_merge_review(db_path: str, table: str, doc_col: str, start
         conditions.append("id <= ?")
         params.append(max_id)
     query = f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1"
+
+    logger.info("    [db] _claim_record_for_merge_review write open %s", db_path)
     conn = _get_write_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -819,6 +830,9 @@ def _claim_record_for_merge_review(db_path: str, table: str, doc_col: str, start
     except Exception:
         conn.rollback()
         raise
+    finally:
+        logger.info("    [db] _claim_record_for_merge_review write close %s", db_path)
+        conn.close()
 
 
 def _claim_record_for_merge(db_path: str, table: str, doc_col: str, start_id: Optional[int], where: Optional[str],
@@ -835,6 +849,8 @@ def _claim_record_for_merge(db_path: str, table: str, doc_col: str, start_id: Op
         conditions.append("id <= ?")
         params.append(max_id)
     query = f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1"
+
+    logger.info("    [db] _claim_record_for_merge write open %s", db_path)
     conn = _get_write_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -850,6 +866,9 @@ def _claim_record_for_merge(db_path: str, table: str, doc_col: str, start_id: Op
     except Exception:
         conn.rollback()
         raise
+    finally:
+        logger.info("    [db] _claim_record_for_merge write close %s", db_path)
+        conn.close()
 
 
 def _claim_draft_for_review(conn: sqlite3.Connection, doc_id: int, draft_seq: int) -> Optional[tuple]:
