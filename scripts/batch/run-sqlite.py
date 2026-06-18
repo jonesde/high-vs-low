@@ -730,7 +730,7 @@ def _claim_record_for_eval(db_path: str, table: str, doc_col: str, start_id: Opt
     max_id: if set, only claim records with id <= max_id (enforces limit)."""
     conditions = []
     params: List[Any] = []
-    conditions.append("eval_status IS NULL OR eval_status = 0")
+    conditions.append("(eval_status IS NULL AND evaluation IS NULL) OR eval_status = 0")
     if where:
         conditions.append(where)
     if start_id is not None:
@@ -997,12 +997,8 @@ def _accumulate_stats(stats: dict, result: ChatResult):
 
 
 def _empty_stats() -> dict:
-    return {
-        "phase_start": time.monotonic(), "total_elapsed": 0.0,
-        "total_generation_time": 0.0, "total_prompt_tokens": 0,
-        "total_completion_tokens": 0, "total_tokens": 0,
-        "total_reasoning_tokens": 0, "total_output_tokens": 0,
-    }
+    return { "phase_start": time.monotonic(), "total_elapsed": 0.0, "total_generation_time": 0.0, "total_prompt_tokens": 0,
+        "total_completion_tokens": 0, "total_tokens": 0, "total_reasoning_tokens": 0, "total_output_tokens": 0 }
 
 
 def _do_eval(client, doc_id: int, doc_title: Optional[str], doc_text: str, dry_run: bool, detailed: bool,
@@ -1928,115 +1924,6 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
 
 
 # ---------------------------------------------------------------------------
-# Config loading
-# ---------------------------------------------------------------------------
-
-def normalize_endpoint(endpoint: str) -> str:
-    """If endpoint is just an IP/host, build a full URL."""
-    if "://" not in endpoint:
-        return f"{DEFAULT_EP_NO_URL_PREFIX}{endpoint}{DEFAULT_EP_NO_URL_SUFFIX}"
-    return endpoint
-
-
-def load_yaml_config(path: str) -> dict:
-    """Load configuration from a YAML file."""
-    if yaml is None:
-        logger.error("PyYAML is required to load .yml config files. Install with: pip install pyyaml")
-        sys.exit(1)
-    with open(path, "r") as f:
-        config = yaml.safe_load(f)
-    return config or {}
-
-
-def build_args_from_config(config: dict) -> argparse.Namespace:
-    """Build argparse.Namespace from YAML config dict."""
-    defaults = {
-        "db_path": config.get("db"),
-        "limit": config.get("limit"),
-        "start_id": config.get("start-id"),
-        "endpoint": config.get("endpoint", os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT)),
-        "api_key": config.get("api-key", os.environ.get("OPENAI_API_KEY", "")),
-        "model": config.get("model", ""),
-        "stub": config.get("stub", False),
-        "skip_review": config.get("skip-review", False),
-        "skip_evaluation": config.get("skip-evaluation", False),
-        "merge_from": config.get("merge-from"),
-        "dry_run": config.get("dry-run", False),
-        "reset": config.get("reset", False),
-        "reset_only": config.get("reset-only", False),
-        "where": config.get("where"),
-        "table": config.get("table"),
-        "document_column": config.get("document-column", DEFAULT_DOCUMENT_COLUMN),
-        "detailed": config.get("detailed", False),
-        "parallel": config.get("parallel", 1),
-        "reviews": config.get("reviews", 3),
-        "name": config.get("name", "main"),
-        "drafts": config.get("drafts", []),
-    }
-    return argparse.Namespace(**defaults)
-
-
-def parse_cli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
-    """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Threaded Database Delegation Workflow for High Law vs Low Law evaluation",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__,
-    )
-    parser.add_argument("db_path", nargs="?", help="Path to SQLite database or .yml config file")
-    parser.add_argument("--limit", type=int, default=None, help="Process only first N records")
-    parser.add_argument("--start-id", type=int, default=None, help="Start from this record ID")
-    parser.add_argument("--endpoint", default=os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT), help="OpenAI-compatible endpoint URL")
-    parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", ""), help="API key")
-    parser.add_argument("--model", default="", help="Model name")
-    parser.add_argument("--name", default="main", help="Human-readable name for this endpoint")
-    parser.add_argument("--stub", action="store_true", help="Use stub AI client")
-    parser.add_argument("--skip-review", action="store_true", help="Skip the review phase")
-    parser.add_argument("--skip-evaluation", action="store_true", help="Skip the evaluation phase")
-    parser.add_argument("--merge-from", default=None, metavar="DB", help="Merge evaluations from another database")
-    parser.add_argument("--dry-run", action="store_true", help="Print actions without modifying DB")
-    parser.add_argument("--reset", action="store_true", help="Reset evaluation data before processing")
-    parser.add_argument("--reset-only", action="store_true", help="Only reset evaluation data and exit")
-    parser.add_argument("--where", default=None, help="SQL WHERE clause (without 'WHERE')")
-    parser.add_argument("--table", default=None, help="Table name to use")
-    parser.add_argument("--document-column", default=DEFAULT_DOCUMENT_COLUMN, help=f"Column containing document text (default: {DEFAULT_DOCUMENT_COLUMN})")
-    parser.add_argument("--detailed", action="store_true", help="Produce detailed evaluation reports")
-    parser.add_argument("--parallel", type=int, default=1, help="Number of threads for main endpoint (default: 1)")
-    parser.add_argument("--reviews", type=int, default=3, help="Number of review iterations (default: 3; 0 = skip reviews)")
-    return parser.parse_args(argv)
-
-
-def merge_cli_over_yaml(yaml_args: argparse.Namespace, cli_args: argparse.Namespace) -> argparse.Namespace:
-    """Override YAML config with explicit CLI args (non-default values)."""
-    # If CLI has non-default values, override YAML
-    overrides = {
-        "db_path": cli_args.db_path if cli_args.db_path and not cli_args.db_path.endswith((".yml", ".yaml")) else yaml_args.db_path,
-        "limit": cli_args.limit if cli_args.limit is not None else yaml_args.limit,
-        "start_id": cli_args.start_id if cli_args.start_id is not None else yaml_args.start_id,
-        "endpoint": cli_args.endpoint if cli_args.endpoint != os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT) else yaml_args.endpoint,
-        "api_key": cli_args.api_key if cli_args.api_key != os.environ.get("OPENAI_API_KEY", "") else yaml_args.api_key,
-        "model": cli_args.model if cli_args.model else yaml_args.model,
-        "name": cli_args.name if cli_args.name != "main" else yaml_args.name,
-        "stub": cli_args.stub or yaml_args.stub,
-        "skip_review": cli_args.skip_review or yaml_args.skip_review,
-        "skip_evaluation": cli_args.skip_evaluation or yaml_args.skip_evaluation,
-        "merge_from": cli_args.merge_from or yaml_args.merge_from,
-        "dry_run": cli_args.dry_run or yaml_args.dry_run,
-        "reset": cli_args.reset or yaml_args.reset,
-        "reset_only": cli_args.reset_only or yaml_args.reset_only,
-        "where": cli_args.where or yaml_args.where,
-        "table": cli_args.table or yaml_args.table,
-        "document_column": cli_args.document_column if cli_args.document_column != DEFAULT_DOCUMENT_COLUMN else yaml_args.document_column,
-        "detailed": cli_args.detailed or yaml_args.detailed,
-        "parallel": cli_args.parallel if cli_args.parallel != 1 else yaml_args.parallel,
-        "reviews": cli_args.reviews if cli_args.reviews != 3 else yaml_args.reviews,
-    }
-    # drafts only from YAML
-    overrides["drafts"] = yaml_args.drafts
-    return argparse.Namespace(**overrides)
-
-
-# ---------------------------------------------------------------------------
 # Schema / DB initialization
 # ---------------------------------------------------------------------------
 
@@ -2263,6 +2150,115 @@ def print_final_status(db_path: str, table: str):
     finally:
         logger.info("[db] print_final_status close %s", db_path)
         conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Config loading
+# ---------------------------------------------------------------------------
+
+def normalize_endpoint(endpoint: str) -> str:
+    """If endpoint is just an IP/host, build a full URL."""
+    if "://" not in endpoint:
+        return f"{DEFAULT_EP_NO_URL_PREFIX}{endpoint}{DEFAULT_EP_NO_URL_SUFFIX}"
+    return endpoint
+
+
+def load_yaml_config(path: str) -> dict:
+    """Load configuration from a YAML file."""
+    if yaml is None:
+        logger.error("PyYAML is required to load .yml config files. Install with: pip install pyyaml")
+        sys.exit(1)
+    with open(path, "r") as f:
+        config = yaml.safe_load(f)
+    return config or {}
+
+
+def build_args_from_config(config: dict) -> argparse.Namespace:
+    """Build argparse.Namespace from YAML config dict."""
+    defaults = {
+        "db_path": config.get("db"),
+        "limit": config.get("limit"),
+        "start_id": config.get("start-id"),
+        "endpoint": config.get("endpoint", os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT)),
+        "api_key": config.get("api-key", os.environ.get("OPENAI_API_KEY", "")),
+        "model": config.get("model", ""),
+        "stub": config.get("stub", False),
+        "skip_review": config.get("skip-review", False),
+        "skip_evaluation": config.get("skip-evaluation", False),
+        "merge_from": config.get("merge-from"),
+        "dry_run": config.get("dry-run", False),
+        "reset": config.get("reset", False),
+        "reset_only": config.get("reset-only", False),
+        "where": config.get("where"),
+        "table": config.get("table"),
+        "document_column": config.get("document-column", DEFAULT_DOCUMENT_COLUMN),
+        "detailed": config.get("detailed", False),
+        "parallel": config.get("parallel", 1),
+        "reviews": config.get("reviews", 3),
+        "name": config.get("name", "main"),
+        "drafts": config.get("drafts", []),
+    }
+    return argparse.Namespace(**defaults)
+
+
+def parse_cli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Threaded Database Delegation Workflow for High Law vs Low Law evaluation",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument("db_path", nargs="?", help="Path to SQLite database or .yml config file")
+    parser.add_argument("--limit", type=int, default=None, help="Process only first N records")
+    parser.add_argument("--start-id", type=int, default=None, help="Start from this record ID")
+    parser.add_argument("--endpoint", default=os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT), help="OpenAI-compatible endpoint URL")
+    parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", ""), help="API key")
+    parser.add_argument("--model", default="", help="Model name")
+    parser.add_argument("--name", default="main", help="Human-readable name for this endpoint")
+    parser.add_argument("--stub", action="store_true", help="Use stub AI client")
+    parser.add_argument("--skip-review", action="store_true", help="Skip the review phase")
+    parser.add_argument("--skip-evaluation", action="store_true", help="Skip the evaluation phase")
+    parser.add_argument("--merge-from", default=None, metavar="DB", help="Merge evaluations from another database")
+    parser.add_argument("--dry-run", action="store_true", help="Print actions without modifying DB")
+    parser.add_argument("--reset", action="store_true", help="Reset evaluation data before processing")
+    parser.add_argument("--reset-only", action="store_true", help="Only reset evaluation data and exit")
+    parser.add_argument("--where", default=None, help="SQL WHERE clause (without 'WHERE')")
+    parser.add_argument("--table", default=None, help="Table name to use")
+    parser.add_argument("--document-column", default=DEFAULT_DOCUMENT_COLUMN, help=f"Column containing document text (default: {DEFAULT_DOCUMENT_COLUMN})")
+    parser.add_argument("--detailed", action="store_true", help="Produce detailed evaluation reports")
+    parser.add_argument("--parallel", type=int, default=1, help="Number of threads for main endpoint (default: 1)")
+    parser.add_argument("--reviews", type=int, default=3, help="Number of review iterations (default: 3; 0 = skip reviews)")
+    return parser.parse_args(argv)
+
+
+def merge_cli_over_yaml(yaml_args: argparse.Namespace, cli_args: argparse.Namespace) -> argparse.Namespace:
+    """Override YAML config with explicit CLI args (non-default values)."""
+    # If CLI has non-default values, override YAML
+    overrides = {
+        "db_path": cli_args.db_path if cli_args.db_path and not cli_args.db_path.endswith((".yml", ".yaml")) else yaml_args.db_path,
+        "limit": cli_args.limit if cli_args.limit is not None else yaml_args.limit,
+        "start_id": cli_args.start_id if cli_args.start_id is not None else yaml_args.start_id,
+        "endpoint": cli_args.endpoint if cli_args.endpoint != os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT) else yaml_args.endpoint,
+        "api_key": cli_args.api_key if cli_args.api_key != os.environ.get("OPENAI_API_KEY", "") else yaml_args.api_key,
+        "model": cli_args.model if cli_args.model else yaml_args.model,
+        "name": cli_args.name if cli_args.name != "main" else yaml_args.name,
+        "stub": cli_args.stub or yaml_args.stub,
+        "skip_review": cli_args.skip_review or yaml_args.skip_review,
+        "skip_evaluation": cli_args.skip_evaluation or yaml_args.skip_evaluation,
+        "merge_from": cli_args.merge_from or yaml_args.merge_from,
+        "dry_run": cli_args.dry_run or yaml_args.dry_run,
+        "reset": cli_args.reset or yaml_args.reset,
+        "reset_only": cli_args.reset_only or yaml_args.reset_only,
+        "where": cli_args.where or yaml_args.where,
+        "table": cli_args.table or yaml_args.table,
+        "document_column": cli_args.document_column if cli_args.document_column != DEFAULT_DOCUMENT_COLUMN else yaml_args.document_column,
+        "detailed": cli_args.detailed or yaml_args.detailed,
+        "parallel": cli_args.parallel if cli_args.parallel != 1 else yaml_args.parallel,
+        "reviews": cli_args.reviews if cli_args.reviews != 3 else yaml_args.reviews,
+    }
+    # drafts only from YAML
+    overrides["drafts"] = yaml_args.drafts
+    return argparse.Namespace(**overrides)
 
 
 # ---------------------------------------------------------------------------
