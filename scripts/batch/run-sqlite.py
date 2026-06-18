@@ -190,8 +190,34 @@ Updated stub evaluation.
 # Multi-thread progress display
 # ---------------------------------------------------------------------------
 
+class _LockedStreamHandler(logging.Handler):
+    """Wraps existing stdout handlers with a shared lock to prevent
+    progress display and log output from interleaving on stdout."""
+
+    def __init__(self, locked_handlers: List[logging.Handler], lock: threading.Lock):
+        super().__init__()
+        self._handlers = locked_handlers
+        self._lock = lock
+        self.terminator = "\n"  # StreamHandler sets this; we inherit from Handler
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            stream = sys.stdout
+            with self._lock:
+                stream.write(msg + self.terminator)
+                stream.flush()
+        except Exception:
+            self.handleError(record)
+
+
 class MultiProgressDisplay:
-    """Manages N static progress lines at the bottom of the terminal."""
+    """Manages N static progress lines at the bottom of the terminal.
+
+    Uses a terminal scroll region to reserve the bottom N rows so that
+    log output (which goes through the logging framework on stdout) can
+    never overwrite the progress area.
+    """
 
     def __init__(self, num_lines: int):
         self.num_lines = num_lines
@@ -199,7 +225,17 @@ class MultiProgressDisplay:
         self._lines: List[str] = [""] * num_lines
         self._last_refresh: float = 0
         self._dirty = False
-        self._term_width = shutil.get_terminal_size(fallback=(180, 24)).columns
+        term_size = shutil.get_terminal_size(fallback=(180, 24))
+        self._term_width = term_size.columns
+        self._term_rows = term_size.lines
+        scroll_bottom = self._term_rows - self.num_lines
+
+        # Reserve bottom N rows via scroll region, then move cursor to
+        # the last scrollable row so log output starts just above progress.
+        sys.stdout.write(f"\033[1;{scroll_bottom}r")
+        sys.stdout.write(f"\033[{scroll_bottom};1H")
+        sys.stdout.flush()
+
         # Start background refresh thread
         self._stop_event = threading.Event()
         self._bg_thread = threading.Thread(target=self._refresh_loop, daemon=True)
@@ -220,22 +256,25 @@ class MultiProgressDisplay:
                 return
             self._last_refresh = now
 
-        # Save cursor, move to bottom N lines, draw, restore
         lines_to_draw = []
         with self._lock:
             for i in range(self.num_lines):
                 lines_to_draw.append(self._lines[i] if i < len(self._lines) else "")
 
-        sys.stdout.write("\033[?25l")  # hide cursor
-        sys.stdout.write("\033[s")  # save cursor position
-        sys.stdout.write(f"\033[{self.num_lines}A")  # move up N lines
-        for line in lines_to_draw:
-            padded = line.ljust(self._term_width)
-            sys.stdout.write(f"\033[2K\r{padded}\n")
-        sys.stdout.write(f"\033[{self.num_lines}A")  # move back up
-        sys.stdout.write("\033[u")  # restore cursor
-        sys.stdout.write("\033[?25h")  # show cursor
-        sys.stdout.flush()
+        scroll_bottom = self._term_rows - self.num_lines
+        progress_start = scroll_bottom + 1
+
+        with self._lock:
+            sys.stdout.write("\033[?25l")  # hide cursor
+            sys.stdout.write(f"\033[{progress_start};1H")  # move to first progress row
+            for line in lines_to_draw:
+                padded = line.ljust(self._term_width)
+                sys.stdout.write(f"\033[2K{padded}\n")
+            # Return cursor to bottom of scroll region so next log line
+            # lands just above the progress area.
+            sys.stdout.write(f"\033[{scroll_bottom};1H")
+            sys.stdout.write("\033[?25h")  # show cursor
+            sys.stdout.flush()
 
     def update_line(self, line_idx: int, text: str):
         with self._lock:
@@ -244,26 +283,53 @@ class MultiProgressDisplay:
                     self._lines[line_idx] = text[:self._term_width]
                     self._dirty = True
 
+    def wrap_stdout_handlers(self):
+        """Replace stdout logging handlers with lock-protected wrappers.
+
+        Call this AFTER the display is created so that all logging output
+        is serialized with progress renders and stays within the scroll
+        region."""
+        root = logging.getLogger("run-sqlite")
+        stdout_handlers = [
+            h for h in root.handlers
+            if isinstance(h, logging.StreamHandler)
+            and not isinstance(h, logging.FileHandler)
+        ]
+        if not stdout_handlers:
+            return
+        locked = _LockedStreamHandler(stdout_handlers, self._lock)
+        # Inherit formatter from the first handler (they all share the same)
+        if stdout_handlers:
+            locked.setFormatter(stdout_handlers[0].formatter)
+        for h in stdout_handlers:
+            root.removeHandler(h)
+        root.addHandler(locked)
+
     def finalize(self):
-        """Stop background thread and do final render."""
+        """Stop background thread, do final render, clear progress lines,
+        and restore the full-terminal scroll region."""
         self._stop_event.set()
         self._bg_thread.join(timeout=2)
         self._render()
-        # Clear the progress lines
-        sys.stdout.write("\033[?25l")
-        sys.stdout.write("\033[s")
-        sys.stdout.write(f"\033[{self.num_lines}A")
-        for _ in range(self.num_lines):
-            sys.stdout.write("\033[2K\r" + " " * self._term_width + "\n")
-        sys.stdout.write(f"\033[{self.num_lines}A")
-        sys.stdout.write("\033[u")
-        sys.stdout.write("\033[?25h")
-        sys.stdout.flush()
+
+        scroll_bottom = self._term_rows - self.num_lines
+        progress_start = scroll_bottom + 1
+
+        with self._lock:
+            sys.stdout.write("\033[?25l")
+            # Clear each progress line
+            sys.stdout.write(f"\033[{progress_start};1H")
+            for _ in range(self.num_lines):
+                sys.stdout.write("\033[2K\r\n")
+            # Restore full scroll region
+            sys.stdout.write(f"\033[1;{self._term_rows}r")
+            sys.stdout.write(f"\033[{self._term_rows};1H")
+            sys.stdout.write("\033[?25h")
+            sys.stdout.flush()
 
     def newline_after(self):
-        """Move cursor past the progress lines."""
-        sys.stdout.write(f"\033[{self.num_lines}B\n")
-        sys.stdout.flush()
+        """No-op: cursor is already positioned correctly after finalize."""
+        pass
 
 
 def make_thread_progress_cb(display: MultiProgressDisplay, line_idx: int) -> Callable:
@@ -2532,6 +2598,9 @@ def main():
         display = MultiProgressDisplay(1)
     else:
         display = MultiProgressDisplay(total_threads)
+
+    # Protect stdout so log output stays within the scroll region
+    display.wrap_stdout_handlers()
 
     # Start workers
     stop_event = threading.Event()
