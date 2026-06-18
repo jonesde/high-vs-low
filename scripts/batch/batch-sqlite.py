@@ -730,11 +730,11 @@ def run_verify_report(evaluation_text):
     Returns the combined stdout+stderr output, or None if the script is not
     found or fails to run.
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     verify_script = os.path.join(script_dir, "verify-report.py")
 
     if not os.path.exists(verify_script):
-        logger.info("    [script] Script not found: %s — skipping", verify_script)
+        logger.warning("    [script] Script not found: %s — skipping", verify_script)
         return None
 
     try:
