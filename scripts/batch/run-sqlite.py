@@ -296,6 +296,73 @@ def make_thread_progress_cb(display: MultiProgressDisplay, line_idx: int) -> Cal
 
 
 # ---------------------------------------------------------------------------
+# Wait timer — keeps the progress line ticking while waiting for first token
+# ---------------------------------------------------------------------------
+
+_WAIT_THREAD_STOP: threading.Event = threading.Event()
+_WAIT_THREAD: Optional[threading.Thread] = None
+_WAIT_DISPLAY: Optional[MultiProgressDisplay] = None
+_WAIT_LINE_IDX: int = 0
+_WAIT_START_TIME: float = 0.0
+
+
+def _wait_timer_loop() -> None:
+    """Background thread that keeps the progress line visible while waiting."""
+    while not _WAIT_THREAD_STOP.is_set():
+        elapsed = time.monotonic() - _WAIT_START_TIME
+        mins = int(elapsed) // 60
+        secs = int(elapsed) % 60
+        _WAIT_DISPLAY.update_line(_WAIT_LINE_IDX,
+                                   f" {mins:02d}:{secs:02d} (reading & reasoning...) | ")
+        for _ in range(10):
+            if _WAIT_THREAD_STOP.is_set():
+                break
+            time.sleep(0.1)
+
+
+def start_wait_timer(display: MultiProgressDisplay, line_idx: int, start_time: float) -> None:
+    """Start a background thread that keeps the progress line ticking while waiting."""
+    global _WAIT_DISPLAY, _WAIT_LINE_IDX, _WAIT_START_TIME
+    _WAIT_THREAD_STOP.clear()
+    _WAIT_DISPLAY = display
+    _WAIT_LINE_IDX = line_idx
+    _WAIT_START_TIME = start_time
+    _WAIT_THREAD = threading.Thread(target=_wait_timer_loop, daemon=True)
+    _WAIT_THREAD.start()
+
+
+def stop_wait_timer() -> None:
+    """Stop the background wait timer thread."""
+    global _WAIT_THREAD, _WAIT_DISPLAY
+    _WAIT_THREAD_STOP.set()
+    if _WAIT_THREAD is not None:
+        _WAIT_THREAD.join(timeout=2.0)
+        _WAIT_THREAD = None
+    _WAIT_DISPLAY = None
+
+
+def make_streaming_cb(display: MultiProgressDisplay, line_idx: int, progress_cb) -> tuple:
+    """Create a callback wrapper that starts the wait timer and stops it on first token.
+
+    Returns (start_fn, wrapped_callback) where:
+      - start_fn(start_time) kicks off the background timer thread
+      - wrapped_callback replaces the original progress_cb; stops the timer on first call
+    """
+    first = [True]
+
+    def start_fn(start_time: float) -> None:
+        start_wait_timer(display, line_idx, start_time)
+
+    def wrapped(char_count: int, content_so_far: str, st: float) -> None:
+        if first[0]:
+            first[0] = False
+            stop_wait_timer()
+        progress_cb(char_count, content_so_far, st)
+
+    return start_fn, wrapped
+
+
+# ---------------------------------------------------------------------------
 # OpenAI-compatible client
 # ---------------------------------------------------------------------------
 
@@ -1021,18 +1088,28 @@ def _empty_stats() -> dict:
 
 
 def _do_eval(client, doc_id: int, doc_title: Optional[str], doc_text: str, dry_run: bool, detailed: bool,
-             conn_or_path, table: str, progress_cb) -> tuple:
+              conn_or_path, table: str, progress_cb, display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
     """Evaluate a single record. Returns (doc_id, doc_title, hl, ll, score, eval_text, error, chat_result).
     conn_or_path: either a sqlite3.Connection or a db_path string."""
     system_prompt = build_evaluation_system_prompt(detailed)
     user_prompt = build_evaluation_user_prompt(doc_text, doc_title)
     start_time = time.monotonic()
 
+    # Start timer immediately if display is available
+    start_fn = None
+    wrapped_cb = progress_cb
+    if display and progress_cb:
+        start_fn, wrapped_cb = make_streaming_cb(display, line_idx, progress_cb)
+        start_fn(start_time)
+
     try:
-        result = client.chat_stream(system_prompt, user_prompt, progress_cb=progress_cb)
+        result = client.chat_stream(system_prompt, user_prompt, progress_cb=wrapped_cb)
     except RuntimeError as exc:
         logger.error("    [eval] %s", exc)
+        stop_wait_timer()
         return (doc_id, doc_title, None, None, None, None, str(exc), None)
+    finally:
+        stop_wait_timer()
 
     output_tokens = (result.completion_tokens or 0) - (result.reasoning_tokens or 0)
     logger.info("    [eval] LLM: %.1fs | prompt %s reasoning %s output %s",
@@ -1063,8 +1140,8 @@ def _do_eval(client, doc_id: int, doc_title: Optional[str], doc_text: str, dry_r
 
 
 def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
-               eval_text: str, dry_run: bool, conn_or_path, table: str,
-               max_reviews: int, progress_cb) -> tuple:
+                eval_text: str, dry_run: bool, conn_or_path, table: str,
+                max_reviews: int, progress_cb, display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
     """Review a single record with re-execution loop.
     conn_or_path: either a sqlite3.Connection or a db_path string.
     Returns (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error, chat_result)."""
@@ -1083,12 +1160,21 @@ def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
         user_prompt = build_review_user_prompt(doc_text, current_eval, doc_title, verify_output, previous_changes_text)
         start_time = time.monotonic()
 
+        # Start timer immediately if display is available
+        wrapped_cb = progress_cb
+        if display and progress_cb:
+            _, wrapped_cb = make_streaming_cb(display, line_idx, progress_cb)
+            start_wait_timer(display, line_idx, start_time)
+
         try:
-            result = client.chat_stream(system_prompt, user_prompt, progress_cb=progress_cb)
+            result = client.chat_stream(system_prompt, user_prompt, progress_cb=wrapped_cb)
         except RuntimeError as exc:
             logger.error("    [review] %s", exc)
+            stop_wait_timer()
             final_error = str(exc)
             break
+        finally:
+            stop_wait_timer()
 
         last_result = result
         changes_text = parse_review_changes_section(result.content)
@@ -1135,7 +1221,7 @@ def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
 
 
 def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval_source: str, eval_target: Optional[str], source_name: str,
-              target_name: str, dry_run: bool, conn_or_path, table: str, progress_cb) -> tuple:
+              target_name: str, dry_run: bool, conn_or_path, table: str, progress_cb, display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
     """Merge two evaluations. Returns (doc_id, hl, ll, score, merged_eval, error, chat_result).
     conn_or_path: either a sqlite3.Connection or a db_path string."""
     if eval_target is None:
@@ -1160,11 +1246,20 @@ def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval
                                           source_name, target_name)
     start_time = time.monotonic()
 
+    # Start timer immediately if display is available
+    wrapped_cb = progress_cb
+    if display and progress_cb:
+        _, wrapped_cb = make_streaming_cb(display, line_idx, progress_cb)
+        start_wait_timer(display, line_idx, start_time)
+
     try:
-        result = client.chat_stream(system_prompt, user_prompt, progress_cb=progress_cb)
+        result = client.chat_stream(system_prompt, user_prompt, progress_cb=wrapped_cb)
     except RuntimeError as exc:
         logger.error("    [merge] %s", exc)
+        stop_wait_timer()
         return (doc_id, None, None, None, None, str(exc), None)
+    finally:
+        stop_wait_timer()
 
     merged_eval = result.content.lstrip() if result.content else None
     if not merged_eval or not _is_valid_report(merged_eval):
@@ -1191,7 +1286,7 @@ def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval
 
 
 def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, main_eval: Optional[str], draft_eval: str, draft_name: str,
-                    dry_run: bool, conn_or_path, table: str, progress_cb) -> tuple:
+                    dry_run: bool, conn_or_path, table: str, progress_cb, display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
     """Merge a draft evaluation into the main evaluation.
     conn_or_path: either a sqlite3.Connection or a db_path string.
     Returns (hl, ll, score, merged_eval, error, chat_result)."""
@@ -1217,11 +1312,20 @@ def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str
                                           draft_name, "main")
     start_time = time.monotonic()
 
+    # Start timer immediately if display is available
+    wrapped_cb = progress_cb
+    if display and progress_cb:
+        _, wrapped_cb = make_streaming_cb(display, line_idx, progress_cb)
+        start_wait_timer(display, line_idx, start_time)
+
     try:
-        result = client.chat_stream(system_prompt, user_prompt, progress_cb=progress_cb)
+        result = client.chat_stream(system_prompt, user_prompt, progress_cb=wrapped_cb)
     except RuntimeError as exc:
         logger.error("    [draft-merge] %s", exc)
+        stop_wait_timer()
         return (None, None, None, None, str(exc), None)
+    finally:
+        stop_wait_timer()
 
     merged_eval = result.content.lstrip() if result.content else None
     if not merged_eval or not _is_valid_report(merged_eval):
@@ -1320,7 +1424,7 @@ def worker_main_eval(client, db_path: str, table: str, doc_col: str, name: str, 
 
                 if reviews > 0:
                     _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                        client, doc_id, doc_title, doc_text, evaluation, dry_run, db_path, table, reviews, progress_cb)
+                        client, doc_id, doc_title, doc_text, evaluation, dry_run, db_path, table, reviews, progress_cb, display, line_idx)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_review()
@@ -1350,7 +1454,7 @@ def worker_main_eval(client, db_path: str, table: str, doc_col: str, name: str, 
                 display.update_line(line_idx, f"{prefix} evaluating ID={doc_id} ...")
 
                 _, _, hl, ll, score, eval_text, err, chat_res = _do_eval(
-                    client, doc_id, doc_title, doc_text, dry_run, detailed, db_path, table, progress_cb)
+                    client, doc_id, doc_title, doc_text, dry_run, detailed, db_path, table, progress_cb, display, line_idx)
                 if chat_res:
                     stats.add(chat_res)
                 stats.inc_eval()
@@ -1449,7 +1553,7 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str, doc
 
                 if reviews > 0:
                     _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                        client, doc_id, doc_title, doc_text, evaluation, dry_run, db_path, table, reviews, progress_cb)
+                        client, doc_id, doc_title, doc_text, evaluation, dry_run, db_path, table, reviews, progress_cb, display, line_idx)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_review()
@@ -1484,7 +1588,7 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str, doc
 
                 if eval_source:
                     _, hl, ll, score, merged, err, chat_res = _do_merge(client, doc_id, doc_title, doc_text, eval_source, eval_target,
-                        os.path.basename(source_db_path), os.path.basename(db_path), dry_run, db_path, table, progress_cb)
+                        os.path.basename(source_db_path), os.path.basename(db_path), dry_run, db_path, table, progress_cb, display, line_idx)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_merge()
@@ -1560,7 +1664,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
             # Close conn before LLM call; pass db_path instead
             if reviews > 0:
                 _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                    client, doc_id, doc_title, doc_text, draft_eval, dry_run, db_path, table, reviews, progress_cb)
+                    client, doc_id, doc_title, doc_text, draft_eval, dry_run, db_path, table, reviews, progress_cb, display, line_idx)
                 if chat_res:
                     stats.add(chat_res)
                 stats.inc_review()
@@ -1636,7 +1740,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
 
                 # Close conn before LLM call; pass db_path instead
                 _, _, hl, ll, score, eval_text, err, chat_res = _do_eval(
-                    client, doc_id, doc_title, doc_text, dry_run, detailed, db_path, table, progress_cb)
+                    client, doc_id, doc_title, doc_text, dry_run, detailed, db_path, table, progress_cb, display, line_idx)
                 if chat_res:
                     stats.add(chat_res)
                 stats.inc_eval()
@@ -1781,7 +1885,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
 
                 if reviews > 0:
                     _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                        client, doc_id, doc_title, doc_text, main_eval, dry_run, db_path, table, reviews, progress_cb)
+                        client, doc_id, doc_title, doc_text, main_eval, dry_run, db_path, table, reviews, progress_cb, display, line_idx)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_review()
@@ -1826,7 +1930,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
                 if de:
                     dn = f"draft-{ds}"
                     hl, ll, score, merged, err, chat_res = _do_draft_merge(client, doc_id, doc_title, doc_text,
-                        current_eval, de, dn, dry_run, db_path, table, progress_cb)
+                        current_eval, de, dn, dry_run, db_path, table, progress_cb, display, line_idx)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_merge()
@@ -1867,7 +1971,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
                 display.update_line(line_idx, f"{prefix} post-draft review doc={doc_id} ...")
 
                 _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                    client, doc_id, doc_title, doc_text, current_eval, dry_run, db_path, table, reviews, progress_cb)
+                    client, doc_id, doc_title, doc_text, current_eval, dry_run, db_path, table, reviews, progress_cb, display, line_idx)
                 if chat_res:
                     stats.add(chat_res)
                 stats.inc_review()
