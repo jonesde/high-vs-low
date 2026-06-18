@@ -2207,6 +2207,85 @@ def reset_evaluations(conn: sqlite3.Connection, table: str, where: Optional[str]
     logger.info("[Reset] Cleared evaluations for %s records.", cursor.rowcount)
 
 
+def reset_in_progress_statuses(conn: sqlite3.Connection, table: str, is_merge_mode: bool, is_draft_mode: bool, dry_run: bool):
+    """Reset in-progress statuses back to previous step so records can be re-processed.
+
+    eval_status rollbacks:
+      1 (eval-in-progress)    -> 0 (planned)
+      4 (merge-in-progress)   -> 3 (merge-planned)
+      6 (drafts-in-progress)  -> 0 (planned)
+      8 (review-in-progress)  -> 2 (eval-complete) for default workflow
+                              -> 5 (merge-complete) for merge workflow
+                              -> 7 (drafts-complete) for draft workflow
+
+    draft_status rollbacks:
+      1 (draft-in-progress)     -> 0 (draft-planned)
+      3 (draft-review-in-progress) -> 2 (draft-complete)
+      5 (draft-merge-in-progress)  -> 4 (draft-review-complete)
+    """
+    if dry_run:
+        logger.info("[Dry-run] Would reset in-progress statuses.")
+        return
+
+    cursor = conn.cursor()
+
+    # eval_status: 1 (eval-in-progress) -> 0 (planned)
+    cursor.execute(f"UPDATE {table} SET eval_status = 0 WHERE eval_status = 1")
+    if cursor.rowcount:
+        logger.info("[reset-in-progress] eval_status 1->0: %d records", cursor.rowcount)
+
+    # eval_status: 4 (merge-in-progress) -> 3 (merge-planned)
+    cursor.execute(f"UPDATE {table} SET eval_status = 3 WHERE eval_status = 4")
+    if cursor.rowcount:
+        logger.info("[reset-in-progress] eval_status 4->3: %d records", cursor.rowcount)
+
+    # eval_status: 6 (drafts-in-progress) -> 0 (planned)
+    cursor.execute(f"UPDATE {table} SET eval_status = 0 WHERE eval_status = 6")
+    if cursor.rowcount:
+        logger.info("[reset-in-progress] eval_status 6->0: %d records", cursor.rowcount)
+
+    # eval_status: 8 (review-in-progress) -> depends on workflow
+    if is_draft_mode:
+        # Draft workflow: 8 -> 7 (drafts-complete)
+        cursor.execute(f"UPDATE {table} SET eval_status = 7 WHERE eval_status = 8")
+        if cursor.rowcount:
+            logger.info("[reset-in-progress] eval_status 8->7 (draft workflow): %d records", cursor.rowcount)
+    elif is_merge_mode:
+        # Merge workflow: 8 -> 5 (merge-complete)
+        cursor.execute(f"UPDATE {table} SET eval_status = 5 WHERE eval_status = 8")
+        if cursor.rowcount:
+            logger.info("[reset-in-progress] eval_status 8->5 (merge workflow): %d records", cursor.rowcount)
+    else:
+        # Default eval workflow: 8 -> 2 (eval-complete)
+        cursor.execute(f"UPDATE {table} SET eval_status = 2 WHERE eval_status = 8")
+        if cursor.rowcount:
+            logger.info("[reset-in-progress] eval_status 8->2 (eval workflow): %d records", cursor.rowcount)
+
+    conn.commit()
+
+    # Draft status rollbacks
+    try:
+        # draft_status: 1 (draft-in-progress) -> 0 (draft-planned)
+        cursor.execute("UPDATE doc_eval_draft SET draft_status = 0 WHERE draft_status = 1")
+        if cursor.rowcount:
+            logger.info("[reset-in-progress] draft_status 1->0: %d records", cursor.rowcount)
+
+        # draft_status: 3 (draft-review-in-progress) -> 2 (draft-complete)
+        cursor.execute("UPDATE doc_eval_draft SET draft_status = 2 WHERE draft_status = 3")
+        if cursor.rowcount:
+            logger.info("[reset-in-progress] draft_status 3->2: %d records", cursor.rowcount)
+
+        # draft_status: 5 (draft-merge-in-progress) -> 4 (draft-review-complete)
+        cursor.execute("UPDATE doc_eval_draft SET draft_status = 4 WHERE draft_status = 5")
+        if cursor.rowcount:
+            logger.info("[reset-in-progress] draft_status 5->4: %d records", cursor.rowcount)
+
+        conn.commit()
+    except Exception as exc:
+        # doc_eval_draft may not exist if drafts haven't been set up yet
+        logger.debug("[reset-in-progress] draft status reset skipped: %s", exc)
+
+
 # ---------------------------------------------------------------------------
 # Draft preparation
 # ---------------------------------------------------------------------------
@@ -2562,13 +2641,14 @@ def main():
         if has_drafts:
             prepare_drafts(conn, args.table, args.document_column, drafts_config, args.start_id, args.where, args.limit)
 
+        # Reset in-progress statuses from previous interrupted runs
+        is_merge_mode = bool(args.merge_from)
+        is_draft_mode = has_drafts
+        reset_in_progress_statuses(conn, args.table, is_merge_mode, is_draft_mode, args.dry_run)
+
     finally:
         logger.info("[db] main get tables close %s", db_path)
         conn.close()
-
-    # Determine mode
-    is_merge_mode = bool(args.merge_from)
-    is_draft_mode = has_drafts
 
     # Compute max_id for limit enforcement (not for draft mode since drafts handle their own limit)
     max_id: Optional[int] = None
