@@ -457,12 +457,9 @@ class OpenAIClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            "reasoning_effort": "high",
-            "reasoning": "on",
-            "stream": stream,
-            "stream_options": {"include_usage": True} if stream else None,
-            "max_completion_tokens": 32768,
-            "max_tokens": 32768,
+            "reasoning_effort": "high", "reasoning": "on",
+            "stream": stream, "stream_options": {"include_usage": True} if stream else None,
+            "max_completion_tokens": 40000, "max_tokens": 40000,
         }
 
     def chat(self, system_prompt: str, user_prompt: str) -> ChatResult:

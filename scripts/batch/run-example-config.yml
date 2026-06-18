@@ -109,7 +109,7 @@ drafts:
     model: ""
     name: "Gemma4 12B"
     parallel: 2
-    reviews: 1
+    reviews: 2
 
   # --- Draft endpoint 2 ---
   - endpoint: "http://10.1.0.191:1234/v1"
@@ -117,7 +117,7 @@ drafts:
     model: ""
     name: "Qwen3.6 35B"
     parallel: 1
-    reviews: 2
+    reviews: 1
 
   # --- Draft endpoint 3 (example with skip review) ---
   # - endpoint: "10.1.0.100"
