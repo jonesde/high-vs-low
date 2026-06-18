@@ -1221,6 +1221,7 @@ def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
     for iteration in range(1, max_reviews + 1):
         logger.info("    [review pass %d]", iteration)
         verify_output = run_verify_report(current_eval)
+        logger.info("    [review] Verify script output:\n%s", verify_output if verify_output else "(none)")
 
         system_prompt = build_review_system_prompt()
         user_prompt = build_review_user_prompt(doc_text, current_eval, doc_title, verify_output, previous_changes_text)
@@ -1255,6 +1256,7 @@ def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
         else:
             new_hl, new_ll, new_score = None, None, None
 
+        logger.info("    [review] LLM Review Notes:\n%s", changes_text if changes_text else "(none)")
         logger.info("    [review] Valid report? %s | Changes? %s | HL %s->%s, LL %s->%s, Score %s->%s",
                      "YES" if updated_valid else "NO", "YES" if has_changes else "NO",
                      orig_hl, new_hl, orig_ll, new_ll, orig_score, new_score)
@@ -2224,7 +2226,7 @@ def reset_in_progress_statuses(conn: sqlite3.Connection, table: str, is_merge_mo
       5 (draft-merge-in-progress)  -> 4 (draft-review-complete)
     """
     if dry_run:
-        logger.info("[Dry-run] Would reset in-progress statuses.")
+        logger.warning("[Dry-run] Would reset in-progress statuses.")
         return
 
     cursor = conn.cursor()
@@ -2232,34 +2234,34 @@ def reset_in_progress_statuses(conn: sqlite3.Connection, table: str, is_merge_mo
     # eval_status: 1 (eval-in-progress) -> 0 (planned)
     cursor.execute(f"UPDATE {table} SET eval_status = 0 WHERE eval_status = 1")
     if cursor.rowcount:
-        logger.info("[reset-in-progress] eval_status 1->0: %d records", cursor.rowcount)
+        logger.warning("[reset-in-progress] eval_status 1->0: %d records", cursor.rowcount)
 
     # eval_status: 4 (merge-in-progress) -> 3 (merge-planned)
     cursor.execute(f"UPDATE {table} SET eval_status = 3 WHERE eval_status = 4")
     if cursor.rowcount:
-        logger.info("[reset-in-progress] eval_status 4->3: %d records", cursor.rowcount)
+        logger.warning("[reset-in-progress] eval_status 4->3: %d records", cursor.rowcount)
 
     # eval_status: 6 (drafts-in-progress) -> 0 (planned)
     cursor.execute(f"UPDATE {table} SET eval_status = 0 WHERE eval_status = 6")
     if cursor.rowcount:
-        logger.info("[reset-in-progress] eval_status 6->0: %d records", cursor.rowcount)
+        logger.warning("[reset-in-progress] eval_status 6->0: %d records", cursor.rowcount)
 
     # eval_status: 8 (review-in-progress) -> depends on workflow
     if is_draft_mode:
         # Draft workflow: 8 -> 7 (drafts-complete)
         cursor.execute(f"UPDATE {table} SET eval_status = 7 WHERE eval_status = 8")
         if cursor.rowcount:
-            logger.info("[reset-in-progress] eval_status 8->7 (draft workflow): %d records", cursor.rowcount)
+            logger.warning("[reset-in-progress] eval_status 8->7 (draft workflow): %d records", cursor.rowcount)
     elif is_merge_mode:
         # Merge workflow: 8 -> 5 (merge-complete)
         cursor.execute(f"UPDATE {table} SET eval_status = 5 WHERE eval_status = 8")
         if cursor.rowcount:
-            logger.info("[reset-in-progress] eval_status 8->5 (merge workflow): %d records", cursor.rowcount)
+            logger.warning("[reset-in-progress] eval_status 8->5 (merge workflow): %d records", cursor.rowcount)
     else:
         # Default eval workflow: 8 -> 2 (eval-complete)
         cursor.execute(f"UPDATE {table} SET eval_status = 2 WHERE eval_status = 8")
         if cursor.rowcount:
-            logger.info("[reset-in-progress] eval_status 8->2 (eval workflow): %d records", cursor.rowcount)
+            logger.warning("[reset-in-progress] eval_status 8->2 (eval workflow): %d records", cursor.rowcount)
 
     conn.commit()
 
@@ -2268,17 +2270,17 @@ def reset_in_progress_statuses(conn: sqlite3.Connection, table: str, is_merge_mo
         # draft_status: 1 (draft-in-progress) -> 0 (draft-planned)
         cursor.execute("UPDATE doc_eval_draft SET draft_status = 0 WHERE draft_status = 1")
         if cursor.rowcount:
-            logger.info("[reset-in-progress] draft_status 1->0: %d records", cursor.rowcount)
+            logger.warning("[reset-in-progress] draft_status 1->0: %d records", cursor.rowcount)
 
         # draft_status: 3 (draft-review-in-progress) -> 2 (draft-complete)
         cursor.execute("UPDATE doc_eval_draft SET draft_status = 2 WHERE draft_status = 3")
         if cursor.rowcount:
-            logger.info("[reset-in-progress] draft_status 3->2: %d records", cursor.rowcount)
+            logger.warning("[reset-in-progress] draft_status 3->2: %d records", cursor.rowcount)
 
         # draft_status: 5 (draft-merge-in-progress) -> 4 (draft-review-complete)
         cursor.execute("UPDATE doc_eval_draft SET draft_status = 4 WHERE draft_status = 5")
         if cursor.rowcount:
-            logger.info("[reset-in-progress] draft_status 5->4: %d records", cursor.rowcount)
+            logger.warning("[reset-in-progress] draft_status 5->4: %d records", cursor.rowcount)
 
         conn.commit()
     except Exception as exc:
