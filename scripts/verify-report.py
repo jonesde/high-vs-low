@@ -82,7 +82,7 @@ def main():
 
     # 3. Key Topics — parse canonical names from the Key Topics numbered list
     kt_list = []
-    kt_section = text.split('## Key Topics\n\n')[1].split('\n\n---\n')[0] if '## Key Topics' in text else ''
+    kt_section = text.split('## Key Topics\n')[1].split('\n\n---\n')[0] if '## Key Topics\n' in text else ''
     for line in kt_section.split('\n'):
         m = re.match(r'\d+\.\s+\*\*(.+?)\*\*', line)
         if m:
@@ -111,7 +111,7 @@ def main():
         issues.append(f"Topic count {len(kt_list)} outside 7-14 range")
 
     # 4. Scoring Summary
-    scoring = text.split('## Scoring Summary\n\n')[1].split('\n\n---\n')[0] if '## Scoring Summary' in text else ''
+    scoring = text.split('## Scoring Summary\n')[1].split('\n\n---\n')[0] if '## Scoring Summary\n' in text else ''
     if scoring:
         ss_hl = re.search(r'High Law Aligned\s*\|\s*(\d+)', scoring)
         ss_ll = re.search(r'Low Law Aligned\s*\|\s*(\d+)', scoring)
@@ -127,7 +127,7 @@ def main():
             issues.append(f"Scoring Summary Score {ss_score.group(1)} != {score}")
 
     # 5. Score Table
-    score_section = text.split('## Key Topic Score Table\n\n')[1].split('\n\n---\n')[0] if '## Key Topic Score Table' in text else ''
+    score_section = text.split('## Key Topic Score Table\n')[1].split('\n\n---\n')[0] if '## Key Topic Score Table\n' in text else ''
     score_rows = [l for l in score_section.split('\n') if re.match(r'\|', l) and 'Key Topic' not in l and '---' not in l and l.strip()]
     if score_rows and len(score_rows) != len(kt_list):
         issues.append(f"Score Table rows ({len(score_rows)}) != Key Topics ({len(kt_list)})")
