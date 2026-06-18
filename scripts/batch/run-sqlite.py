@@ -2489,6 +2489,38 @@ def main():
 
     setup_logging(db_path)
 
+    # Log effective configuration
+    logger.info("Configuration:")
+    logger.info("  db_path           = %s", args.db_path)
+    if args.limit is not None:
+        logger.info("  limit             = %s", args.limit)
+    if args.start_id is not None:
+        logger.info("  start_id          = %s", args.start_id)
+    logger.info("  endpoint          = %s", args.endpoint)
+    logger.info("  model             = %s", args.model or "(none)")
+    logger.info("  name              = %s", args.name)
+    logger.info("  stub              = %s", args.stub)
+    logger.info("  skip_review       = %s", args.skip_review)
+    logger.info("  skip_evaluation   = %s", args.skip_evaluation)
+    if args.merge_from:
+        logger.info("  merge_from        = %s", args.merge_from)
+    logger.info("  dry_run           = %s", args.dry_run)
+    logger.info("  reset             = %s", args.reset)
+    logger.info("  reset_only        = %s", args.reset_only)
+    if args.where:
+        logger.info("  where             = %s", args.where)
+    if args.table:
+        logger.info("  table             = %s", args.table)
+    if args.document_column != DEFAULT_DOCUMENT_COLUMN:
+        logger.info("  document_column   = %s", args.document_column)
+    logger.info("  detailed          = %s", args.detailed)
+    logger.info("  parallel          = %s", args.parallel)
+    logger.info("  reviews           = %s", args.reviews)
+    if args.drafts:
+        logger.info("  drafts            = %s", len(args.drafts))
+        for i, d in enumerate(args.drafts):
+            logger.info("    [%d] name=%s endpoint=%s parallel=%d reviews=%d", i, d.get("name", ""), d.get("endpoint", ""), d.get("parallel", 1), d.get("reviews", 1))
+
     # Validate database
     if not os.path.exists(db_path):
         logger.error("Database not found: %s", db_path)
