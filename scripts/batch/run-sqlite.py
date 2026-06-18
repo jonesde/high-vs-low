@@ -2848,7 +2848,7 @@ def setup_logging(db_path: str):
     if root.handlers:
         return
 
-    fmt = logging.Formatter("%(asctime)s  %(levelname)-7s  %(message)s", datefmt="%H:%M:%S")
+    fmt = logging.Formatter("%(asctime)s  %(levelname)-7s [%(threadName)-12.12s] %(message)s", datefmt="%H:%M:%S")
 
     sh = logging.StreamHandler(sys.stdout)
     sh.setLevel(logging.INFO)
