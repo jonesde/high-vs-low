@@ -84,13 +84,16 @@ DRAFT_REVIEW_COMPLETE = 4
 DRAFT_MERGE_IN_PROGRESS = 5
 DRAFT_MERGE_COMPLETE = 6
 
+# Directories for other files used (SKILL.md, report-review.md, verify-report.py, etc), relative to script file (use dir structure from git repo)
+_BATCH_DIR = os.path.dirname(os.path.abspath(__file__))
+_SCRIPTS_DIR = os.path.dirname(_SCRIPTS_DIR)
+_SKILL_DIR = os.path.dirname(_SCRIPTS_DIR)
+
 # ---------------------------------------------------------------------------
 # Stubs
 # ---------------------------------------------------------------------------
 
-_STUB_EVAL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test-report.md")
-
-
+_STUB_EVAL_PATH = os.path.join(_BATCH_DIR, "test-report.md")
 def _load_stub_evaluation() -> str:
     with open(_STUB_EVAL_PATH, "r") as f:
         return f.read()
@@ -347,13 +350,9 @@ class OpenAIClient:
             content = body["choices"][0]["message"]["content"]
             usage = body.get("usage", {})
             usage_details = usage.get("completion_tokens_details", {})
-            return ChatResult(
-                content=content, elapsed=elapsed,
-                prompt_tokens=usage.get("prompt_tokens"),
-                completion_tokens=usage.get("completion_tokens"),
-                total_tokens=usage.get("total_tokens"),
-                reasoning_tokens=usage_details.get("reasoning_tokens"),
-            )
+            return ChatResult(content=content, elapsed=elapsed, prompt_tokens=usage.get("prompt_tokens"),
+                completion_tokens=usage.get("completion_tokens"), total_tokens=usage.get("total_tokens"),
+                reasoning_tokens=usage_details.get("reasoning_tokens"))
         except urllib.error.HTTPError as exc:
             elapsed = time.monotonic() - start
             error_body = exc.read().decode("utf-8", errors="replace")
@@ -364,10 +363,8 @@ class OpenAIClient:
         url = f"{self.endpoint}/chat/completions"
         payload = self._build_payload(system_prompt, user_prompt, stream=True)
         data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data, headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-        }, method="POST")
+        req = urllib.request.Request(url, data=data, headers={ "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}" }, method="POST")
         start = time.monotonic()
         try:
             with urllib.request.urlopen(req, timeout=1800) as resp:
@@ -415,12 +412,8 @@ class OpenAIClient:
                 content = "".join(full_content)
                 if completion_tokens is None:
                     completion_tokens = char_count
-                return ChatResult(
-                    content=content, elapsed=elapsed,
-                    prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
-                    total_tokens=total_tokens, reasoning_tokens=reasoning_tokens,
-                    first_token_elapsed=first_token_time,
-                )
+                return ChatResult(content=content, elapsed=elapsed, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
+                    total_tokens=total_tokens, reasoning_tokens=reasoning_tokens, first_token_elapsed=first_token_time)
         except urllib.error.HTTPError as exc:
             elapsed = time.monotonic() - start
             error_body = exc.read().decode("utf-8", errors="replace")
@@ -439,8 +432,7 @@ class StubClient:
     def chat(self, system_prompt: str, user_prompt: str) -> ChatResult:
         return self._stub_response(system_prompt, user_prompt)
 
-    def chat_stream(self, system_prompt: str, user_prompt: str,
-                     progress_cb: Optional[Callable] = None) -> ChatResult:
+    def chat_stream(self, system_prompt: str, user_prompt: str, progress_cb: Optional[Callable] = None) -> ChatResult:
         result = self._stub_response(system_prompt, user_prompt)
         content = result.content
         chunk_size = 50
@@ -467,19 +459,12 @@ class StubClient:
                     content = STUB_REVIEW
             else:
                 content = _load_stub_evaluation()
-        return ChatResult(
-            content=content, elapsed=0.01,
-            prompt_tokens=100, completion_tokens=200,
-            total_tokens=300, reasoning_tokens=0,
-        )
+        return ChatResult(content=content, elapsed=0.01, prompt_tokens=100, completion_tokens=200, total_tokens=300, reasoning_tokens=0)
 
 
 # ---------------------------------------------------------------------------
 # Prompt builders
 # ---------------------------------------------------------------------------
-
-_SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 def _read_skill_file(relative_path: str) -> str:
     path = os.path.join(_SKILL_DIR, relative_path)
@@ -568,8 +553,7 @@ def build_merge_system_prompt() -> str:
     return skill_md + instructions
 
 
-def build_merge_user_prompt(doc_text: str, doc_title: Optional[str], eval_a: str, eval_b: str,
-                             source_a: str, source_b: str) -> str:
+def build_merge_user_prompt(doc_text: str, doc_title: Optional[str], eval_a: str, eval_b: str, source_a: str, source_b: str) -> str:
     title_part = f', titled "{doc_title}"' if doc_title else ""
     return f"""Merge the following two evaluation reports for the same document{title_part}:
 
@@ -591,8 +575,7 @@ any classification conflicts using the Distinction Rules.
 """
 
 
-def build_review_user_prompt(doc_text: str, evaluation: str, doc_title: Optional[str],
-                              verify_output: Optional[str] = None,
+def build_review_user_prompt(doc_text: str, evaluation: str, doc_title: Optional[str], verify_output: Optional[str] = None,
                               prev_llm_notes: Optional[str] = None) -> str:
     verify_section = ""
     if verify_output is not None:
@@ -628,8 +611,7 @@ Review the Evaluation Report of the Original Document Text by following the inst
 
 
 def run_verify_report(evaluation_text: str) -> Optional[str]:
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    verify_script = os.path.join(script_dir, "verify-report.py")
+    verify_script = os.path.join(_SCRIPTS_DIR, "verify-report.py")
     if not os.path.exists(verify_script):
         logger.info("    [script] Script not found: %s — skipping", verify_script)
         return None
@@ -638,10 +620,7 @@ def run_verify_report(evaluation_text: str) -> Optional[str]:
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as f:
                 f.write(evaluation_text)
-            result = subprocess.run(
-                [sys.executable, verify_script, tmp_path],
-                capture_output=True, text=True, timeout=30,
-            )
+            result = subprocess.run([sys.executable, verify_script, tmp_path], capture_output=True, text=True, timeout=30)
             output = result.stdout
             if result.stderr:
                 output += result.stderr
@@ -688,8 +667,7 @@ def parse_evaluation_report(report_text: Optional[str]):
 
 
 def parse_review_has_changes(changes_text: str) -> bool:
-    return ("STATEMENTS_ADDED" in changes_text or "STATEMENTS_MOVED" in changes_text
-            or "STATEMENTS_REMOVED" in changes_text)
+    return ("STATEMENTS_ADDED" in changes_text or "STATEMENTS_MOVED" in changes_text or "STATEMENTS_REMOVED" in changes_text)
 
 
 def _is_valid_report(text: Optional[str]) -> bool:
@@ -729,22 +707,21 @@ def parse_review_changes_section(review_text: str) -> str:
 
 def _get_conn(db_path: str) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path, timeout=30)
+    # TODO: is WAL a good idea? necessary for the multi-threads? gets set permanently on file once used...
     conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA busy_timeout=10000")
     return conn
 
 
 def _get_write_conn(db_path: str) -> sqlite3.Connection:
     """Get a connection with BEGIN IMMEDIATE for atomic claim operations."""
     conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)
+    # TODO: is WAL a good idea? necessary for the multi-threads? gets set permanently on file once used...
     conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA busy_timeout=10000")
     conn.execute("BEGIN IMMEDIATE")
     return conn
 
 
-def _claim_record_for_eval(db_path: str, table: str, doc_col: str,
-                             start_id: Optional[int], where: Optional[str],
+def _claim_record_for_eval(db_path: str, table: str, doc_col: str, start_id: Optional[int], where: Optional[str],
                              limit: Optional[int], max_id: Optional[int] = None) -> Optional[tuple]:
     """Atomically find and claim a record for evaluation using BEGIN IMMEDIATE.
     Returns (id, doc_title, doc_text) or None.
@@ -760,8 +737,7 @@ def _claim_record_for_eval(db_path: str, table: str, doc_col: str,
     if max_id is not None:
         conditions.append("id <= ?")
         params.append(max_id)
-    query = (f"SELECT id, doc_title, {doc_col} FROM {table} "
-             f"WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1")
+    query = f"SELECT id, doc_title, {doc_col} FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1"
     conn = _get_write_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -771,8 +747,7 @@ def _claim_record_for_eval(db_path: str, table: str, doc_col: str,
             conn.rollback()
             return None
         doc_id = row[0]
-        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                     (STATUS_EVAL_IN_PROGRESS, doc_id))
+        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_EVAL_IN_PROGRESS, doc_id))
         conn.commit()
         return (doc_id, row[1], row[2])
     except Exception:
@@ -780,8 +755,7 @@ def _claim_record_for_eval(db_path: str, table: str, doc_col: str,
         raise
 
 
-def _claim_record_for_review(db_path: str, table: str, doc_col: str,
-                               start_id: Optional[int], where: Optional[str],
+def _claim_record_for_review(db_path: str, table: str, doc_col: str, start_id: Optional[int], where: Optional[str],
                                limit: Optional[int], max_id: Optional[int] = None) -> Optional[tuple]:
     """Atomically find and claim a record for review (status 2 -> 8) using BEGIN IMMEDIATE.
     Returns (id, doc_title, doc_text, evaluation) or None."""
@@ -796,8 +770,7 @@ def _claim_record_for_review(db_path: str, table: str, doc_col: str,
     if max_id is not None:
         conditions.append("id <= ?")
         params.append(max_id)
-    query = (f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} "
-             f"WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1")
+    query = f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1"
     conn = _get_write_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -807,8 +780,7 @@ def _claim_record_for_review(db_path: str, table: str, doc_col: str,
             conn.rollback()
             return None
         doc_id = row[0]
-        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                     (STATUS_REVIEW_IN_PROGRESS, doc_id))
+        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_IN_PROGRESS, doc_id))
         conn.commit()
         return (doc_id, row[1], row[2], row[3])
     except Exception:
@@ -816,8 +788,7 @@ def _claim_record_for_review(db_path: str, table: str, doc_col: str,
         raise
 
 
-def _claim_record_for_merge_review(db_path: str, table: str, doc_col: str,
-                                      start_id: Optional[int], where: Optional[str],
+def _claim_record_for_merge_review(db_path: str, table: str, doc_col: str, start_id: Optional[int], where: Optional[str],
                                       limit: Optional[int], max_id: Optional[int] = None) -> Optional[tuple]:
     """Claim a record with status 5 for review (5 -> 8) using BEGIN IMMEDIATE."""
     conditions = ["eval_status = 5"]
@@ -830,8 +801,7 @@ def _claim_record_for_merge_review(db_path: str, table: str, doc_col: str,
     if max_id is not None:
         conditions.append("id <= ?")
         params.append(max_id)
-    query = (f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} "
-             f"WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1")
+    query = f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1"
     conn = _get_write_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -841,8 +811,7 @@ def _claim_record_for_merge_review(db_path: str, table: str, doc_col: str,
             conn.rollback()
             return None
         doc_id = row[0]
-        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                     (STATUS_REVIEW_IN_PROGRESS, doc_id))
+        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_IN_PROGRESS, doc_id))
         conn.commit()
         return (doc_id, row[1], row[2], row[3])
     except Exception:
@@ -850,8 +819,7 @@ def _claim_record_for_merge_review(db_path: str, table: str, doc_col: str,
         raise
 
 
-def _claim_record_for_merge(db_path: str, table: str, doc_col: str,
-                               start_id: Optional[int], where: Optional[str],
+def _claim_record_for_merge(db_path: str, table: str, doc_col: str, start_id: Optional[int], where: Optional[str],
                                limit: Optional[int], max_id: Optional[int] = None) -> Optional[tuple]:
     """Claim a record with status 3 for merge (3 -> 4) using BEGIN IMMEDIATE."""
     conditions = ["eval_status = 3"]
@@ -864,8 +832,7 @@ def _claim_record_for_merge(db_path: str, table: str, doc_col: str,
     if max_id is not None:
         conditions.append("id <= ?")
         params.append(max_id)
-    query = (f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} "
-             f"WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1")
+    query = f"SELECT id, doc_title, {doc_col}, evaluation FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1"
     conn = _get_write_conn(db_path)
     try:
         cursor = conn.cursor()
@@ -875,8 +842,7 @@ def _claim_record_for_merge(db_path: str, table: str, doc_col: str,
             conn.rollback()
             return None
         doc_id = row[0]
-        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                     (STATUS_MERGE_IN_PROGRESS, doc_id))
+        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_MERGE_IN_PROGRESS, doc_id))
         conn.commit()
         return (doc_id, row[1], row[2], row[3])
     except Exception:
@@ -890,15 +856,13 @@ def _claim_draft_for_review(conn: sqlite3.Connection, doc_id: int, draft_seq: in
     Uses conditional UPDATE to prevent race conditions."""
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT draft_status, evaluation, count_hl, count_ll, score FROM doc_eval_draft "
-        "WHERE doc_id = ? AND draft_seq = ? AND draft_status = ?",
+        "SELECT draft_status, evaluation, count_hl, count_ll, score FROM doc_eval_draft WHERE doc_id = ? AND draft_seq = ? AND draft_status = ?",
         (doc_id, draft_seq, DRAFT_COMPLETE))
     row = cursor.fetchone()
     if not row:
         return None
     cursor.execute(
-        "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ? "
-        "AND draft_status = ?",
+        "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ? AND draft_status = ?",
         (DRAFT_REVIEW_IN_PROGRESS, doc_id, draft_seq, DRAFT_COMPLETE))
     conn.commit()
     if cursor.rowcount == 0:
@@ -911,8 +875,7 @@ def _claim_draft_for_eval(conn: sqlite3.Connection, doc_id: int, draft_seq: int)
     Uses conditional UPDATE to prevent race conditions."""
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ? "
-        "AND (draft_status IS NULL OR draft_status = 0)",
+        "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ? AND (draft_status IS NULL OR draft_status = 0)",
         (DRAFT_IN_PROGRESS, doc_id, draft_seq))
     conn.commit()
     return cursor.rowcount > 0
@@ -922,15 +885,14 @@ def _get_draft_doc_text(conn: sqlite3.Connection, table: str, doc_col: str,
                          doc_id: int) -> Optional[tuple]:
     """Get doc_text and doc_title for a draft's doc_id."""
     cursor = conn.cursor()
-    cursor.execute(
-        f"SELECT id, doc_title, {doc_col} FROM {table} WHERE id = ?", (doc_id,))
+    cursor.execute(f"SELECT id, doc_title, {doc_col} FROM {table} WHERE id = ?", (doc_id,))
     row = cursor.fetchone()
     return row
 
 
-def _save_eval_to_table(conn: sqlite3.Connection, table: str, doc_id: int,
-                         evaluation: Optional[str], count_hl: Optional[int],
+def _save_eval_to_table(conn: sqlite3.Connection, table: str, doc_id: int, evaluation: Optional[str], count_hl: Optional[int],
                          count_ll: Optional[int], score: Optional[float]):
+
     assignments = []
     params: List[Any] = []
     if evaluation is not None:
@@ -952,8 +914,7 @@ def _save_eval_to_table(conn: sqlite3.Connection, table: str, doc_id: int,
     conn.commit()
 
 
-def _save_draft_eval(conn: sqlite3.Connection, doc_id: int, draft_seq: int,
-                      evaluation: Optional[str], count_hl: Optional[int],
+def _save_draft_eval(conn: sqlite3.Connection, doc_id: int, draft_seq: int, evaluation: Optional[str], count_hl: Optional[int],
                       count_ll: Optional[int], score: Optional[float]):
     assignments = []
     params: List[Any] = []
@@ -992,9 +953,8 @@ def _count_draft_status(conn: sqlite3.Connection, draft_seq: int, status: int) -
     return cursor.fetchone()[0]
 
 
-def _compute_max_id_for_limit(conn: sqlite3.Connection, table: str, doc_col: str,
-                                start_id: Optional[int], where: Optional[str],
-                                limit: int) -> Optional[int]:
+def _compute_max_id_for_limit(conn: sqlite3.Connection, table: str, doc_col: str, start_id: Optional[int],
+                              where: Optional[str], limit: int) -> Optional[int]:
     """Find the max ID that should be processed given a limit.
     Returns the ID of the Nth eligible record (1-indexed), or None if fewer than N exist."""
     conditions = []
@@ -1043,9 +1003,8 @@ def _empty_stats() -> dict:
     }
 
 
-def _do_eval(client, doc_id: int, doc_title: Optional[str], doc_text: str,
-             dry_run: bool, detailed: bool, conn_or_path, table: str,
-             progress_cb) -> tuple:
+def _do_eval(client, doc_id: int, doc_title: Optional[str], doc_text: str, dry_run: bool, detailed: bool,
+             conn_or_path, table: str, progress_cb) -> tuple:
     """Evaluate a single record. Returns (doc_id, doc_title, hl, ll, score, eval_text, error, chat_result).
     conn_or_path: either a sqlite3.Connection or a db_path string."""
     system_prompt = build_evaluation_system_prompt(detailed)
@@ -1102,8 +1061,7 @@ def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
         verify_output = run_verify_report(current_eval)
 
         system_prompt = build_review_system_prompt()
-        user_prompt = build_review_user_prompt(doc_text, current_eval, doc_title,
-                                                verify_output, previous_changes_text)
+        user_prompt = build_review_user_prompt(doc_text, current_eval, doc_title, verify_output, previous_changes_text)
         start_time = time.monotonic()
 
         try:
@@ -1155,10 +1113,8 @@ def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
             final_hl, final_ll, final_score, final_error, last_result)
 
 
-def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str,
-              eval_source: str, eval_target: Optional[str], source_name: str,
-              target_name: str, dry_run: bool, conn_or_path, table: str,
-              progress_cb) -> tuple:
+def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval_source: str, eval_target: Optional[str], source_name: str,
+              target_name: str, dry_run: bool, conn_or_path, table: str, progress_cb) -> tuple:
     """Merge two evaluations. Returns (doc_id, hl, ll, score, merged_eval, error, chat_result).
     conn_or_path: either a sqlite3.Connection or a db_path string."""
     if eval_target is None:
@@ -1209,10 +1165,8 @@ def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str,
     return (doc_id, count_hl, count_ll, score, merged_eval, None, result)
 
 
-def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str,
-                    main_eval: Optional[str], draft_eval: str, draft_name: str,
-                    dry_run: bool, conn_or_path, table: str,
-                    progress_cb) -> tuple:
+def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, main_eval: Optional[str], draft_eval: str, draft_name: str,
+                    dry_run: bool, conn_or_path, table: str, progress_cb) -> tuple:
     """Merge a draft evaluation into the main evaluation.
     conn_or_path: either a sqlite3.Connection or a db_path string.
     Returns (hl, ll, score, merged_eval, error, chat_result)."""
@@ -1301,12 +1255,9 @@ class ThreadStats:
     def summary(self, name: str) -> str:
         with self._lock:
             s = self.stats
-            return (f"[{name}] evals={self.eval_count} reviews={self.review_count} "
-                    f"merges={self.merge_count} errors={self.error_count} "
-                    f"time={s['total_elapsed']:.0f}s "
-                    f"tokens=prompt={s['total_prompt_tokens']} "
-                    f"reasoning={s['total_reasoning_tokens']} "
-                    f"output={s['total_output_tokens']}")
+            return (f"[{name}] evals={self.eval_count} reviews={self.review_count} merges={self.merge_count} errors={self.error_count} "
+                    f"time={s['total_elapsed']:.0f}s tokens=prompt={s['total_prompt_tokens']} "
+                    f"reasoning={s['total_reasoning_tokens']} output={s['total_output_tokens']}")
 
 
 def _update_status(db_path: str, table: str, doc_id: int, status: int):
@@ -1319,12 +1270,9 @@ def _update_status(db_path: str, table: str, doc_id: int, status: int):
         conn.close()
 
 
-def worker_main_eval(client, db_path: str, table: str, doc_col: str,
-                       name: str, line_idx: int, display: MultiProgressDisplay,
-                       dry_run: bool, detailed: bool, reviews: int,
-                       start_id: Optional[int], where: Optional[str],
-                       limit: Optional[int], max_id: Optional[int],
-                       stats: ThreadStats, stop_event: threading.Event,
+def worker_main_eval(client, db_path: str, table: str, doc_col: str, name: str, line_idx: int, display: MultiProgressDisplay,
+                       dry_run: bool, detailed: bool, reviews: int, start_id: Optional[int], where: Optional[str],
+                       limit: Optional[int], max_id: Optional[int], stats: ThreadStats, stop_event: threading.Event,
                        results_lock: threading.Lock, results: list):
     """Main endpoint worker: evaluate and review based on eval_status."""
     progress_cb = make_thread_progress_cb(display, line_idx)
@@ -1336,37 +1284,27 @@ def worker_main_eval(client, db_path: str, table: str, doc_col: str,
             row = _claim_record_for_review(db_path, table, doc_col, start_id, where, limit, max_id)
             if row:
                 doc_id, doc_title, doc_text, evaluation = row
-                logger.info("%s [review] ID=%s: %s", prefix, doc_id,
-                            (doc_title or "N/A")[:50])
+                logger.info("%s [review] ID=%s: %s", prefix, doc_id, (doc_title or "N/A")[:50])
                 display.update_line(line_idx, f"{prefix} reviewing ID={doc_id} ...")
 
                 if reviews > 0:
                     _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                        client, doc_id, doc_title, doc_text, evaluation, dry_run,
-                        db_path, table, reviews, progress_cb)
+                        client, doc_id, doc_title, doc_text, evaluation, dry_run, db_path, table, reviews, progress_cb)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_review()
                     if err:
                         stats.inc_error()
                         with results_lock:
-                            results.append({
-                                "doc_id": doc_id, "doc_title": doc_title,
-                                "phase": "review", "error": err,
-                                "orig_hl": None, "orig_ll": None, "orig_score": None,
-                                "final_hl": fhl, "final_ll": fll, "final_score": fscore,
-                            })
+                            results.append({ "doc_id": doc_id, "doc_title": doc_title, "phase": "review", "error": err,
+                                "orig_hl": None, "orig_ll": None, "orig_score": None, "final_hl": fhl, "final_ll": fll, "final_score": fscore })
                         _update_status(db_path, table, doc_id, STATUS_REVIEW_IN_PROGRESS)
                         break
                     else:
                         _update_status(db_path, table, doc_id, STATUS_REVIEW_COMPLETE)
                         with results_lock:
-                            results.append({
-                                "doc_id": doc_id, "doc_title": doc_title,
-                                "phase": "review", "error": None,
-                                "orig_hl": None, "orig_ll": None, "orig_score": None,
-                                "final_hl": fhl, "final_ll": fll, "final_score": fscore,
-                            })
+                            results.append({ "doc_id": doc_id, "doc_title": doc_title, "phase": "review", "error": None,
+                                "orig_hl": None, "orig_ll": None, "orig_score": None, "final_hl": fhl, "final_ll": fll, "final_score": fscore })
                 else:
                     _update_status(db_path, table, doc_id, STATUS_REVIEW_COMPLETE)
                     logger.info("%s [review] ID=%s: SKIPPED (reviews=0)", prefix, doc_id)
@@ -1377,34 +1315,26 @@ def worker_main_eval(client, db_path: str, table: str, doc_col: str,
             row = _claim_record_for_eval(db_path, table, doc_col, start_id, where, limit, max_id)
             if row:
                 doc_id, doc_title, doc_text = row
-                logger.info("%s [eval] ID=%s: %s", prefix, doc_id,
-                            (doc_title or "N/A")[:50])
+                logger.info("%s [eval] ID=%s: %s", prefix, doc_id, (doc_title or "N/A")[:50])
                 display.update_line(line_idx, f"{prefix} evaluating ID={doc_id} ...")
 
                 _, _, hl, ll, score, eval_text, err, chat_res = _do_eval(
-                    client, doc_id, doc_title, doc_text, dry_run, detailed,
-                    db_path, table, progress_cb)
+                    client, doc_id, doc_title, doc_text, dry_run, detailed, db_path, table, progress_cb)
                 if chat_res:
                     stats.add(chat_res)
                 stats.inc_eval()
                 if err:
                     stats.inc_error()
                     with results_lock:
-                        results.append({
-                            "doc_id": doc_id, "doc_title": doc_title,
-                            "phase": "eval", "error": err,
-                            "final_hl": hl, "final_ll": ll, "final_score": score,
-                        })
+                        results.append({ "doc_id": doc_id, "doc_title": doc_title, "phase": "eval", "error": err,
+                            "final_hl": hl, "final_ll": ll, "final_score": score })
                     _update_status(db_path, table, doc_id, STATUS_EVAL_IN_PROGRESS)
                     break
                 else:
                     _update_status(db_path, table, doc_id, STATUS_EVAL_COMPLETE)
                     with results_lock:
-                        results.append({
-                            "doc_id": doc_id, "doc_title": doc_title,
-                            "phase": "eval", "error": None,
-                            "final_hl": hl, "final_ll": ll, "final_score": score,
-                        })
+                        results.append({ "doc_id": doc_id, "doc_title": doc_title, "phase": "eval", "error": None,
+                            "final_hl": hl, "final_ll": ll, "final_score": score })
                 display.update_line(line_idx, f"{prefix} eval done ID={doc_id}")
                 continue
 
@@ -1423,12 +1353,9 @@ def worker_main_eval(client, db_path: str, table: str, doc_col: str,
             time.sleep(1)
 
 
-def worker_main_merge(client, source_db_path: str, db_path: str, table: str,
-                        doc_col: str, source_table: str, name: str, line_idx: int,
-                        display: MultiProgressDisplay, dry_run: bool, reviews: int,
-                        start_id: Optional[int], where: Optional[str],
-                        limit: Optional[int], max_id: Optional[int],
-                        stats: ThreadStats, stop_event: threading.Event,
+def worker_main_merge(client, source_db_path: str, db_path: str, table: str, doc_col: str, source_table: str, name: str, line_idx: int,
+                        display: MultiProgressDisplay, dry_run: bool, reviews: int, start_id: Optional[int], where: Optional[str],
+                        limit: Optional[int], max_id: Optional[int], stats: ThreadStats, stop_event: threading.Event,
                         results_lock: threading.Lock, results: list):
     """Main endpoint worker for merge mode: merge then review based on eval_status."""
     progress_cb = make_thread_progress_cb(display, line_idx)
@@ -1452,8 +1379,7 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str,
             if max_id is not None:
                 src_conditions.append("id <= ?")
                 src_params.append(max_id)
-            src_query = (f"SELECT id FROM {source_table} WHERE "
-                         f"{' AND '.join(src_conditions)} ORDER BY id")
+            src_query = f"SELECT id FROM {source_table} WHERE {' AND '.join(src_conditions)} ORDER BY id"
             if limit:
                 src_query += " LIMIT ?"
                 src_params.append(limit)
@@ -1470,9 +1396,7 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str,
                 else:
                     tgt_params = [STATUS_MERGE_PLANNED] + list(source_ids)
                 tgt_cursor = tgt_conn.cursor()
-                tgt_cursor.execute(
-                    f"UPDATE {table} SET eval_status = ? WHERE {tgt_where}",
-                    tgt_params)
+                tgt_cursor.execute(f"UPDATE {table} SET eval_status = ? WHERE {tgt_where}", tgt_params)
                 tgt_conn.commit()
                 logger.info("[merge-plan] Planned %d merges", tgt_cursor.rowcount)
         finally:
@@ -1485,14 +1409,12 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str,
             row = _claim_record_for_merge_review(db_path, table, doc_col, start_id, where, limit, max_id)
             if row:
                 doc_id, doc_title, doc_text, evaluation = row
-                logger.info("%s [merge-review] ID=%s: %s", prefix, doc_id,
-                            (doc_title or "N/A")[:50])
+                logger.info("%s [merge-review] ID=%s: %s", prefix, doc_id, (doc_title or "N/A")[:50])
                 display.update_line(line_idx, f"{prefix} merge-review ID={doc_id} ...")
 
                 if reviews > 0:
                     _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                        client, doc_id, doc_title, doc_text, evaluation, dry_run,
-                        db_path, table, reviews, progress_cb)
+                        client, doc_id, doc_title, doc_text, evaluation, dry_run, db_path, table, reviews, progress_cb)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_review()
@@ -1511,25 +1433,21 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str,
             row = _claim_record_for_merge(db_path, table, doc_col, start_id, where, limit, max_id)
             if row:
                 doc_id, doc_title, doc_text, eval_target = row
-                logger.info("%s [merge] ID=%s: %s", prefix, doc_id,
-                            (doc_title or "N/A")[:50])
+                logger.info("%s [merge] ID=%s: %s", prefix, doc_id, (doc_title or "N/A")[:50])
                 display.update_line(line_idx, f"{prefix} merging ID={doc_id} ...")
 
                 src_conn = _get_conn(source_db_path)
                 try:
                     src_cursor = src_conn.cursor()
-                    src_cursor.execute(
-                        f"SELECT evaluation FROM {source_table} WHERE id = ?", (doc_id,))
+                    src_cursor.execute(f"SELECT evaluation FROM {source_table} WHERE id = ?", (doc_id,))
                     src_row = src_cursor.fetchone()
                     eval_source = src_row[0] if src_row else None
                 finally:
                     src_conn.close()
 
                 if eval_source:
-                    _, hl, ll, score, merged, err, chat_res = _do_merge(
-                        client, doc_id, doc_title, doc_text, eval_source, eval_target,
-                        os.path.basename(source_db_path), os.path.basename(db_path),
-                        dry_run, db_path, table, progress_cb)
+                    _, hl, ll, score, merged, err, chat_res = _do_merge(client, doc_id, doc_title, doc_text, eval_source, eval_target,
+                        os.path.basename(source_db_path), os.path.basename(db_path), dry_run, db_path, table, progress_cb)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_merge()
@@ -1559,12 +1477,9 @@ def worker_main_merge(client, source_db_path: str, db_path: str, table: str,
             time.sleep(1)
 
 
-def worker_draft_eval(client, db_path: str, table: str, doc_col: str,
-                        name: str, line_idx: int, display: MultiProgressDisplay,
-                        dry_run: bool, detailed: bool, reviews: int,
-                        draft_seq: int, stats: ThreadStats,
-                        stop_event: threading.Event, results_lock: threading.Lock,
-                        results: list):
+def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str, line_idx: int, display: MultiProgressDisplay,
+                        dry_run: bool, detailed: bool, reviews: int, draft_seq: int, stats: ThreadStats,
+                        stop_event: threading.Event, results_lock: threading.Lock, results: list):
     """Draft endpoint worker: evaluate and review drafts based on draft_status."""
     progress_cb = make_thread_progress_cb(display, line_idx)
     prefix = f"[{name}]"
@@ -1579,9 +1494,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str,
         conn = _get_conn(db_path)
         try:
             cursor = conn.cursor()
-            cursor.execute(
-                "SELECT doc_id FROM doc_eval_draft WHERE draft_seq = ? AND draft_status = ?",
-                (draft_seq, DRAFT_COMPLETE))
+            cursor.execute("SELECT doc_id FROM doc_eval_draft WHERE draft_seq = ? AND draft_status = ?", (draft_seq, DRAFT_COMPLETE))
             rows = cursor.fetchall()
             if rows:
                 doc_id = rows[0][0]
@@ -1592,8 +1505,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str,
                     doc_row = _get_draft_doc_text(conn, table, doc_col, doc_id)
                     if not doc_row:
                         logger.error("%s [draft-review] ID=%s: doc not found", prefix, doc_id)
-                        conn.execute(
-                            "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?",
+                        conn.execute("UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?",
                             (DRAFT_REVIEW_IN_PROGRESS, doc_id, draft_seq))
                         conn.commit()
                         doc_id = None  # prevent double-close
@@ -1603,15 +1515,13 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str,
             conn.close()
 
         if claimed and doc_id is not None:
-            logger.info("%s [draft-review] doc_id=%s draft_seq=%d: %s",
-                        prefix, doc_id, draft_seq, (doc_title or "N/A")[:50])
+            logger.info("%s [draft-review] doc_id=%s draft_seq=%d: %s", prefix, doc_id, draft_seq, (doc_title or "N/A")[:50])
             display.update_line(line_idx, f"{prefix} draft-review doc={doc_id} ...")
 
             # Close conn before LLM call; pass db_path instead
             if reviews > 0:
                 _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                    client, doc_id, doc_title, doc_text, draft_eval, dry_run,
-                    db_path, table, reviews, progress_cb)
+                    client, doc_id, doc_title, doc_text, draft_eval, dry_run, db_path, table, reviews, progress_cb)
                 if chat_res:
                     stats.add(chat_res)
                 stats.inc_review()
@@ -1630,8 +1540,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str,
                     conn2 = _get_conn(db_path)
                     try:
                         if not dry_run:
-                            _save_draft_eval(conn2, doc_id, draft_seq,
-                                              None, fhl, fll, fscore)
+                            _save_draft_eval(conn2, doc_id, draft_seq, None, fhl, fll, fscore)
                         conn2.execute(
                             "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?",
                             (DRAFT_REVIEW_COMPLETE, doc_id, draft_seq))
@@ -1686,8 +1595,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str,
 
                 # Close conn before LLM call; pass db_path instead
                 _, _, hl, ll, score, eval_text, err, chat_res = _do_eval(
-                    client, doc_id, doc_title, doc_text, dry_run, detailed,
-                    db_path, table, progress_cb)
+                    client, doc_id, doc_title, doc_text, dry_run, detailed, db_path, table, progress_cb)
                 if chat_res:
                     stats.add(chat_res)
                 stats.inc_eval()
@@ -1726,12 +1634,9 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str,
         return
 
 
-def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
-                        name: str, line_idx: int, display: MultiProgressDisplay,
-                        dry_run: bool, reviews: int, all_draft_seqs: List[int],
-                        stats: ThreadStats, stop_event: threading.Event,
-                        results_lock: threading.Lock, results: list,
-                        num_draft_threads: int):
+def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str, line_idx: int, display: MultiProgressDisplay,
+                        dry_run: bool, reviews: int, all_draft_seqs: List[int], stats: ThreadStats, stop_event: threading.Event,
+                        results_lock: threading.Lock, results: list, num_draft_threads: int):
     """Merge/main thread for drafts: merge draft evals into main, then review."""
     progress_cb = make_thread_progress_cb(display, line_idx)
     prefix = f"[{name}-merge]"
@@ -1742,9 +1647,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
         # Phase 0: Check if any docs are in drafts-in-progress
         conn = _get_conn(db_path)
         try:
-            in_progress = conn.execute(
-                f"SELECT COUNT(*) FROM {table} WHERE eval_status = ?",
-                (STATUS_DRAFTS_IN_PROGRESS,)).fetchone()[0]
+            in_progress = conn.execute(f"SELECT COUNT(*) FROM {table} WHERE eval_status = ?", (STATUS_DRAFTS_IN_PROGRESS,)).fetchone()[0]
         finally:
             conn.close()
 
@@ -1765,10 +1668,8 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
             try:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "SELECT DISTINCT d.doc_id FROM doc_eval_draft d "
-                    "JOIN documents doc ON d.doc_id = doc.id "
-                    "WHERE d.draft_seq = ? AND d.draft_status = ? "
-                    "AND doc.eval_status = ?",
+                    "SELECT DISTINCT d.doc_id FROM doc_eval_draft d JOIN documents doc ON d.doc_id = doc.id "
+                    "WHERE d.draft_seq = ? AND d.draft_status = ? AND doc.eval_status = ?",
                     (draft_seq, DRAFT_REVIEW_COMPLETE, STATUS_DRAFTS_IN_PROGRESS))
                 rows = cursor.fetchall()
             finally:
@@ -1782,13 +1683,10 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
                     cursor = conn.cursor()
                     # Skip if already merged (all drafts at status 6)
                     already_merged = cursor.execute(
-                        "SELECT COUNT(*) FROM doc_eval_draft WHERE doc_id = ? "
-                        "AND draft_status = ?",
+                        "SELECT COUNT(*) FROM doc_eval_draft WHERE doc_id = ? AND draft_status = ?",
                         (doc_id, DRAFT_MERGE_COMPLETE)).fetchone()[0]
                     if already_merged == len(all_draft_seqs):
-                        doc_status = cursor.execute(
-                            f"SELECT eval_status FROM {table} WHERE id = ?",
-                            (doc_id,)).fetchone()[0]
+                        doc_status = cursor.execute(f"SELECT eval_status FROM {table} WHERE id = ?", (doc_id,)).fetchone()[0]
                         if doc_status in (STATUS_REVIEW_COMPLETE, STATUS_DRAFTS_COMPLETE):
                             continue
                         elif doc_status == STATUS_REVIEW_IN_PROGRESS:
@@ -1796,34 +1694,26 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
                             if not doc_row:
                                 continue
                             _, doc_title, doc_text = doc_row
-                            main_eval = cursor.execute(
-                                f"SELECT evaluation FROM {table} WHERE id = ?",
-                                (doc_id,)).fetchone()
+                            main_eval = cursor.execute(f"SELECT evaluation FROM {table} WHERE id = ?", (doc_id,)).fetchone()
                             main_eval = main_eval[0] if main_eval else None
                             work_item = (doc_id, doc_title, doc_text, main_eval, None, True)
                             found_merge = True
                             break
                     else:
                         pending = cursor.execute(
-                            "SELECT COUNT(*) FROM doc_eval_draft WHERE doc_id = ? "
-                            "AND draft_status != ?",
+                            "SELECT COUNT(*) FROM doc_eval_draft WHERE doc_id = ? AND draft_status != ?",
                             (doc_id, DRAFT_REVIEW_COMPLETE)).fetchone()[0]
                         if pending == 0:
                             doc_row = _get_draft_doc_text(conn, table, doc_col, doc_id)
                             if not doc_row:
                                 continue
                             _, doc_title, doc_text = doc_row
-                            main_eval = cursor.execute(
-                                f"SELECT evaluation FROM {table} WHERE id = ?",
-                                (doc_id,)).fetchone()
+                            main_eval = cursor.execute(f"SELECT evaluation FROM {table} WHERE id = ?", (doc_id,)).fetchone()
                             main_eval = main_eval[0] if main_eval else None
                             # Collect draft evals
                             draft_evals = {}
                             for ds in all_draft_seqs:
-                                de = cursor.execute(
-                                    "SELECT evaluation FROM doc_eval_draft "
-                                    "WHERE doc_id = ? AND draft_seq = ?",
-                                    (doc_id, ds)).fetchone()
+                                de = cursor.execute("SELECT evaluation FROM doc_eval_draft WHERE doc_id = ? AND draft_seq = ?", (doc_id, ds)).fetchone()
                                 draft_evals[ds] = de[0] if de else None
                             work_item = (doc_id, doc_title, doc_text, main_eval, draft_evals, False)
                             found_merge = True
@@ -1839,8 +1729,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
         if found_merge and work_item:
             doc_id, doc_title, doc_text, main_eval, draft_evals, is_retry = work_item
             if is_retry:
-                logger.info("%s [draft-review-retry] doc_id=%s: retrying post-draft review",
-                            prefix, doc_id)
+                logger.info("%s [draft-review-retry] doc_id=%s: retrying post-draft review", prefix, doc_id)
                 display.update_line(line_idx, f"{prefix} retry review doc={doc_id} ...")
 
                 if reviews > 0:
@@ -1859,9 +1748,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
                         conn = _get_conn(db_path)
                         try:
                             _save_eval_to_table(conn, table, doc_id, main_eval, fhl, fll, fscore)
-                            conn.execute(
-                                f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                                (STATUS_REVIEW_COMPLETE, doc_id))
+                            conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_COMPLETE, doc_id))
                             conn.commit()
                         finally:
                             conn.close()
@@ -1871,9 +1758,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
                 else:
                     conn = _get_conn(db_path)
                     try:
-                        conn.execute(
-                            f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                            (STATUS_DRAFTS_COMPLETE, doc_id))
+                        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_DRAFTS_COMPLETE, doc_id))
                         conn.commit()
                     finally:
                         conn.close()
@@ -1882,8 +1767,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
                     continue
 
             # New merge
-            logger.info("%s [draft-merge] doc_id=%s: merging %d drafts",
-                        prefix, doc_id, len(all_draft_seqs))
+            logger.info("%s [draft-merge] doc_id=%s: merging %d drafts", prefix, doc_id, len(all_draft_seqs))
             display.update_line(line_idx, f"{prefix} merging doc={doc_id} ...")
 
             current_eval = main_eval
@@ -1891,10 +1775,8 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
                 de = draft_evals.get(ds)
                 if de:
                     dn = f"draft-{ds}"
-                    hl, ll, score, merged, err, chat_res = _do_draft_merge(
-                        client, doc_id, doc_title, doc_text,
-                        current_eval, de, dn, dry_run,
-                        db_path, table, progress_cb)
+                    hl, ll, score, merged, err, chat_res = _do_draft_merge(client, doc_id, doc_title, doc_text,
+                        current_eval, de, dn, dry_run, db_path, table, progress_cb)
                     if chat_res:
                         stats.add(chat_res)
                     stats.inc_merge()
@@ -1912,10 +1794,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
             conn = _get_conn(db_path)
             try:
                 for ds in all_draft_seqs:
-                    conn.execute(
-                        "UPDATE doc_eval_draft SET draft_status = ? "
-                        "WHERE doc_id = ? AND draft_seq = ?",
-                        (DRAFT_MERGE_COMPLETE, doc_id, ds))
+                    conn.execute("UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?", (DRAFT_MERGE_COMPLETE, doc_id, ds))
                 conn.commit()
             finally:
                 conn.close()
@@ -1923,9 +1802,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
             if reviews > 0:
                 conn = _get_conn(db_path)
                 try:
-                    conn.execute(
-                        f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                        (STATUS_REVIEW_IN_PROGRESS, doc_id))
+                    conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_IN_PROGRESS, doc_id))
                     conn.commit()
                 finally:
                     conn.close()
@@ -1934,8 +1811,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
                 display.update_line(line_idx, f"{prefix} post-draft review doc={doc_id} ...")
 
                 _, _, _, _, _, fhl, fll, fscore, err, chat_res = _do_review(
-                    client, doc_id, doc_title, doc_text, current_eval, dry_run,
-                    db_path, table, reviews, progress_cb)
+                    client, doc_id, doc_title, doc_text, current_eval, dry_run, db_path, table, reviews, progress_cb)
                 if chat_res:
                     stats.add(chat_res)
                 stats.inc_review()
@@ -1943,27 +1819,21 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
                     stats.inc_error()
                     conn = _get_conn(db_path)
                     try:
-                        conn.execute(
-                            f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                            (STATUS_REVIEW_IN_PROGRESS, doc_id))
+                        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_IN_PROGRESS, doc_id))
                         conn.commit()
                     finally:
                         conn.close()
                 else:
                     conn = _get_conn(db_path)
                     try:
-                        conn.execute(
-                            f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                            (STATUS_REVIEW_COMPLETE, doc_id))
+                        conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_REVIEW_COMPLETE, doc_id))
                         conn.commit()
                     finally:
                         conn.close()
             else:
                 conn = _get_conn(db_path)
                 try:
-                    conn.execute(
-                        f"UPDATE {table} SET eval_status = ? WHERE id = ?",
-                        (STATUS_DRAFTS_COMPLETE, doc_id))
+                    conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id = ?", (STATUS_DRAFTS_COMPLETE, doc_id))
                     conn.commit()
                 finally:
                     conn.close()
@@ -1976,9 +1846,7 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str,
         conn = _get_conn(db_path)
         try:
             pending = conn.execute(
-                "SELECT COUNT(*) FROM doc_eval_draft d "
-                "JOIN documents doc ON d.doc_id = doc.id "
-                "WHERE doc.eval_status = ? AND d.draft_status < 4",
+                "SELECT COUNT(*) FROM doc_eval_draft d JOIN documents doc ON d.doc_id = doc.id WHERE doc.eval_status = ? AND d.draft_status < 4",
                 (STATUS_DRAFTS_IN_PROGRESS,)).fetchone()[0]
         finally:
             conn.close()
@@ -2071,28 +1939,23 @@ def parse_cli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument("db_path", nargs="?", help="Path to SQLite database or .yml config file")
     parser.add_argument("--limit", type=int, default=None, help="Process only first N records")
     parser.add_argument("--start-id", type=int, default=None, help="Start from this record ID")
-    parser.add_argument("--endpoint", default=os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT),
-                        help="OpenAI-compatible endpoint URL")
+    parser.add_argument("--endpoint", default=os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT), help="OpenAI-compatible endpoint URL")
     parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", ""), help="API key")
     parser.add_argument("--model", default="", help="Model name")
     parser.add_argument("--name", default="main", help="Human-readable name for this endpoint")
     parser.add_argument("--stub", action="store_true", help="Use stub AI client")
     parser.add_argument("--skip-review", action="store_true", help="Skip the review phase")
     parser.add_argument("--skip-evaluation", action="store_true", help="Skip the evaluation phase")
-    parser.add_argument("--merge-from", default=None, metavar="DB",
-                        help="Merge evaluations from another database")
+    parser.add_argument("--merge-from", default=None, metavar="DB", help="Merge evaluations from another database")
     parser.add_argument("--dry-run", action="store_true", help="Print actions without modifying DB")
     parser.add_argument("--reset", action="store_true", help="Reset evaluation data before processing")
     parser.add_argument("--reset-only", action="store_true", help="Only reset evaluation data and exit")
     parser.add_argument("--where", default=None, help="SQL WHERE clause (without 'WHERE')")
     parser.add_argument("--table", default=None, help="Table name to use")
-    parser.add_argument("--document-column", default=DEFAULT_DOCUMENT_COLUMN,
-                        help=f"Column containing document text (default: {DEFAULT_DOCUMENT_COLUMN})")
+    parser.add_argument("--document-column", default=DEFAULT_DOCUMENT_COLUMN, help=f"Column containing document text (default: {DEFAULT_DOCUMENT_COLUMN})")
     parser.add_argument("--detailed", action="store_true", help="Produce detailed evaluation reports")
-    parser.add_argument("--parallel", type=int, default=1,
-                        help="Number of threads for main endpoint (default: 1)")
-    parser.add_argument("--reviews", type=int, default=3,
-                        help="Number of review iterations (default: 3; 0 = skip reviews)")
+    parser.add_argument("--parallel", type=int, default=1, help="Number of threads for main endpoint (default: 1)")
+    parser.add_argument("--reviews", type=int, default=3, help="Number of review iterations (default: 3; 0 = skip reviews)")
     return parser.parse_args(argv)
 
 
@@ -2159,9 +2022,7 @@ def discover_schema(conn: sqlite3.Connection, table: str, doc_col: str):
     logger.info("[db-init] All required columns present")
 
 
-def preview_records(conn: sqlite3.Connection, table: str, doc_col: str,
-                     start_id: Optional[int], where: Optional[str],
-                     limit: Optional[int]):
+def preview_records(conn: sqlite3.Connection, table: str, doc_col: str, start_id: Optional[int], where: Optional[str], limit: Optional[int]):
     """Preview record counts and ranges."""
     cursor = conn.cursor()
     cursor.execute(f"SELECT MIN(id), MAX(id), COUNT(*) FROM {table}")
@@ -2227,8 +2088,7 @@ def reset_evaluations(conn: sqlite3.Connection, table: str, where: Optional[str]
 # Draft preparation
 # ---------------------------------------------------------------------------
 
-def prepare_drafts(conn: sqlite3.Connection, table: str, doc_col: str,
-                    drafts_config: List[dict], start_id: Optional[int],
+def prepare_drafts(conn: sqlite3.Connection, table: str, doc_col: str, drafts_config: List[dict], start_id: Optional[int],
                     where: Optional[str], limit: Optional[int]):
     """Create doc_eval_draft records and set eval_status for draft workflow."""
     if not drafts_config:
@@ -2260,19 +2120,14 @@ def prepare_drafts(conn: sqlite3.Connection, table: str, doc_col: str,
     for i, draft_cfg in enumerate(drafts_config):
         draft_seq = i
         for doc_id in doc_ids:
-            cursor.execute(
-                "INSERT OR IGNORE INTO doc_eval_draft (doc_id, draft_seq, draft_status) "
-                "VALUES (?, ?, ?)",
+            cursor.execute("INSERT OR IGNORE INTO doc_eval_draft (doc_id, draft_seq, draft_status) VALUES (?, ?, ?)",
                 (doc_id, draft_seq, DRAFT_PLANNED))
         conn.commit()
-        logger.info("[drafts] Created draft_seq=%d records for '%s'", draft_seq,
-                     draft_cfg.get("name", f"draft-{draft_seq}"))
+        logger.info("[drafts] Created draft_seq=%d records for '%s'", draft_seq, draft_cfg.get("name", f"draft-{draft_seq}"))
 
     # Set eval_status to 6 (drafts-in-progress) for these docs
     placeholders = ",".join("?" for _ in doc_ids)
-    conn.execute(
-        f"UPDATE {table} SET eval_status = ? WHERE id IN ({placeholders})",
-        [STATUS_DRAFTS_IN_PROGRESS] + doc_ids)
+    conn.execute(f"UPDATE {table} SET eval_status = ? WHERE id IN ({placeholders})", [STATUS_DRAFTS_IN_PROGRESS] + doc_ids)
     conn.commit()
     logger.info("[drafts] Set eval_status=6 for %d documents", len(doc_ids))
 
@@ -2294,8 +2149,7 @@ def print_summary(results: list, thread_stats: List[tuple], db_path: str, table:
     # Results by doc
     logger.info("")
     logger.info("RESULTS BY DOCUMENT:")
-    logger.info("  %6s  %-45s  %-10s  %6s  %6s  %8s  %s",
-                "ID", "Title", "Phase", "HL", "LL", "Score", "Error")
+    logger.info("  %6s  %-45s  %-10s  %6s  %6s  %8s  %s", "ID", "Title", "Phase", "HL", "LL", "Score", "Error")
     logger.info("  " + "-" * 100)
 
     # Group by doc_id
@@ -2425,8 +2279,7 @@ def main():
         logger.info("[db-init] Table: %s, Doc column: %s", args.table, args.document_column)
 
         discover_schema(conn, args.table, args.document_column)
-        preview_records(conn, args.table, args.document_column,
-                         args.start_id, args.where, args.limit)
+        preview_records(conn, args.table, args.document_column, args.start_id, args.where, args.limit)
 
         # Reset if requested
         if args.reset or args.reset_only:
@@ -2440,8 +2293,7 @@ def main():
         has_drafts = bool(drafts_config)
 
         if has_drafts:
-            prepare_drafts(conn, args.table, args.document_column,
-                            drafts_config, args.start_id, args.where, args.limit)
+            prepare_drafts(conn, args.table, args.document_column, drafts_config, args.start_id, args.where, args.limit)
 
     finally:
         conn.close()
@@ -2455,8 +2307,7 @@ def main():
     if args.limit and not is_draft_mode:
         conn = _get_conn(db_path)
         try:
-            max_id = _compute_max_id_for_limit(conn, args.table, args.document_column,
-                                                args.start_id, args.where, args.limit)
+            max_id = _compute_max_id_for_limit(conn, args.table, args.document_column, args.start_id, args.where, args.limit)
             if max_id:
                 logger.info("[limit] Will process records with id <= %s (limit %d)", max_id, args.limit)
         finally:
@@ -2494,8 +2345,7 @@ def main():
             if args.stub:
                 c = StubClient()
             else:
-                c = OpenAIClient(draft_cfg["endpoint"], draft_cfg.get("api_key", ""),
-                                  draft_cfg.get("model", ""))
+                c = OpenAIClient(draft_cfg["endpoint"], draft_cfg.get("api_key", ""), draft_cfg.get("model", ""))
             draft_clients.append(c)
             logger.info("[llm] Draft '%s': %s", draft_cfg.get("name", ""), draft_cfg["endpoint"])
 
@@ -2548,10 +2398,8 @@ def main():
                 thread_stats_list.append((name, stats))
                 t = threading.Thread(
                     target=worker_main_merge,
-                    args=(main_client, args.merge_from, db_path, args.table,
-                          args.document_column, source_table, name, i,
-                          display, args.dry_run, args.reviews,
-                          args.start_id, args.where, args.limit, max_id,
+                    args=(main_client, args.merge_from, db_path, args.table, args.document_column, source_table, name, i,
+                          display, args.dry_run, args.reviews, args.start_id, args.where, args.limit, max_id,
                           stats, stop_event, results_lock, results),
                     daemon=True,
                 )
@@ -2574,10 +2422,8 @@ def main():
                     thread_stats_list.append((name, stats))
                     t = threading.Thread(
                         target=worker_draft_eval,
-                        args=(client, db_path, args.table, args.document_column,
-                              name, line_offset, display, args.dry_run, args.detailed,
-                              draft_cfg.get("reviews", 1),
-                              di, stats, stop_event, results_lock, results),
+                        args=(client, db_path, args.table, args.document_column, name, line_offset, display, args.dry_run, args.detailed,
+                              draft_cfg.get("reviews", 1), di, stats, stop_event, results_lock, results),
                         daemon=True,
                     )
                     threads.append(t)
@@ -2591,11 +2437,8 @@ def main():
             num_draft_threads = sum(d.get("parallel", 1) for d in drafts_config)
             merge_t = threading.Thread(
                 target=worker_draft_merge,
-                args=(main_client, db_path, args.table, args.document_column,
-                      args.name, line_offset, display, args.dry_run,
-                      args.reviews, list(range(len(drafts_config))),
-                      merge_stats, stop_event, results_lock, results,
-                      num_draft_threads),
+                args=(main_client, db_path, args.table, args.document_column, args.name, line_offset, display, args.dry_run,
+                      args.reviews, list(range(len(drafts_config))), merge_stats, stop_event, results_lock, results, num_draft_threads),
                 daemon=True,
             )
             threads.append(merge_t)
@@ -2612,10 +2455,8 @@ def main():
                 thread_stats_list.append((name, stats))
                 t = threading.Thread(
                     target=worker_main_eval,
-                    args=(main_client, db_path, args.table, args.document_column,
-                          name, i, display, args.dry_run, args.detailed,
-                          args.reviews, args.start_id, args.where, args.limit,
-                          max_id, stats, stop_event, results_lock, results),
+                    args=(main_client, db_path, args.table, args.document_column, name, i, display, args.dry_run, args.detailed,
+                          args.reviews, args.start_id, args.where, args.limit, max_id, stats, stop_event, results_lock, results),
                     daemon=True,
                 )
                 threads.append(t)
