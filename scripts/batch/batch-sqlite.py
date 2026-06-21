@@ -349,10 +349,7 @@ class OpenAIClient:
         url = f"{self.endpoint}/chat/completions"
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
+            "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
             "reasoning_effort": "high", "reasoning": "on",
             "max_completion_tokens": 40000, "max_tokens": 40000,
         }
@@ -374,14 +371,9 @@ class OpenAIClient:
             content = body["choices"][0]["message"]["content"]
             usage = body.get("usage", {})
             usage_details = usage.get("completion_tokens_details", {})
-            return ChatResult(
-                content=content,
-                elapsed=elapsed,
-                prompt_tokens=usage.get("prompt_tokens"),
-                completion_tokens=usage.get("completion_tokens"),
-                total_tokens=usage.get("total_tokens"),
-                reasoning_tokens=usage_details.get("reasoning_tokens"),
-            )
+            return ChatResult(content=content, elapsed=elapsed, prompt_tokens=usage.get("prompt_tokens"),
+                completion_tokens=usage.get("completion_tokens"), total_tokens=usage.get("total_tokens"),
+                reasoning_tokens=usage_details.get("reasoning_tokens"))
         except urllib.error.HTTPError as exc:
             elapsed = time.monotonic() - start
             error_body = exc.read().decode("utf-8", errors="replace")
@@ -400,27 +392,17 @@ class OpenAIClient:
         url = f"{self.endpoint}/chat/completions"
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
+            "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
             "reasoning_effort": "high", "reasoning": "on",
-            "stream": True,
-            "stream_options": {"include_usage": True},
+            "stream": True, "stream_options": {"include_usage": True},
             # make excessive for normal use (most 5-15k with reasoning+output)
             # avoid looping crazy runs like a 100k+ ones that happens sometimes...
             "max_completion_tokens": 40000, "max_tokens": 40000,
         }
         data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(
-            url,
-            data=data,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}",
-            },
-            method="POST",
-        )
+        req = urllib.request.Request(url, data=data,
+            headers={ "Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}" },
+            method="POST")
         start = time.monotonic()
         try:
             with urllib.request.urlopen(req, timeout=1800) as resp:
@@ -483,9 +465,7 @@ class OpenAIClient:
         except urllib.error.HTTPError as exc:
             elapsed = time.monotonic() - start
             error_body = exc.read().decode("utf-8", errors="replace")
-            raise RuntimeError(
-                f"HTTP {exc.code} from {url} ({elapsed:.1f}s): {error_body}"
-            ) from exc
+            raise RuntimeError(f"HTTP {exc.code} from {url} ({elapsed:.1f}s): {error_body}") from exc
 
 
 class StubClient:
@@ -512,14 +492,7 @@ class StubClient:
                 content = STUB_REVIEW
         else:
             content = _load_stub_evaluation()
-        return ChatResult(
-            content=content,
-            elapsed=0.01,
-            prompt_tokens=100,
-            completion_tokens=200,
-            total_tokens=300,
-            reasoning_tokens=0,
-        )
+        return ChatResult(content=content, elapsed=0.01, prompt_tokens=100, completion_tokens=200, total_tokens=300, reasoning_tokens=0)
 
     def chat_stream(self, system_prompt, user_prompt, progress_cb=None):
         self.call_count += 1
@@ -543,15 +516,8 @@ class StubClient:
                 char_count = len(content[:i + len(chunk)].split())
                 progress_cb(char_count, content[:i + len(chunk)], start)
             time.sleep(0.001)
-        return ChatResult(
-            content=content,
-            elapsed=0.01,
-            prompt_tokens=100,
-            completion_tokens=200,
-            total_tokens=300,
-            reasoning_tokens=0,
-            first_token_elapsed=0.005,
-        )
+        return ChatResult(content=content, elapsed=0.01, prompt_tokens=100, completion_tokens=200, total_tokens=300,
+            reasoning_tokens=0, first_token_elapsed=0.005)
 
 # ---------------------------------------------------------------------------
 # Prompt builders
@@ -744,12 +710,7 @@ def run_verify_report(evaluation_text):
             with os.fdopen(fd, "w", encoding="utf-8") as f:
                 f.write(evaluation_text)
 
-            result = subprocess.run(
-                [sys.executable, verify_script, tmp_path],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
+            result = subprocess.run([sys.executable, verify_script, tmp_path], capture_output=True, text=True, timeout=30)
             output = result.stdout
             if result.stderr:
                 output += result.stderr
@@ -793,9 +754,7 @@ def parse_evaluation_report(report_text):
 
     # Try to get score from the report
     score = None
-    score_match = re.search(
-        r"\*\*Score\*\*.*?=\s*\*\*([+-]?\d+\.?\d*)\*\*", report_text
-    )
+    score_match = re.search(r"\*\*Score\*\*.*?=\s*\*\*([+-]?\d+\.?\d*)\*\*", report_text)
     if score_match:
         score = float(score_match.group(1))
     else:
@@ -873,9 +832,7 @@ def parse_review_changes_section(review_text):
 def discover_schema(conn, args):
     """Step 1: Discover schema by querying sqlite_master."""
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (args.table,)
-    )
+    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (args.table,))
     row = cursor.fetchone()
     if not row:
         logger.error("Table '%s' not found in the database.", args.table)
@@ -928,9 +885,7 @@ def preview_records(conn, args, limit=None, start_id=None, where_clause=None):
         params.append(start_id)
 
     if conditions:
-        cursor.execute(
-            f"SELECT COUNT(*) FROM {args.table} WHERE " + " AND ".join(conditions), params
-        )
+        cursor.execute(f"SELECT COUNT(*) FROM {args.table} WHERE " + " AND ".join(conditions), params)
     else:
         cursor.execute(f"SELECT COUNT(*) FROM {args.table}")
     eligible = cursor.fetchone()[0]
@@ -1031,10 +986,7 @@ def load_record(args, doc_id):
 
     try:
         cursor = conn.cursor()
-        cursor.execute(
-            f"SELECT id, doc_title, {args.document_column}, evaluation FROM {args.table} WHERE id = ?",
-            (doc_id,),
-        )
+        cursor.execute(f"SELECT id, doc_title, {args.document_column}, evaluation FROM {args.table} WHERE id = ?", (doc_id,))
         row = cursor.fetchone()
         if not row:
             return None
@@ -1320,9 +1272,7 @@ def _merge_record(client, doc_id, doc_title, doc_text, eval_source, eval_target,
     logger.info("    [merge] Both source and target have evaluations — performing AI merge")
 
     system_prompt = build_merge_system_prompt()
-    user_prompt = build_merge_user_prompt(
-        doc_text, doc_title, eval_source, eval_target, "source DB", "target DB"
-    )
+    user_prompt = build_merge_user_prompt(doc_text, doc_title, eval_source, eval_target, "source DB", "target DB")
     logger.info("    [merge] Prompt Chars %s (system: %s, user: %s)",
                 len(system_prompt) + len(user_prompt), len(system_prompt), len(user_prompt))
 
@@ -1427,10 +1377,8 @@ def process_merge_review_interleaved(client, source_db_path, args):
             source_conditions.append("id >= ?")
             source_params.append(args.start_id)
 
-        source_query = (
-            f"SELECT id, doc_title, {args.document_column}, evaluation, count_hl, count_ll, score "
-            f"FROM {source_table} WHERE " + " AND ".join(source_conditions) + " ORDER BY id"
-        )
+        source_query = (f"SELECT id, doc_title, {args.document_column}, evaluation, count_hl, count_ll, score "
+                        f"FROM {source_table} WHERE " + " AND ".join(source_conditions) + " ORDER BY id")
         if args.limit:
             source_query += " LIMIT ?"
             source_params.append(args.limit)
