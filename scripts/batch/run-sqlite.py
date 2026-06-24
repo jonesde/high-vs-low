@@ -378,8 +378,7 @@ def _wait_timer_loop() -> None:
         elapsed = time.monotonic() - _WAIT_START_TIME
         mins = int(elapsed) // 60
         secs = int(elapsed) % 60
-        _WAIT_DISPLAY.update_line(_WAIT_LINE_IDX,
-                                   f" {mins:02d}:{secs:02d} (reading & reasoning...) | ")
+        _WAIT_DISPLAY.update_line(_WAIT_LINE_IDX, f" {mins:02d}:{secs:02d} (reading & reasoning...) | ")
         for _ in range(10):
             if _WAIT_THREAD_STOP.is_set():
                 break
@@ -453,10 +452,7 @@ class OpenAIClient:
     def _build_payload(self, system_prompt: str, user_prompt: str, stream: bool = False) -> dict:
         return {
             "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
+            "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
             "reasoning_effort": "high", "reasoning": "on",
             "stream": stream, "stream_options": {"include_usage": True} if stream else None,
             "max_completion_tokens": 40000, "max_tokens": 40000,
@@ -469,9 +465,7 @@ class OpenAIClient:
             payload.pop("stream_options", None)
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-        }, method="POST")
+            "Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"}, method="POST")
         start = time.monotonic()
         try:
             with urllib.request.urlopen(req, timeout=1800) as resp:
@@ -499,12 +493,8 @@ class OpenAIClient:
         try:
             with urllib.request.urlopen(req, timeout=1800) as resp:
                 full_content: List[str] = []
-                prompt_tokens = None
-                completion_tokens = None
-                total_tokens = None
-                reasoning_tokens = None
+                prompt_tokens, completion_tokens, total_tokens, reasoning_tokens, first_token_time = None, None, None, None, None
                 char_count = 0
-                first_token_time = None
 
                 for raw_line in resp:
                     line = raw_line.decode("utf-8").rstrip("\n")
@@ -554,9 +544,7 @@ class StubClient:
     """Stub that returns constant responses for testing."""
 
     def __init__(self):
-        self.call_count = 0
-        self.review_call_count = 0
-        self.merge_call_count = 0
+        self.call_count, self.review_call_count, self.merge_call_count = 0, 0, 0
         self._lock = threading.Lock()
 
     def chat(self, system_prompt: str, user_prompt: str) -> ChatResult:
@@ -1012,8 +1000,7 @@ def _claim_draft_for_review(conn: sqlite3.Connection, doc_id: int, draft_seq: in
     row = cursor.fetchone()
     if not row:
         return None
-    cursor.execute(
-        "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ? AND draft_status = ?",
+    cursor.execute("UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ? AND draft_status = ?",
         (DRAFT_REVIEW_IN_PROGRESS, doc_id, draft_seq, DRAFT_COMPLETE))
     conn.commit()
     if cursor.rowcount == 0:
@@ -1025,8 +1012,7 @@ def _claim_draft_for_eval(conn: sqlite3.Connection, doc_id: int, draft_seq: int)
     """Claim a draft record for evaluation (0/NULL -> 1). Returns True if claimed.
     Uses conditional UPDATE to prevent race conditions."""
     cursor = conn.cursor()
-    cursor.execute(
-        "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ? AND (draft_status IS NULL OR draft_status = 0)",
+    cursor.execute("UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ? AND (draft_status IS NULL OR draft_status = 0)",
         (DRAFT_IN_PROGRESS, doc_id, draft_seq))
     conn.commit()
     return cursor.rowcount > 0
@@ -1084,9 +1070,7 @@ def _save_draft_eval(conn: sqlite3.Connection, doc_id: int, draft_seq: int, eval
     if not assignments:
         return
     params.extend([doc_id, draft_seq])
-    conn.execute(
-        f"UPDATE doc_eval_draft SET {', '.join(assignments)} WHERE doc_id = ? AND draft_seq = ?",
-        params)
+    conn.execute(f"UPDATE doc_eval_draft SET {', '.join(assignments)} WHERE doc_id = ? AND draft_seq = ?", params)
     conn.commit()
 
 
@@ -1098,9 +1082,7 @@ def _count_status(conn: sqlite3.Connection, table: str, status: int) -> int:
 
 def _count_draft_status(conn: sqlite3.Connection, draft_seq: int, status: int) -> int:
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT COUNT(*) FROM doc_eval_draft WHERE draft_seq = ? AND draft_status = ?",
-        (draft_seq, status))
+    cursor.execute("SELECT COUNT(*) FROM doc_eval_draft WHERE draft_seq = ? AND draft_status = ?", (draft_seq, status))
     return cursor.fetchone()[0]
 
 
@@ -1116,8 +1098,7 @@ def _compute_max_id_for_limit(conn: sqlite3.Connection, table: str, doc_col: str
     if start_id is not None:
         conditions.append("id >= ?")
         params.append(start_id)
-    query = (f"SELECT id FROM {table} WHERE {' AND '.join(conditions)} "
-             f"ORDER BY id LIMIT 1 OFFSET ?")
+    query = (f"SELECT id FROM {table} WHERE {' AND '.join(conditions)} ORDER BY id LIMIT 1 OFFSET ?")
     params.append(limit - 1)  # 0-indexed offset
     cursor = conn.cursor()
     cursor.execute(query, params)
@@ -1202,18 +1183,15 @@ def _do_eval(client, doc_id: int, doc_title: Optional[str], doc_text: str, dry_r
     return (doc_id, doc_title, count_hl, count_ll, score, eval_report, None, result)
 
 
-def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
-                eval_text: str, dry_run: bool, conn_or_path, table: str,
+def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval_text: str, dry_run: bool, conn_or_path, table: str,
                 max_reviews: int, progress_cb, display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
     """Review a single record with re-execution loop.
     conn_or_path: either a sqlite3.Connection or a db_path string.
     Returns (doc_id, doc_title, orig_hl, orig_ll, orig_score, final_hl, final_ll, final_score, error, chat_result)."""
     orig_hl, orig_ll, orig_score = parse_evaluation_report(eval_text)
     final_hl, final_ll, final_score = orig_hl, orig_ll, orig_score
-    final_error = None
-    previous_changes_text = None
+    final_error, previous_changes_text, last_result = None, None, None
     current_eval = eval_text
-    last_result = None
 
     for iteration in range(1, max_reviews + 1):
         logger.info("    [review pass %d]", iteration)
@@ -1285,8 +1263,9 @@ def _do_review(client, doc_id: int, doc_title: Optional[str], doc_text: str,
             final_hl, final_ll, final_score, final_error, last_result)
 
 
-def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval_source: str, eval_target: Optional[str], source_name: str,
-              target_name: str, dry_run: bool, conn_or_path, table: str, progress_cb, display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
+def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval_source: str, eval_target: Optional[str],
+              source_name: str, target_name: str, dry_run: bool, conn_or_path, table: str, progress_cb,
+              display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
     """Merge two evaluations. Returns (doc_id, hl, ll, score, merged_eval, error, chat_result).
     conn_or_path: either a sqlite3.Connection or a db_path string."""
     if eval_target is None:
@@ -1307,8 +1286,7 @@ def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval
 
     logger.info("    [merge] Both have evals - AI merge")
     system_prompt = build_merge_system_prompt()
-    user_prompt = build_merge_user_prompt(doc_text, doc_title, eval_source, eval_target,
-                                          source_name, target_name)
+    user_prompt = build_merge_user_prompt(doc_text, doc_title, eval_source, eval_target, source_name, target_name)
     start_time = time.monotonic()
 
     # Start timer immediately if display is available
@@ -1350,8 +1328,9 @@ def _do_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, eval
     return (doc_id, count_hl, count_ll, score, merged_eval, None, result)
 
 
-def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, main_eval: Optional[str], draft_eval: str, draft_name: str,
-                    dry_run: bool, conn_or_path, table: str, progress_cb, display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
+def _do_draft_merge(client, doc_id: int, doc_title: Optional[str], doc_text: str, main_eval: Optional[str],
+                    draft_eval: str, draft_name: str, dry_run: bool, conn_or_path, table: str, progress_cb,
+                    display: Optional[MultiProgressDisplay] = None, line_idx: int = 0) -> tuple:
     """Merge a draft evaluation into the main evaluation.
     conn_or_path: either a sqlite3.Connection or a db_path string.
     Returns (hl, ll, score, merged_eval, error, chat_result)."""
@@ -1424,10 +1403,7 @@ class ThreadStats:
     """Thread-safe stats accumulator."""
     def __init__(self):
         self._lock = threading.Lock()
-        self.eval_count = 0
-        self.review_count = 0
-        self.merge_count = 0
-        self.error_count = 0
+        self.eval_count, self.review_count, self.merge_count, self.error_count = 0, 0, 0, 0
         self.stats = _empty_stats()
 
     def add(self, result: ChatResult):
@@ -1799,8 +1775,7 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
                 conn.close()
 
             if doc_id is not None:
-                logger.info("%s [draft-eval] doc_id=%s draft_seq=%d: %s",
-                            prefix, doc_id, draft_seq, (doc_title or "N/A")[:50])
+                logger.info("%s [draft-eval] doc_id=%s draft_seq=%d: %s", prefix, doc_id, draft_seq, (doc_title or "N/A")[:50])
                 display.update_line(line_idx, f"{prefix} draft-eval doc={doc_id} ...")
 
                 # Close conn before LLM call; pass db_path instead
@@ -1813,9 +1788,8 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
                     stats.inc_error()
                     conn2 = _get_conn(db_path)
                     try:
-                        conn2.execute(
-                            "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?",
-                            (DRAFT_IN_PROGRESS, doc_id, draft_seq))
+                        conn2.execute("UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?",
+                                      (DRAFT_IN_PROGRESS, doc_id, draft_seq))
                         conn2.commit()
                     finally:
                         conn2.close()
@@ -1826,9 +1800,8 @@ def worker_draft_eval(client, db_path: str, table: str, doc_col: str, name: str,
                         if not dry_run:
                             _save_draft_eval(conn2, doc_id, draft_seq,
                                               eval_text, hl, ll, score)
-                        conn2.execute(
-                            "UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?",
-                            (DRAFT_COMPLETE, doc_id, draft_seq))
+                        conn2.execute("UPDATE doc_eval_draft SET draft_status = ? WHERE doc_id = ? AND draft_seq = ?",
+                                      (DRAFT_COMPLETE, doc_id, draft_seq))
                         conn2.commit()
                     finally:
                         conn2.close()
@@ -1880,10 +1853,9 @@ def worker_draft_merge(client, db_path: str, table: str, doc_col: str, name: str
             conn = _get_conn(db_path)
             try:
                 cursor = conn.cursor()
-                cursor.execute(
-                    "SELECT DISTINCT d.doc_id FROM doc_eval_draft d JOIN documents doc ON d.doc_id = doc.id "
-                    "WHERE d.draft_seq = ? AND d.draft_status = ? AND doc.eval_status = ?",
-                    (draft_seq, DRAFT_REVIEW_COMPLETE, STATUS_DRAFTS_IN_PROGRESS))
+                cursor.execute("SELECT DISTINCT d.doc_id FROM doc_eval_draft d JOIN documents doc ON d.doc_id = doc.id "
+                               "WHERE d.draft_seq = ? AND d.draft_status = ? AND doc.eval_status = ?",
+                               (draft_seq, DRAFT_REVIEW_COMPLETE, STATUS_DRAFTS_IN_PROGRESS))
                 rows = cursor.fetchall()
             finally:
                 logger.info("[db] worker_draft_merge find review-complete loop close %s", db_path)
@@ -2150,8 +2122,7 @@ def preview_records(conn: sqlite3.Connection, table: str, doc_col: str, start_id
     cursor.execute(f"SELECT MIN(id), MAX(id), COUNT(*) FROM {table}")
     min_id, max_id, total = cursor.fetchone()
 
-    cursor.execute(
-        f"SELECT AVG(LENGTH({doc_col})), MIN(LENGTH({doc_col})), MAX(LENGTH({doc_col})) FROM {table}")
+    cursor.execute(f"SELECT AVG(LENGTH({doc_col})), MIN(LENGTH({doc_col})), MAX(LENGTH({doc_col})) FROM {table}")
     avg_len, min_len, max_len = cursor.fetchone()
 
     cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE evaluation IS NOT NULL")
@@ -2162,8 +2133,7 @@ def preview_records(conn: sqlite3.Connection, table: str, doc_col: str, start_id
 
     # Count by status
     statuses = {}
-    cursor.execute(
-        f"SELECT eval_status, COUNT(*) FROM {table} GROUP BY eval_status")
+    cursor.execute(f"SELECT eval_status, COUNT(*) FROM {table} GROUP BY eval_status")
     for status, count in cursor.fetchall():
         statuses[status] = count
 
@@ -2184,8 +2154,7 @@ def preview_records(conn: sqlite3.Connection, table: str, doc_col: str, start_id
     if start_id is not None:
         conditions.append("id >= ?")
         params.append(start_id)
-    cursor.execute(
-        f"SELECT COUNT(*) FROM {table} WHERE {' AND '.join(conditions)}", params)
+    cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {' AND '.join(conditions)}", params)
     eligible = cursor.fetchone()[0]
     if limit and limit < eligible:
         eligible = limit
@@ -2389,8 +2358,7 @@ def print_final_status(db_path: str, table: str):
     conn = _get_conn(db_path)
     try:
         cursor = conn.cursor()
-        cursor.execute(
-            f"SELECT eval_status, COUNT(*) FROM {table} GROUP BY eval_status ORDER BY eval_status")
+        cursor.execute(f"SELECT eval_status, COUNT(*) FROM {table} GROUP BY eval_status ORDER BY eval_status")
         logger.info("Final status distribution:")
         status_names = {
             None: "planned/null", 0: "planned", 1: "eval-ing", 2: "eval-done",
@@ -2402,12 +2370,9 @@ def print_final_status(db_path: str, table: str):
             logger.info("  status %s (%s): %d", status, label, count)
 
         # Draft status
-        cursor.execute(
-            "SELECT draft_status, COUNT(*) FROM doc_eval_draft GROUP BY draft_status ORDER BY draft_status")
-        draft_names = {
-            None: "planned/null", 0: "planned", 1: "draft-ing", 2: "draft-done",
-            3: "review-ing", 4: "review-done", 5: "merge-ing", 6: "merge-done",
-        }
+        cursor.execute("SELECT draft_status, COUNT(*) FROM doc_eval_draft GROUP BY draft_status ORDER BY draft_status")
+        draft_names = { None: "planned/null", 0: "planned", 1: "draft-ing", 2: "draft-done",
+                        3: "review-ing", 4: "review-done", 5: "merge-ing", 6: "merge-done" }
         draft_rows = cursor.fetchall()
         if draft_rows:
             logger.info("Draft status distribution:")
@@ -2443,26 +2408,17 @@ def load_yaml_config(path: str) -> dict:
 def build_args_from_config(config: dict) -> argparse.Namespace:
     """Build argparse.Namespace from YAML config dict."""
     defaults = {
-        "db_path": config.get("db"),
-        "limit": config.get("limit"),
-        "start_id": config.get("start-id"),
+        "db_path": config.get("db"), "limit": config.get("limit"), "start_id": config.get("start-id"),
         "endpoint": config.get("endpoint", os.environ.get("OPENAI_ENDPOINT", DEFAULT_ENDPOINT)),
         "api_key": config.get("api-key", os.environ.get("OPENAI_API_KEY", "")),
-        "model": config.get("model", ""),
-        "stub": config.get("stub", False),
-        "skip_review": config.get("skip-review", False),
-        "skip_evaluation": config.get("skip-evaluation", False),
-        "merge_from": config.get("merge-from"),
-        "dry_run": config.get("dry-run", False),
-        "reset": config.get("reset", False),
-        "reset_only": config.get("reset-only", False),
-        "where": config.get("where"),
-        "table": config.get("table"),
+        "model": config.get("model", ""), "stub": config.get("stub", False),
+        "skip_review": config.get("skip-review", False), "skip_evaluation": config.get("skip-evaluation", False),
+        "merge_from": config.get("merge-from"), "dry_run": config.get("dry-run", False),
+        "reset": config.get("reset", False), "reset_only": config.get("reset-only", False),
+        "where": config.get("where"), "table": config.get("table"),
         "document_column": config.get("document-column", DEFAULT_DOCUMENT_COLUMN),
-        "detailed": config.get("detailed", False),
-        "parallel": config.get("parallel", 1),
-        "reviews": config.get("reviews", 3),
-        "name": config.get("name", "main"),
+        "detailed": config.get("detailed", False), "parallel": config.get("parallel", 1),
+        "reviews": config.get("reviews", 3), "name": config.get("name", "main"),
         "drafts": config.get("drafts", []),
     }
     return argparse.Namespace(**defaults)
@@ -2744,8 +2700,7 @@ def main():
                 logger.info("[db] main merge-from get tables close %s", args.merge_from)
                 src_conn.close()
 
-            logger.info("Merge mode: %s -> %s (%d threads)",
-                         args.merge_from, db_path, args.parallel)
+            logger.info("Merge mode: %s -> %s (%d threads)", args.merge_from, db_path, args.parallel)
 
             for i in range(args.parallel):
                 name = f"{args.name}-{i}" if args.parallel > 1 else args.name
@@ -2763,8 +2718,7 @@ def main():
 
         elif is_draft_mode:
             # Draft mode
-            logger.info("Draft mode: %d draft endpoints, %d total threads",
-                         len(drafts_config), total_threads)
+            logger.info("Draft mode: %d draft endpoints, %d total threads", len(drafts_config), total_threads)
 
             line_offset = 0
             # Start draft eval threads
