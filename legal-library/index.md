@@ -48,6 +48,18 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 | pla-034 | [Water prior appropriation](water-prior-appropriation-reclamation.md) | First beneficial use plus Reclamation storage sits between later users and the stream | civil, administrative, regulatory | civil (riparian sharing; unappropriated flow) | resources, property, land-use |
 | pla-035 | [Eminent domain to consolidators](eminent-domain-to-consolidators.md) | Condemnation transfers land to a designated taker, including private carriers | civil, administrative | civil (voluntary sale; public-owned use only) | resources, property, land-use |
 | pla-036 | [Land grants and tariff incidence](land-grants-and-tariff-incidence.md) | Public-domain grants to franchisees; tariff wedge to protected first receivers | regulatory, administrative, civil | civil (homestead-scale entry; non-protective duty) | resources, land-use, regulatory-control, monetary |
+| pla-037 | [Constitutional purity prohibition](constitutional-purity-prohibition.md) | Personal consumption criminalized by amendment and Volstead | criminal, regulatory | civil (adult purchase as of right) | protected-complexes, regulatory-control |
+| pla-038 | [Tax stamp and schedule as crime](tax-schedule-as-crime.md) | Administrative schedule or tax stamp makes the analog a crime | criminal, regulatory, administrative | civil (unscheduled possession) | protected-complexes, regulatory-control |
+| pla-039 | [Mandatory-minimum quantity disparity](mandatory-minimum-quantity-disparity.md) | Same molecule, different quantity trigger by form and class | criminal | civil (same-weight analog) | protected-complexes |
+| pla-040 | [Militarized local drug enforcement](militarized-local-enforcement.md) | Surplus military gear and federal grants convert local police into a drug-war force | administrative, criminal | civil (ordinary municipal patrol) | protected-complexes, policing-revenue |
+| pla-041 | [Self-funding forfeiture as drug-war revenue](self-funding-forfeiture-enforcement.md) | Enforcement pays itself from seized property; drug cases as the yield | civil, administrative | criminal (conviction as a condition of keeping the property) | protected-complexes, policing-revenue |
+| pla-042 | [Covered-person liability shields](covered-person-liability-shields.md) | Designated makers and administrators immune; users lack ordinary product suits | civil, regulatory | civil (ordinary product jury) | protected-complexes, financial |
+| pla-043 | [Funding-conditioned health mandates](funding-conditioned-mandates.md) | Federal money or workplace rules compel a health or abstinence product | regulatory, administrative, civil | civil (unconditioned job or grant) | protected-complexes, labor |
+| pla-044 | [Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md) | Same substance: registered professional track vs street crime | criminal, administrative, civil | civil (unlicensed analog as health/property) | protected-complexes, labor |
+| pla-045 | [Qualified immunity for officials](qualified-immunity.md) | Officials shielded unless a nearly identical right was already clearly established | civil | civil (damages trial on the constitutional facts) | protected-complexes |
+| pla-046 | [Captured evidence and associations](captured-evidence-associations.md) | User-fee and association gates on what counts as official evidence | administrative, regulatory, civil | civil (independent evidence as the record) | protected-complexes |
+| pla-047 | [Government-platform speech routing](government-platform-speech.md) | Official pressure plus platform rules close dissent on the complex's product | contractual, civil, administrative | civil (merits First Amendment hearing) | protected-complexes, speech, platforms |
+| pla-048 | [Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md) | Designated contractors take cost-plus or OTA work with limited bid competition | contractual, administrative, regulatory | civil (sealed competed bid as of right) | protected-complexes, capital-access |
 
 ---
 
@@ -58,6 +70,8 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 - [pla-001 Unpaid wages on the civil track](unpaid-wages-civil-track.md)
 - [pla-007 Employee theft on the criminal track](employee-theft-criminal-track.md)
 - [pla-011 Non-competes and trade secrets](noncompete-trade-secrets.md)
+- [pla-043 Funding-conditioned health mandates](funding-conditioned-mandates.md)
+- [pla-044 Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md)
 
 ### Property (including personal property and commercial)
 
@@ -119,6 +133,8 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-029 Fiat first-receiver impulse](fiat-first-receiver-impulse.md)
 - [pla-030 Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md)
 - [pla-031 GENIUS Act permitted issuance](genius-act-permitted-issuance.md)
+- [pla-042 Covered-person liability shields](covered-person-liability-shields.md)
+- [pla-048 Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md)
 
 ### Land use and regulatory control
 
@@ -136,6 +152,8 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-034 Water prior appropriation](water-prior-appropriation-reclamation.md)
 - [pla-035 Eminent domain to consolidators](eminent-domain-to-consolidators.md)
 - [pla-036 Land grants and tariff incidence](land-grants-and-tariff-incidence.md)
+- [pla-037 Constitutional purity prohibition](constitutional-purity-prohibition.md)
+- [pla-038 Tax stamp and schedule as crime](tax-schedule-as-crime.md)
 
 ### Platforms and speech
 
@@ -143,10 +161,30 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-012 Platform safe harbors](platform-safe-harbors.md)
 - [pla-014 CFAA and terms of service](cfaa-tos-authorized-access.md)
 - [pla-017 AI corpus and evaluation enclosure](ai-corpus-and-evaluation-enclosure.md)
+- [pla-047 Government-platform speech routing](government-platform-speech.md)
 
 ### Policing revenue
 
 - [pla-002 Civil asset forfeiture](civil-asset-forfeiture.md)
+- [pla-040 Militarized local drug enforcement](militarized-local-enforcement.md)
+- [pla-041 Self-funding forfeiture as drug-war revenue](self-funding-forfeiture-enforcement.md)
+
+### Protected complexes
+
+Compulsion for the outside, immunity and exemption for designated institutions. Health, carceral, military, intelligence, and professional complexes share enabler types.
+
+- [pla-037 Constitutional purity prohibition](constitutional-purity-prohibition.md)
+- [pla-038 Tax stamp and schedule as crime](tax-schedule-as-crime.md)
+- [pla-039 Mandatory-minimum quantity disparity](mandatory-minimum-quantity-disparity.md)
+- [pla-040 Militarized local drug enforcement](militarized-local-enforcement.md)
+- [pla-041 Self-funding forfeiture as drug-war revenue](self-funding-forfeiture-enforcement.md)
+- [pla-042 Covered-person liability shields](covered-person-liability-shields.md)
+- [pla-043 Funding-conditioned health mandates](funding-conditioned-mandates.md)
+- [pla-044 Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md)
+- [pla-045 Qualified immunity for officials](qualified-immunity.md)
+- [pla-046 Captured evidence and associations](captured-evidence-associations.md)
+- [pla-047 Government-platform speech routing](government-platform-speech.md)
+- [pla-048 Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md)
 
 ### Monetary
 
@@ -181,11 +219,11 @@ Legal standing between people and land, minerals, and water.
 
 **Criminal-enabled for the lower-status taker.** Same domain, inverted track.
 
-- [pla-007](employee-theft-criminal-track.md) (pair with pla-001)
+- [pla-007](employee-theft-criminal-track.md) (pair with pla-001), [pla-039](mandatory-minimum-quantity-disparity.md)
 
 **Administrative seizure without conviction.**
 
-- [pla-002](civil-asset-forfeiture.md)
+- [pla-002](civil-asset-forfeiture.md), [pla-041](self-funding-forfeiture-enforcement.md)
 
 **IP enclosure of post-sale or post-employment activity.**
 
@@ -197,11 +235,11 @@ Legal standing between people and land, minerals, and water.
 
 **You have the resources; the license is the wall.**
 
-- [pla-013](digital-license-not-sale.md), [pla-014](cfaa-tos-authorized-access.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md), [pla-020](blocking-patents-nonuse.md), [pla-024](constrained-open-licenses.md)
+- [pla-013](digital-license-not-sale.md), [pla-014](cfaa-tos-authorized-access.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md), [pla-020](blocking-patents-nonuse.md), [pla-024](constrained-open-licenses.md), [pla-044](licensing-monopoly-on-the-analog.md)
 
 **Statutory safe harbor plus private contract.**
 
-- [pla-005](dmca-takedown-content-id.md), [pla-012](platform-safe-harbors.md), [pla-014](cfaa-tos-authorized-access.md)
+- [pla-005](dmca-takedown-content-id.md), [pla-012](platform-safe-harbors.md), [pla-014](cfaa-tos-authorized-access.md), [pla-047](government-platform-speech.md)
 
 **Incumbent protection via discretion.**
 
@@ -218,6 +256,22 @@ Legal standing between people and land, minerals, and water.
 **Standing between people and the earth.** Title, lease, priority date, grant, condemnation, or a tariff wedge.
 
 - [pla-032](hardrock-mining-patent-1872.md), [pla-033](public-land-mineral-leasing.md), [pla-034](water-prior-appropriation-reclamation.md), [pla-035](eminent-domain-to-consolidators.md), [pla-036](land-grants-and-tariff-incidence.md)
+
+**Compulsion outside / immunity inside.** Mandate, schedule, or raid for the analog person; shield, fee-gate, or designation for the institution.
+
+- [pla-037](constitutional-purity-prohibition.md), [pla-038](tax-schedule-as-crime.md), [pla-042](covered-person-liability-shields.md), [pla-043](funding-conditioned-mandates.md), [pla-045](qualified-immunity.md)
+
+**Self-funding and militarized local enforcement.**
+
+- [pla-002](civil-asset-forfeiture.md), [pla-040](militarized-local-enforcement.md), [pla-041](self-funding-forfeiture-enforcement.md)
+
+**Official speech plus platform contract.**
+
+- [pla-012](platform-safe-harbors.md), [pla-047](government-platform-speech.md)
+
+**Designated contractor and captured record.**
+
+- [pla-019](bayh-dole-exclusive-license.md), [pla-046](captured-evidence-associations.md), [pla-048](designated-cost-plus-contractor.md)
 
 ---
 
@@ -243,7 +297,15 @@ Legal standing between people and land, minerals, and water.
 
 **Incumbent administrative discretion.** The text is general. Variances, grandfathering, non-enforcement, and opaque appeals do the work. See [pla-009](zoning-incumbent-protection.md), [pla-012](platform-safe-harbors.md). Rules 2, 9, 34.
 
-**Revenue through process.** Forfeiture proceeds, patent settlements, and automated monetization claims turn legal process into a yield. See [pla-002](civil-asset-forfeiture.md), [pla-004](patent-assertion-entities.md), [pla-005](dmca-takedown-content-id.md). Rules 15, 33.
+**Revenue through process.** Forfeiture proceeds, patent settlements, and automated monetization claims turn legal process into a yield. See [pla-002](civil-asset-forfeiture.md), [pla-004](patent-assertion-entities.md), [pla-005](dmca-takedown-content-id.md), [pla-041](self-funding-forfeiture-enforcement.md). Rules 15, 33.
+
+**Compulsion outside, immunity inside.** The same complex criminalizes or mandates the analog for the unlicensed person and shields the designated maker, officer, or contractor. See [pla-037](constitutional-purity-prohibition.md) through [pla-048](designated-cost-plus-contractor.md), especially [pla-042](covered-person-liability-shields.md), [pla-043](funding-conditioned-mandates.md), [pla-045](qualified-immunity.md). Rules 1, 6, 21, 22, 36.
+
+**Purity control by schedule and license.** A tax stamp, an administrative schedule, or a professional number turns the same molecule from product into crime. See [pla-038](tax-schedule-as-crime.md), [pla-039](mandatory-minimum-quantity-disparity.md), [pla-044](licensing-monopoly-on-the-analog.md), [pla-046](captured-evidence-associations.md). Rules 9, 18, 22, 38.
+
+**Official overlay on a private gate.** Government pressure plus platform ToS and § 230 closes dissent without a merits First Amendment judgment. See [pla-012](platform-safe-harbors.md), [pla-047](government-platform-speech.md). Rules 8, 20, 40.
+
+**Designated purse.** Cost-plus, other-transaction, and exclusive public-to-private residuals put appropriated funds at a named desk. See [pla-019](bayh-dole-exclusive-license.md), [pla-029](fiat-first-receiver-impulse.md), [pla-048](designated-cost-plus-contractor.md). Rules 1, 33, 42.
 
 ---
 

@@ -18,6 +18,7 @@ related:
   - gold-withdrawal-1933
   - deposit-insurance-emergency-liquidity
   - genius-act-permitted-issuance
+  - designated-cost-plus-contractor
   - land-grants-and-tariff-incidence
 updated: 2026-08-20
 ---
@@ -87,6 +88,7 @@ monetary, capital-access, financial
 - [Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md) (pla-030) — panic facilities for the same institutions.
 - [GENIUS Act permitted issuance](genius-act-permitted-issuance.md) (pla-031) — a new licensed ticket that must hold Treasuries.
 - [Land grants and tariff incidence](land-grants-and-tariff-incidence.md) (pla-036) — a non-money first-receiver wedge on real goods.
+- [Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md) (pla-048) — appropriated dollars at a named contractor desk.
 
 ## Expansion notes
 

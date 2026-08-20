@@ -19,6 +19,7 @@ related:
   - zoning-incumbent-protection
   - cfaa-tos-authorized-access
   - constrained-open-licenses
+  - government-platform-speech
 updated: 2026-08-20
 ---
 
@@ -87,6 +88,7 @@ platforms, speech, capital-access
 - [Zoning incumbent protection](zoning-incumbent-protection.md) (pla-009) — discretionary gatekeeping in physical space.
 - [CFAA and terms of service](cfaa-tos-authorized-access.md) (pla-014) — ToS plus a computer-crime overlay.
 - [Constrained open licenses](constrained-open-licenses.md) (pla-024) — copyright terms as the other half of platform-adjacent control.
+- [Government-platform speech routing](government-platform-speech.md) (pla-047) — official pressure on this same stack.
 
 ## Expansion notes
 

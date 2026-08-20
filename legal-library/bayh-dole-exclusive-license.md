@@ -16,6 +16,7 @@ related:
   - gene-method-patents
   - constrained-open-licenses
   - historical-technique-privilege
+  - designated-cost-plus-contractor
 updated: 2026-08-20
 ---
 
@@ -79,6 +80,7 @@ intellectual-property, technology-access, regulatory-control
 - [Gene and method patents](gene-method-patents.md) (pla-022) — exclusive biological techniques, often with public-science origins.
 - [Constrained open licenses](constrained-open-licenses.md) (pla-024) — a copyright-side analog of reserved commercial use.
 - [Historical technique privilege](historical-technique-privilege.md) (pla-021) — sovereign grant of exclusive practice.
+- [Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md) (pla-048) — public funds, private residual on the award side rather than the patent side.
 
 ## Expansion notes
 

@@ -18,6 +18,7 @@ related:
   - cfaa-tos-authorized-access
   - ai-corpus-and-evaluation-enclosure
   - historical-technique-privilege
+  - licensing-monopoly-on-the-analog
 updated: 2026-08-20
 ---
 
@@ -83,6 +84,7 @@ technology-access, regulatory-control
 - [Born-secret Restricted Data](born-secret-restricted-data.md) (pla-023) — a stricter born-classified knowledge ban.
 - [AI corpus and evaluation enclosure](ai-corpus-and-evaluation-enclosure.md) (pla-017) — private-law enclosure of training and measurement.
 - [Historical technique privilege](historical-technique-privilege.md) (pla-021) — machinery and artisan export bans as the analog ancestor.
+- [Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md) (pla-044) — a clearance or number that makes the same object lawful in one mouth and a crime in another.
 
 ## Expansion notes
 

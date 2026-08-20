@@ -16,6 +16,8 @@ status: initial
 related:
   - unpaid-wages-civil-track
   - secured-credit-foreclosure
+  - self-funding-forfeiture-enforcement
+  - militarized-local-enforcement
 updated: 2026-08-20
 ---
 
@@ -82,6 +84,8 @@ property, policing-revenue
 - [Secured credit and foreclosure](secured-credit-foreclosure.md) (pla-008) — another property-priority system in which procedure and cost determine who keeps the asset.
 - [Eminent domain to consolidators](eminent-domain-to-consolidators.md) (pla-035) — another taking of already-titled land, by condemnation rather than forfeiture.
 - [Gold withdrawal 1933](gold-withdrawal-1933.md) (pla-028) — a monetary call-in of a competing unit of property.
+- [Self-funding forfeiture as drug-war revenue](self-funding-forfeiture-enforcement.md) (pla-041) — the 1984 overlay that lets drug units keep the proceeds.
+- [Militarized local drug enforcement](militarized-local-enforcement.md) (pla-040) — what forfeiture and 1033 buy at the door.
 
 ## Expansion notes
 

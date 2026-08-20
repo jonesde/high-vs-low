@@ -76,7 +76,7 @@ updated: 2026-08-20
 
 **`domains`** (one or more):
 
-`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
+`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `protected-complexes`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
 
 **`routing` values** (under `enabled` and `closed`):
 
@@ -204,6 +204,25 @@ Legal standing between mortal people and the earth's means of staying alive — 
 | pla-034 | [water-prior-appropriation-reclamation.md](water-prior-appropriation-reclamation.md) | First beneficial use plus Reclamation storage sits between later users and the stream | State prior-appropriation; Reclamation Act 1902 | resources, property, land-use |
 | pla-035 | [eminent-domain-to-consolidators.md](eminent-domain-to-consolidators.md) | Condemnation transfers land to a designated taker, including private carriers | *Kelo*; 15 U.S.C. § 717f(h) | resources, property, land-use |
 | pla-036 | [land-grants-and-tariff-incidence.md](land-grants-and-tariff-incidence.md) | Public-domain grants to franchisees; tariff wedge to protected first receivers | Railroad land-grant acts; 19 U.S.C. §§ 1862, 2411; IEEPA/§ 122 as dated | resources, land-use, regulatory-control, monetary |
+
+## Fourth wave: protected complexes
+
+Compulsion for the outside, immunity and exemption for designated institutions. The spine is legalistic purity control — alcohol prohibition, then the Drug War, then health-emergency product shields and mandates — applied as **enabler types** across overlapping US industrial complexes (health, carceral, military, intelligence, professional). COVID entries cite PREP, EUA, mandates, and speech routing. They do not decide virology.
+
+| ID | File | Outcome | Primary instruments | Domains |
+| -- | ---- | ------- | ------------------- | ------- |
+| pla-037 | [constitutional-purity-prohibition.md](constitutional-purity-prohibition.md) | Personal consumption criminalized by constitutional amendment and Volstead | 18th Amendment; Volstead Act; 21st Amendment | protected-complexes, regulatory-control |
+| pla-038 | [tax-schedule-as-crime.md](tax-schedule-as-crime.md) | Administrative schedule or tax stamp makes the analog a crime | Harrison Act; CSA 21 U.S.C. §§ 811–813 | protected-complexes, regulatory-control |
+| pla-039 | [mandatory-minimum-quantity-disparity.md](mandatory-minimum-quantity-disparity.md) | Same molecule, different quantity trigger by form and class | Anti-Drug Abuse Act 1986; 21 U.S.C. § 841 | protected-complexes |
+| pla-040 | [militarized-local-enforcement.md](militarized-local-enforcement.md) | Surplus military gear and federal grants convert local police into a drug-war force | 10 U.S.C. § 2576a; Byrne JAG | protected-complexes, policing-revenue |
+| pla-041 | [self-funding-forfeiture-enforcement.md](self-funding-forfeiture-enforcement.md) | Enforcement pays itself from seized property; drug cases as the yield | CCCA 1984; 21 U.S.C. § 881; equitable sharing | protected-complexes, policing-revenue |
+| pla-042 | [covered-person-liability-shields.md](covered-person-liability-shields.md) | Designated manufacturers and administrators immune; users lack ordinary product suits | PREP Act 42 U.S.C. § 247d-6d; EUA 21 U.S.C. § 360bbb-3 | protected-complexes, financial |
+| pla-043 | [funding-conditioned-mandates.md](funding-conditioned-mandates.md) | Federal money or workplace rules compel a health or abstinence product | 23 U.S.C. § 158; OSHA ETS; CMS mandate | protected-complexes, labor |
+| pla-044 | [licensing-monopoly-on-the-analog.md](licensing-monopoly-on-the-analog.md) | Same substance: registered professional track vs street crime | 21 U.S.C. § 822; medical boards | protected-complexes, labor |
+| pla-045 | [qualified-immunity.md](qualified-immunity.md) | Officials shielded unless a nearly identical right was already clearly established | *Harlow*; 42 U.S.C. § 1983 | protected-complexes |
+| pla-046 | [captured-evidence-associations.md](captured-evidence-associations.md) | User-fee and association gates on what counts as official evidence | PDUFA; professional-association standards | protected-complexes |
+| pla-047 | [government-platform-speech.md](government-platform-speech.md) | Official pressure plus platform rules close dissent on the complex's product | First Amendment jawboning; pla-012 stack | protected-complexes, speech, platforms |
+| pla-048 | [designated-cost-plus-contractor.md](designated-cost-plus-contractor.md) | Designated contractors take cost-plus or OTA work with limited bid competition | BARDA/OWS; 10 U.S.C. OTA; FAR cost-reimbursement | protected-complexes, capital-access |
 
 Adjacent domains still open: housing, healthcare billing as price, environmental permitting, education credentialing.
 
