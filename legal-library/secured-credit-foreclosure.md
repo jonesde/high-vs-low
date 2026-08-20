@@ -17,6 +17,9 @@ related:
   - civil-asset-forfeiture
   - unpaid-wages-civil-track
   - zoning-incumbent-protection
+  - fiat-first-receiver-impulse
+  - deposit-insurance-emergency-liquidity
+  - eminent-domain-to-consolidators
 updated: 2026-08-20
 ---
 
@@ -83,6 +86,9 @@ capital-access, debt
 - [Civil asset forfeiture](civil-asset-forfeiture.md) (pla-002) — another system in which procedure moves property before a full contest.
 - [Unpaid wages on the civil track](unpaid-wages-civil-track.md) (pla-001) — wage claimants are often unsecured, below the secured stack.
 - [Zoning incumbent protection](zoning-incumbent-protection.md) (pla-009) — incumbency protected by a different code.
+- [Fiat first-receiver impulse](fiat-first-receiver-impulse.md) (pla-029) — how the claim-ticket is issued before this stack collects it.
+- [Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md) (pla-030) — designated institutions through panics, then this priority in default.
+- [Eminent domain to consolidators](eminent-domain-to-consolidators.md) (pla-035) — another forced transfer at a legally set price.
 
 ## Expansion notes
 

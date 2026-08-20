@@ -36,6 +36,18 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 | pla-022 | [Gene and method patents](gene-method-patents.md) | Equipped labs blocked from running known tests | civil, contractual | civil (ordinary assay practice) | intellectual-property, technology-access |
 | pla-023 | [Born-secret Restricted Data](born-secret-restricted-data.md) | Independently derived nuclear technique still illegal to communicate | criminal, regulatory | civil (ordinary scientific publication) | technology-access, regulatory-control |
 | pla-024 | [Constrained open licenses](constrained-open-licenses.md) | Source looks shared; commercial or field-of-use rights remain reserved | civil, contractual | civil (OSI-open use in any field) | intellectual-property, technology-access |
+| pla-025 | [National banking reserve pyramid](national-banking-reserve-pyramid.md) | Note-issue and reserve privilege in chartered banks and NY correspondents | regulatory, civil | civil (state-bank notes; interior specie) | monetary, capital-access, financial |
+| pla-026 | [Federal Reserve Act 1913](federal-reserve-act-1913.md) | Elastic currency and discount window for member banks | regulatory, civil | civil (non-member issue; inelastic national-bank notes) | monetary, financial, regulatory-control |
+| pla-027 | [Legal tender](legal-tender-forced-acceptance.md) | Debts and taxes must be payable in US coins and Fed notes | civil, regulatory | civil (contract in a named commodity) | monetary, property |
+| pla-028 | [Gold withdrawal 1933](gold-withdrawal-1933.md) | Private gold called in; dollar gold content cut | criminal, regulatory, civil | civil (redeem at old parity) | monetary, property, regulatory-control |
+| pla-029 | [Fiat first-receiver impulse](fiat-first-receiver-impulse.md) | New balances appear first at dealers, banks, and Treasury counterparties | regulatory, contractual | civil (new money as wages; gold redemption) | monetary, capital-access, financial |
+| pla-030 | [Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md) | Insured deposits and emergency facilities keep funding inside designated institutions | regulatory, administrative | civil (uninsured cash; non-member paper) | monetary, financial, regulatory-control |
+| pla-031 | [GENIUS Act permitted issuance](genius-act-permitted-issuance.md) | Payment-stablecoin issue confined to permitted issuers; T-bill/reserve backing | regulatory, civil | civil (unlicensed redeemable ticket) | monetary, financial, regulatory-control |
+| pla-032 | [Hardrock mining patent 1872](hardrock-mining-patent-1872.md) | Locatable public-domain minerals to the claimant at statutory patent prices | civil, administrative | civil (commons mineral; royalty lease) | resources, property, land-use |
+| pla-033 | [Public-land mineral leasing](public-land-mineral-leasing.md) | Exclusive extraction of leasable federal minerals | administrative, contractual, regulatory | civil (unleased federal mineral as commons) | resources, regulatory-control |
+| pla-034 | [Water prior appropriation](water-prior-appropriation-reclamation.md) | First beneficial use plus Reclamation storage sits between later users and the stream | civil, administrative, regulatory | civil (riparian sharing; unappropriated flow) | resources, property, land-use |
+| pla-035 | [Eminent domain to consolidators](eminent-domain-to-consolidators.md) | Condemnation transfers land to a designated taker, including private carriers | civil, administrative | civil (voluntary sale; public-owned use only) | resources, property, land-use |
+| pla-036 | [Land grants and tariff incidence](land-grants-and-tariff-incidence.md) | Public-domain grants to franchisees; tariff wedge to protected first receivers | regulatory, administrative, civil | civil (homestead-scale entry; non-protective duty) | resources, land-use, regulatory-control, monetary |
 
 ---
 
@@ -56,6 +68,11 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 - [pla-007 Employee theft on the criminal track](employee-theft-criminal-track.md)
 - [pla-013 Digital license-not-sale](digital-license-not-sale.md)
 - [pla-018 Seed patent reuse ban](seed-patent-reuse-ban.md)
+- [pla-027 Legal tender](legal-tender-forced-acceptance.md)
+- [pla-028 Gold withdrawal 1933](gold-withdrawal-1933.md)
+- [pla-032 Hardrock mining patent 1872](hardrock-mining-patent-1872.md)
+- [pla-034 Water prior appropriation](water-prior-appropriation-reclamation.md)
+- [pla-035 Eminent domain to consolidators](eminent-domain-to-consolidators.md)
 
 ### Intellectual property
 
@@ -97,6 +114,11 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-008 Secured credit and foreclosure](secured-credit-foreclosure.md)
 - [pla-010 White-collar civil routing](white-collar-civil-routing.md)
 - [pla-012 Platform safe harbors](platform-safe-harbors.md) (economic access)
+- [pla-025 National banking reserve pyramid](national-banking-reserve-pyramid.md)
+- [pla-026 Federal Reserve Act 1913](federal-reserve-act-1913.md)
+- [pla-029 Fiat first-receiver impulse](fiat-first-receiver-impulse.md)
+- [pla-030 Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md)
+- [pla-031 GENIUS Act permitted issuance](genius-act-permitted-issuance.md)
 
 ### Land use and regulatory control
 
@@ -106,6 +128,14 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-019 Bayh-Dole exclusive license](bayh-dole-exclusive-license.md)
 - [pla-021 Historical technique privilege](historical-technique-privilege.md)
 - [pla-023 Born-secret Restricted Data](born-secret-restricted-data.md)
+- [pla-026 Federal Reserve Act 1913](federal-reserve-act-1913.md)
+- [pla-028 Gold withdrawal 1933](gold-withdrawal-1933.md)
+- [pla-030 Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md)
+- [pla-031 GENIUS Act permitted issuance](genius-act-permitted-issuance.md)
+- [pla-033 Public-land mineral leasing](public-land-mineral-leasing.md)
+- [pla-034 Water prior appropriation](water-prior-appropriation-reclamation.md)
+- [pla-035 Eminent domain to consolidators](eminent-domain-to-consolidators.md)
+- [pla-036 Land grants and tariff incidence](land-grants-and-tariff-incidence.md)
 
 ### Platforms and speech
 
@@ -117,6 +147,29 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 ### Policing revenue
 
 - [pla-002 Civil asset forfeiture](civil-asset-forfeiture.md)
+
+### Monetary
+
+First-receiver issue of the claim-ticket that now mediates access to resources. Impulse vs. street-price lag.
+
+- [pla-025 National banking reserve pyramid](national-banking-reserve-pyramid.md)
+- [pla-026 Federal Reserve Act 1913](federal-reserve-act-1913.md)
+- [pla-027 Legal tender](legal-tender-forced-acceptance.md)
+- [pla-028 Gold withdrawal 1933](gold-withdrawal-1933.md)
+- [pla-029 Fiat first-receiver impulse](fiat-first-receiver-impulse.md)
+- [pla-030 Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md)
+- [pla-031 GENIUS Act permitted issuance](genius-act-permitted-issuance.md)
+- [pla-036 Land grants and tariff incidence](land-grants-and-tariff-incidence.md) (tariff wedge)
+
+### Resources
+
+Legal standing between people and land, minerals, and water.
+
+- [pla-032 Hardrock mining patent 1872](hardrock-mining-patent-1872.md)
+- [pla-033 Public-land mineral leasing](public-land-mineral-leasing.md)
+- [pla-034 Water prior appropriation](water-prior-appropriation-reclamation.md)
+- [pla-035 Eminent domain to consolidators](eminent-domain-to-consolidators.md)
+- [pla-036 Land grants and tariff incidence](land-grants-and-tariff-incidence.md)
 
 ---
 
@@ -158,6 +211,14 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 
 - [pla-004](patent-assertion-entities.md), [pla-008](secured-credit-foreclosure.md)
 
+**First-receiver money issue.** New balances or a licensed ticket enter at a designated counterparty; street prices and wages lag.
+
+- [pla-025](national-banking-reserve-pyramid.md), [pla-026](federal-reserve-act-1913.md), [pla-027](legal-tender-forced-acceptance.md), [pla-029](fiat-first-receiver-impulse.md), [pla-030](deposit-insurance-emergency-liquidity.md), [pla-031](genius-act-permitted-issuance.md)
+
+**Standing between people and the earth.** Title, lease, priority date, grant, condemnation, or a tariff wedge.
+
+- [pla-032](hardrock-mining-patent-1872.md), [pla-033](public-land-mineral-leasing.md), [pla-034](water-prior-appropriation-reclamation.md), [pla-035](eminent-domain-to-consolidators.md), [pla-036](land-grants-and-tariff-incidence.md)
+
 ---
 
 ## Cross-cutting patterns
@@ -173,6 +234,10 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 **Restricted awareness.** Independently derived or independently researched knowledge is still illegal or risky to share. See [pla-015](security-research-knowledge-ban.md), [pla-016](technical-data-export-controls.md), [pla-023](born-secret-restricted-data.md). Rules 18, 20, 22.
 
 **Open-looking reservation.** Source or weights are visible; competing production is not granted. See [pla-024](constrained-open-licenses.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md). Rules 22, 33, 42.
+
+**First-receiver impulse vs. street lag.** New purchasing power (or a price wedge) hits a designated class before wages and consumer prices adjust. See [pla-029](fiat-first-receiver-impulse.md), [pla-026](federal-reserve-act-1913.md), [pla-031](genius-act-permitted-issuance.md), [pla-036](land-grants-and-tariff-incidence.md). Rules 1, 15, 38, 42.
+
+**Interposition between person and earth.** A statute, lease, priority, grant, or condemnation sits between a mortal need and the resource. See [pla-032](hardrock-mining-patent-1872.md), [pla-033](public-land-mineral-leasing.md), [pla-034](water-prior-appropriation-reclamation.md), [pla-035](eminent-domain-to-consolidators.md), [pla-008](secured-credit-foreclosure.md) (downstream collection). Rules 7, 8, 33.
 
 **Resource-asymmetric litigation.** The doctrine is symmetric. The TRO calendar, discovery, and choice-of-law clause are not. See [pla-004](patent-assertion-entities.md), [pla-008](secured-credit-foreclosure.md), [pla-011](noncompete-trade-secrets.md). Rules 4, 15, 40.
 

@@ -80,6 +80,8 @@ financial, regulatory-control
 - [Unpaid wages on the civil track](unpaid-wages-civil-track.md) (pla-001) — civil default for institutional defendants.
 - [Employee theft on the criminal track](employee-theft-criminal-track.md) (pla-007) — modest taking charged as crime.
 - [Consignment civil conversion](consignment-civil-conversion.md) (pla-006) — commercial disputes kept civil.
+- [Fiat first-receiver impulse](fiat-first-receiver-impulse.md) (pla-029) — lawful issue privilege, as distinct from fraud routing.
+- [Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md) (pla-030) — designated institutions through panics.
 
 ## Expansion notes
 

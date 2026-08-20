@@ -76,7 +76,7 @@ updated: 2026-08-20
 
 **`domains`** (one or more):
 
-`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
+`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
 
 **`routing` values** (under `enabled` and `closed`):
 
@@ -186,6 +186,25 @@ Restriction of **use of, or awareness of, a technique** despite sufficient machi
 | pla-023 | [born-secret-restricted-data.md](born-secret-restricted-data.md) | Independently derived nuclear technique still illegal to communicate | 42 U.S.C. §§ 2014(y), 2274; *Progressive* | technology-access, regulatory-control |
 | pla-024 | [constrained-open-licenses.md](constrained-open-licenses.md) | Source-available and field-of-use terms that look open while reserving commercial use | Copyright licenses; BSL, SSPL, Commons Clause, Llama AUP, dual-license | intellectual-property, technology-access |
 
-Adjacent domains still open: housing, healthcare billing, environmental permitting, education credentialing.
+## Third wave: resource access and money issue
+
+Legal standing between mortal people and the earth's means of staying alive — land, minerals, water, and the **monetary claim-ticket** that mediates almost all of that access. New purchasing power enters at legally designated points; street prices and wages adjust later. First receivers spend at pre-dilution prices. See [index.md](index.md).
+
+| ID | File | Outcome | Primary instruments | Domains |
+| -- | ---- | ------- | ------------------- | ------- |
+| pla-025 | [national-banking-reserve-pyramid.md](national-banking-reserve-pyramid.md) | Note-issue and reserve privilege in chartered banks and NY correspondents | National Bank Acts; Coinage Act 1873; Aldrich-Vreeland | monetary, capital-access, financial |
+| pla-026 | [federal-reserve-act-1913.md](federal-reserve-act-1913.md) | Elastic currency and discount window for member banks | Federal Reserve Act; 12 U.S.C. ch. 3 | monetary, financial, regulatory-control |
+| pla-027 | [legal-tender-forced-acceptance.md](legal-tender-forced-acceptance.md) | Debts and taxes must be payable in US coins and Fed notes | 31 U.S.C. § 5103 | monetary, property |
+| pla-028 | [gold-withdrawal-1933.md](gold-withdrawal-1933.md) | Private gold called in; dollar gold content cut | EO 6102; Gold Reserve Act 1934 | monetary, property, regulatory-control |
+| pla-029 | [fiat-first-receiver-impulse.md](fiat-first-receiver-impulse.md) | New balances appear first at dealers, banks, and Treasury counterparties | 12 U.S.C. §§ 343, 355, 461; primary dealers | monetary, capital-access, financial |
+| pla-030 | [deposit-insurance-emergency-liquidity.md](deposit-insurance-emergency-liquidity.md) | Insured deposits and emergency facilities keep funding inside designated institutions | FDIC; 12 U.S.C. § 343 (13(3)); BTFP | monetary, financial, regulatory-control |
+| pla-031 | [genius-act-permitted-issuance.md](genius-act-permitted-issuance.md) | Payment-stablecoin issue confined to permitted issuers; T-bill/reserve backing | GENIUS Act; 12 U.S.C. § 5902 | monetary, financial, regulatory-control |
+| pla-032 | [hardrock-mining-patent-1872.md](hardrock-mining-patent-1872.md) | Locatable public-domain minerals to the claimant at statutory patent prices | General Mining Law of 1872 | resources, property, land-use |
+| pla-033 | [public-land-mineral-leasing.md](public-land-mineral-leasing.md) | Exclusive extraction of leasable federal minerals | Mineral Leasing Act 1920; OCSLA | resources, regulatory-control |
+| pla-034 | [water-prior-appropriation-reclamation.md](water-prior-appropriation-reclamation.md) | First beneficial use plus Reclamation storage sits between later users and the stream | State prior-appropriation; Reclamation Act 1902 | resources, property, land-use |
+| pla-035 | [eminent-domain-to-consolidators.md](eminent-domain-to-consolidators.md) | Condemnation transfers land to a designated taker, including private carriers | *Kelo*; 15 U.S.C. § 717f(h) | resources, property, land-use |
+| pla-036 | [land-grants-and-tariff-incidence.md](land-grants-and-tariff-incidence.md) | Public-domain grants to franchisees; tariff wedge to protected first receivers | Railroad land-grant acts; 19 U.S.C. §§ 1862, 2411; IEEPA/§ 122 as dated | resources, land-use, regulatory-control, monetary |
+
+Adjacent domains still open: housing, healthcare billing as price, environmental permitting, education credentialing.
 
 To add an entry, follow the inclusion rule and this spec, then add it to [index.md](index.md).

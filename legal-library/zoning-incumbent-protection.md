@@ -82,6 +82,9 @@ land-use, regulatory-control
 - [Secured credit and foreclosure](secured-credit-foreclosure.md) (pla-008) — incumbency in capital rather than in land use.
 - [Non-competes and trade secrets](noncompete-trade-secrets.md) (pla-011) — incumbency in labor markets.
 - [Platform safe harbors](platform-safe-harbors.md) (pla-012) — discretionary gatekeeping by a private incumbent.
+- [Water prior appropriation](water-prior-appropriation-reclamation.md) (pla-034) — seniority on water rather than on zoning maps.
+- [Eminent domain to consolidators](eminent-domain-to-consolidators.md) (pla-035) — forced deed, not only a permit ranking.
+- [Land grants and tariff incidence](land-grants-and-tariff-incidence.md) (pla-036) — federal franchise over land and trade.
 
 ## Expansion notes
 

@@ -16,7 +16,7 @@ If your chat interface can't reach a URL but you can upload a file attachment (o
 Install the latest version of the skill at github.com/jonesde/high-vs-low
 ```
 
-**Legal library.** Concrete, citable cases of preferential legal application — outcomes the formal system enables for some parties while closing or criminalizing analogous conduct for others — live in [`legal-library/`](legal-library/README.md). Each entry names the outcome, the statutes and procedures used, the evidence of differential routing, and the matching distinction rules. A technology-access cluster documents restriction of use or awareness of a technique despite sufficient resources. It is a knowledge base for the skill, not a scored evaluation corpus.
+**Legal library.** Concrete, citable cases of preferential legal application — outcomes the formal system enables for some parties while closing or criminalizing analogous conduct for others — live in [`legal-library/`](legal-library/README.md). Each entry names the outcome, the statutes and procedures used, the evidence of differential routing, and the matching distinction rules. Clusters cover restriction of techniques despite sufficient resources, and legal interposition between people and earth resources, including money issue. It is a knowledge base for the skill, not a scored evaluation corpus.
 
 **Use Cases**
 - Why do I feel funny when I read this, but can't quite place it?

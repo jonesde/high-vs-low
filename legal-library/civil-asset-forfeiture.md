@@ -80,6 +80,8 @@ property, policing-revenue
 
 - [Unpaid wages on the civil track](unpaid-wages-civil-track.md) (pla-001) — civil process as the path of least resistance, here used to take rather than to avoid a taking.
 - [Secured credit and foreclosure](secured-credit-foreclosure.md) (pla-008) — another property-priority system in which procedure and cost determine who keeps the asset.
+- [Eminent domain to consolidators](eminent-domain-to-consolidators.md) (pla-035) — another taking of already-titled land, by condemnation rather than forfeiture.
+- [Gold withdrawal 1933](gold-withdrawal-1933.md) (pla-028) — a monetary call-in of a competing unit of property.
 
 ## Expansion notes
 
