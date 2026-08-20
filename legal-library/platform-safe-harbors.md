@@ -17,6 +17,8 @@ related:
   - dmca-takedown-content-id
   - manufacturer-repair-control
   - zoning-incumbent-protection
+  - cfaa-tos-authorized-access
+  - constrained-open-licenses
 updated: 2026-08-20
 ---
 
@@ -83,6 +85,8 @@ platforms, speech, capital-access
 - [DMCA takedown and Content ID](dmca-takedown-content-id.md) (pla-005) — the copyright half of the stack.
 - [Manufacturer repair control](manufacturer-repair-control.md) (pla-003) — post-sale control via a different statute-plus-contract pair.
 - [Zoning incumbent protection](zoning-incumbent-protection.md) (pla-009) — discretionary gatekeeping in physical space.
+- [CFAA and terms of service](cfaa-tos-authorized-access.md) (pla-014) — ToS plus a computer-crime overlay.
+- [Constrained open licenses](constrained-open-licenses.md) (pla-024) — copyright terms as the other half of platform-adjacent control.
 
 ## Expansion notes
 

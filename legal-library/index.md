@@ -14,7 +14,7 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 | -- | ----- | ------- | ------- | ------ | ------- |
 | pla-001 | [Unpaid wages on the civil track](unpaid-wages-civil-track.md) | Retention of unpaid wages with minimal criminal exposure | civil, administrative, non-action | criminal | labor, property |
 | pla-002 | [Civil asset forfeiture](civil-asset-forfeiture.md) | Seizure from low-resource owners with low contestation | civil, administrative | criminal | property, policing-revenue |
-| pla-003 | [Manufacturer repair control](manufacturer-repair-control.md) | Post-sale control of repair markets and parts | civil, contractual, regulatory | civil (owner repair as of right) | intellectual-property, personal-property |
+| pla-003 | [Manufacturer repair control](manufacturer-repair-control.md) | Post-sale control of repair markets and parts (including printer cartridges) | civil, contractual, regulatory | civil (owner repair as of right) | intellectual-property, personal-property, technology-access |
 | pla-004 | [Patent assertion entities](patent-assertion-entities.md) | Licensing revenue or settlements against operating companies | civil | civil (cheap symmetric defense / assertion) | intellectual-property, capital-access |
 | pla-005 | [DMCA takedown and Content ID](dmca-takedown-content-id.md) | Rapid removal or monetization control of user content | civil, contractual, administrative | civil (practical fair-use hearing) | intellectual-property, platforms |
 | pla-006 | [Consignment civil conversion](consignment-civil-conversion.md) | High-value inventory disputes kept as business cases | civil, contractual | criminal | property, commercial |
@@ -24,6 +24,18 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 | pla-010 | [White-collar civil routing](white-collar-civil-routing.md) | Large-scale financial wrongdoing resolved civil/DPA | civil, regulatory | criminal | financial, regulatory-control |
 | pla-011 | [Non-competes and trade secrets](noncompete-trade-secrets.md) | Restriction of worker mobility after exit | civil, contractual | civil (cheap mobility determination) | labor, intellectual-property |
 | pla-012 | [Platform safe harbors](platform-safe-harbors.md) | Control of speech and economic access via ToS plus immunity | contractual, civil | civil (reviewable account as of right) | platforms, speech, capital-access |
+| pla-013 | [Digital license-not-sale](digital-license-not-sale.md) | Vendor retains control of a paid-for digital copy | civil, contractual | civil (first sale of a chattel) | intellectual-property, technology-access, personal-property |
+| pla-014 | [CFAA and terms of service](cfaa-tos-authorized-access.md) | ToS or authorized access as a crime around reachable systems | criminal, civil, contractual | civil (reading a posted page) | technology-access, platforms, speech |
+| pla-015 | [Security research knowledge ban](security-research-knowledge-ban.md) | Independent research and publication about locks is legally risky | civil, criminal, regulatory | civil (ordinary technical publication) | intellectual-property, technology-access |
+| pla-016 | [Technical data export controls](technical-data-export-controls.md) | License wall on crypto and AI technical data | regulatory, criminal, civil | civil (ordinary scientific publication) | technology-access, regulatory-control |
+| pla-017 | [AI corpus and evaluation enclosure](ai-corpus-and-evaluation-enclosure.md) | Incumbents keep corpora and evaluation; later parties are fenced | civil, contractual | civil (incumbent crawl; ordinary product review) | intellectual-property, technology-access, platforms |
+| pla-018 | [Seed patent reuse ban](seed-patent-reuse-ban.md) | Bought seed cannot be saved, replanted, or independently bred | civil, contractual | civil (ordinary seed saving) | intellectual-property, technology-access, property |
+| pla-019 | [Bayh-Dole exclusive license](bayh-dole-exclusive-license.md) | Publicly funded inventions exclusively licensed away from other equipped firms | civil, regulatory, contractual | regulatory (march-in; public-domain practice) | intellectual-property, technology-access, regulatory-control |
+| pla-020 | [Blocking patents and non-use](blocking-patents-nonuse.md) | Exclusive rights used to prevent practice, including by non-working owners | civil | regulatory (working requirement / compulsory license) | intellectual-property, technology-access |
+| pla-021 | [Historical technique privilege](historical-technique-privilege.md) | Sovereign or incumbent reserves who may print, export a machine, or attach a device | regulatory, civil, contractual | civil (unlicensed practice with owned tools) | intellectual-property, technology-access, regulatory-control |
+| pla-022 | [Gene and method patents](gene-method-patents.md) | Equipped labs blocked from running known tests | civil, contractual | civil (ordinary assay practice) | intellectual-property, technology-access |
+| pla-023 | [Born-secret Restricted Data](born-secret-restricted-data.md) | Independently derived nuclear technique still illegal to communicate | criminal, regulatory | civil (ordinary scientific publication) | technology-access, regulatory-control |
+| pla-024 | [Constrained open licenses](constrained-open-licenses.md) | Source looks shared; commercial or field-of-use rights remain reserved | civil, contractual | civil (OSI-open use in any field) | intellectual-property, technology-access |
 
 ---
 
@@ -42,6 +54,8 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 - [pla-003 Manufacturer repair control](manufacturer-repair-control.md)
 - [pla-006 Consignment civil conversion](consignment-civil-conversion.md)
 - [pla-007 Employee theft on the criminal track](employee-theft-criminal-track.md)
+- [pla-013 Digital license-not-sale](digital-license-not-sale.md)
+- [pla-018 Seed patent reuse ban](seed-patent-reuse-ban.md)
 
 ### Intellectual property
 
@@ -49,6 +63,33 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 - [pla-004 Patent assertion entities](patent-assertion-entities.md)
 - [pla-005 DMCA takedown and Content ID](dmca-takedown-content-id.md)
 - [pla-011 Non-competes and trade secrets](noncompete-trade-secrets.md)
+- [pla-013 Digital license-not-sale](digital-license-not-sale.md)
+- [pla-015 Security research knowledge ban](security-research-knowledge-ban.md)
+- [pla-017 AI corpus and evaluation enclosure](ai-corpus-and-evaluation-enclosure.md)
+- [pla-018 Seed patent reuse ban](seed-patent-reuse-ban.md)
+- [pla-019 Bayh-Dole exclusive license](bayh-dole-exclusive-license.md)
+- [pla-020 Blocking patents and non-use](blocking-patents-nonuse.md)
+- [pla-021 Historical technique privilege](historical-technique-privilege.md)
+- [pla-022 Gene and method patents](gene-method-patents.md)
+- [pla-024 Constrained open licenses](constrained-open-licenses.md)
+
+### Technology access
+
+Restriction of use or awareness of a technique despite sufficient machines, copies, labs, skill, or public funding.
+
+- [pla-003 Manufacturer repair control](manufacturer-repair-control.md)
+- [pla-013 Digital license-not-sale](digital-license-not-sale.md)
+- [pla-014 CFAA and terms of service](cfaa-tos-authorized-access.md)
+- [pla-015 Security research knowledge ban](security-research-knowledge-ban.md)
+- [pla-016 Technical data export controls](technical-data-export-controls.md)
+- [pla-017 AI corpus and evaluation enclosure](ai-corpus-and-evaluation-enclosure.md)
+- [pla-018 Seed patent reuse ban](seed-patent-reuse-ban.md)
+- [pla-019 Bayh-Dole exclusive license](bayh-dole-exclusive-license.md)
+- [pla-020 Blocking patents and non-use](blocking-patents-nonuse.md)
+- [pla-021 Historical technique privilege](historical-technique-privilege.md)
+- [pla-022 Gene and method patents](gene-method-patents.md)
+- [pla-023 Born-secret Restricted Data](born-secret-restricted-data.md)
+- [pla-024 Constrained open licenses](constrained-open-licenses.md)
 
 ### Capital, debt, and financial
 
@@ -61,11 +102,17 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 
 - [pla-009 Zoning incumbent protection](zoning-incumbent-protection.md)
 - [pla-010 White-collar civil routing](white-collar-civil-routing.md)
+- [pla-016 Technical data export controls](technical-data-export-controls.md)
+- [pla-019 Bayh-Dole exclusive license](bayh-dole-exclusive-license.md)
+- [pla-021 Historical technique privilege](historical-technique-privilege.md)
+- [pla-023 Born-secret Restricted Data](born-secret-restricted-data.md)
 
 ### Platforms and speech
 
 - [pla-005 DMCA takedown and Content ID](dmca-takedown-content-id.md)
 - [pla-012 Platform safe harbors](platform-safe-harbors.md)
+- [pla-014 CFAA and terms of service](cfaa-tos-authorized-access.md)
+- [pla-017 AI corpus and evaluation enclosure](ai-corpus-and-evaluation-enclosure.md)
 
 ### Policing revenue
 
@@ -89,11 +136,19 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 
 **IP enclosure of post-sale or post-employment activity.**
 
-- [pla-003](manufacturer-repair-control.md), [pla-005](dmca-takedown-content-id.md), [pla-011](noncompete-trade-secrets.md)
+- [pla-003](manufacturer-repair-control.md), [pla-005](dmca-takedown-content-id.md), [pla-011](noncompete-trade-secrets.md), [pla-013](digital-license-not-sale.md), [pla-018](seed-patent-reuse-ban.md)
+
+**Technique known, use or telling forbidden.**
+
+- [pla-015](security-research-knowledge-ban.md), [pla-016](technical-data-export-controls.md), [pla-023](born-secret-restricted-data.md), [pla-022](gene-method-patents.md)
+
+**You have the resources; the license is the wall.**
+
+- [pla-013](digital-license-not-sale.md), [pla-014](cfaa-tos-authorized-access.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md), [pla-020](blocking-patents-nonuse.md), [pla-024](constrained-open-licenses.md)
 
 **Statutory safe harbor plus private contract.**
 
-- [pla-005](dmca-takedown-content-id.md), [pla-012](platform-safe-harbors.md)
+- [pla-005](dmca-takedown-content-id.md), [pla-012](platform-safe-harbors.md), [pla-014](cfaa-tos-authorized-access.md)
 
 **Incumbent protection via discretion.**
 
@@ -113,7 +168,11 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 
 **Safe harbor plus contract.** A statute immunizes the intermediary; a contract lets the same intermediary exclude the user. See [pla-005](dmca-takedown-content-id.md), [pla-012](platform-safe-harbors.md). Rules 8, 18, 22, 42.
 
-**Enclosure after the relationship.** Sale, employment, or upload is treated as the start of continuing control, not the end of the seller's or employer's claim. See [pla-003](manufacturer-repair-control.md), [pla-005](dmca-takedown-content-id.md), [pla-011](noncompete-trade-secrets.md). Rules 6, 33, 42.
+**Enclosure after the relationship.** Sale, employment, or upload is treated as the start of continuing control, not the end of the seller's or employer's claim. See [pla-003](manufacturer-repair-control.md), [pla-005](dmca-takedown-content-id.md), [pla-011](noncompete-trade-secrets.md), [pla-013](digital-license-not-sale.md), [pla-018](seed-patent-reuse-ban.md). Rules 6, 33, 42.
+
+**Restricted awareness.** Independently derived or independently researched knowledge is still illegal or risky to share. See [pla-015](security-research-knowledge-ban.md), [pla-016](technical-data-export-controls.md), [pla-023](born-secret-restricted-data.md). Rules 18, 20, 22.
+
+**Open-looking reservation.** Source or weights are visible; competing production is not granted. See [pla-024](constrained-open-licenses.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md). Rules 22, 33, 42.
 
 **Resource-asymmetric litigation.** The doctrine is symmetric. The TRO calendar, discovery, and choice-of-law clause are not. See [pla-004](patent-assertion-entities.md), [pla-008](secured-credit-foreclosure.md), [pla-011](noncompete-trade-secrets.md). Rules 4, 15, 40.
 
@@ -128,7 +187,7 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 Not yet written. Use the [inclusion rule](README.md#inclusion-rule) if adding them:
 
 - Housing (eviction process, source-of-income rules, habitability enforcement)
-- Healthcare billing (upcoding civil vs. beneficiary fraud criminal; surprise billing)
+- Healthcare billing as **price/resources** (distinct from [pla-022](gene-method-patents.md) technique-control)
 - Environmental permitting (incumbent plants vs. new facilities)
 - Education credentialing (accreditation and licensing as entry barriers)
 

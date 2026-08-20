@@ -76,7 +76,7 @@ updated: 2026-08-20
 
 **`domains`** (one or more):
 
-`labor`, `property`, `personal-property`, `intellectual-property`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
+`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
 
 **`routing` values** (under `enabled` and `closed`):
 
@@ -167,6 +167,25 @@ Twelve initial entries. Each is `status: initial`: a complete first-pass page, n
 | pla-011 | [noncompete-trade-secrets.md](noncompete-trade-secrets.md) | Restriction of worker mobility via non-competes and trade secrets | State non-compete doctrine; 18 U.S.C. § 1836 | labor, intellectual-property |
 | pla-012 | [platform-safe-harbors.md](platform-safe-harbors.md) | Platform control of speech and economic access via ToS plus safe harbors | 47 U.S.C. § 230; 17 U.S.C. § 512; terms of service | platforms, speech, capital-access |
 
-Adjacent domains for later growth (no stub files yet): housing, healthcare billing, environmental permitting, education credentialing.
+## Second wave: technology access
+
+Restriction of **use of, or awareness of, a technique** despite sufficient machines, copies, labs, skill, or public funding. Not inability to pay for the device, the drug, or the factory. See [index.md](index.md) for catalog grouping.
+
+| ID | File | Outcome | Primary instruments | Domains |
+| -- | ---- | ------- | ------------------- | ------- |
+| pla-013 | [digital-license-not-sale.md](digital-license-not-sale.md) | Vendor retains control of a paid-for digital copy | 17 U.S.C. § 109; *Vernor*; *ReDigi* | intellectual-property, technology-access, personal-property |
+| pla-014 | [cfaa-tos-authorized-access.md](cfaa-tos-authorized-access.md) | ToS or "authorized access" as a crime around reachable systems | 18 U.S.C. § 1030; *Van Buren*; *hiQ* | technology-access, platforms, speech |
+| pla-015 | [security-research-knowledge-ban.md](security-research-knowledge-ban.md) | Independent research and publication about locks is legally risky | 17 U.S.C. § 1201(a)(2); CFAA | intellectual-property, technology-access |
+| pla-016 | [technical-data-export-controls.md](technical-data-export-controls.md) | License wall on publishing or transferring crypto and AI technical data | EAR/ITAR; *Bernstein*; ECCN 3A090 / 4E091 | technology-access, regulatory-control |
+| pla-017 | [ai-corpus-and-evaluation-enclosure.md](ai-corpus-and-evaluation-enclosure.md) | Incumbents keep corpora and evaluation; later parties are fenced | Copyright; ToS; CFAA; anti-benchmark clauses | intellectual-property, technology-access, platforms |
+| pla-018 | [seed-patent-reuse-ban.md](seed-patent-reuse-ban.md) | Bought seed cannot be saved, replanted, or independently bred | Utility patents; PVPA; *Bowman v. Monsanto* | intellectual-property, technology-access, property |
+| pla-019 | [bayh-dole-exclusive-license.md](bayh-dole-exclusive-license.md) | Publicly funded inventions exclusively licensed away from other equipped firms | 35 U.S.C. §§ 200–212 | intellectual-property, technology-access, regulatory-control |
+| pla-020 | [blocking-patents-nonuse.md](blocking-patents-nonuse.md) | Exclusive rights used to prevent practice, including by non-working owners | 35 U.S.C. § 271; *Continental Paper Bag* | intellectual-property, technology-access |
+| pla-021 | [historical-technique-privilege.md](historical-technique-privilege.md) | Sovereign or incumbent reserves who may print, export a machine, or attach a device | Stationers; machinery-export bans; *Carterfone* | intellectual-property, technology-access, regulatory-control |
+| pla-022 | [gene-method-patents.md](gene-method-patents.md) | Equipped labs blocked from running known tests by gene and method patents | 35 U.S.C. § 101; *Myriad*; *Mayo* | intellectual-property, technology-access |
+| pla-023 | [born-secret-restricted-data.md](born-secret-restricted-data.md) | Independently derived nuclear technique still illegal to communicate | 42 U.S.C. §§ 2014(y), 2274; *Progressive* | technology-access, regulatory-control |
+| pla-024 | [constrained-open-licenses.md](constrained-open-licenses.md) | Source-available and field-of-use terms that look open while reserving commercial use | Copyright licenses; BSL, SSPL, Commons Clause, Llama AUP, dual-license | intellectual-property, technology-access |
+
+Adjacent domains still open: housing, healthcare billing, environmental permitting, education credentialing.
 
 To add an entry, follow the inclusion rule and this spec, then add it to [index.md](index.md).

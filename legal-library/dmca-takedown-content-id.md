@@ -15,6 +15,7 @@ related:
   - platform-safe-harbors
   - manufacturer-repair-control
   - patent-assertion-entities
+  - ai-corpus-and-evaluation-enclosure
 updated: 2026-08-20
 ---
 
@@ -81,6 +82,7 @@ intellectual-property, platforms
 - [Platform safe harbors](platform-safe-harbors.md) (pla-012) — § 230 plus ToS as the broader immunity-and-control stack; § 512 is the copyright module.
 - [Manufacturer repair control](manufacturer-repair-control.md) (pla-003) — DMCA Title I (§ 1201) rather than Title II (§ 512).
 - [Patent assertion entities](patent-assertion-entities.md) (pla-004) — rights assertion whose real filter is cost and tooling.
+- [AI corpus and evaluation enclosure](ai-corpus-and-evaluation-enclosure.md) (pla-017) — enclosure of training and measurement, not of posted copies.
 
 ## Expansion notes
 

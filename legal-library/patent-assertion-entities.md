@@ -15,6 +15,7 @@ related:
   - manufacturer-repair-control
   - noncompete-trade-secrets
   - dmca-takedown-content-id
+  - blocking-patents-nonuse
 updated: 2026-08-20
 ---
 
@@ -75,6 +76,7 @@ intellectual-property, capital-access
 - [Manufacturer repair control](manufacturer-repair-control.md) (pla-003) — IP used to control post-sale activity.
 - [Non-competes and trade secrets](noncompete-trade-secrets.md) (pla-011) — IP-adjacent mobility restriction.
 - [DMCA takedown and Content ID](dmca-takedown-content-id.md) (pla-005) — another rights-assertion system with asymmetric tooling.
+- [Blocking patents and non-use](blocking-patents-nonuse.md) (pla-020) — exclusive rights as a veto on practice, not as a settlement engine.
 
 ## Expansion notes
 
