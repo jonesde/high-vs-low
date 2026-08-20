@@ -17,6 +17,7 @@ related:
   - white-collar-civil-routing
   - covered-person-liability-shields
   - church-tax-opacity
+  - ag-only-charitable-standing
 updated: 2026-08-20
 ---
 
@@ -76,6 +77,7 @@ religion, protected-complexes, financial
 - [White-collar civil routing](white-collar-civil-routing.md) (pla-010) — another inside track that is not an ordinary jury.
 - [Covered-person liability shields](covered-person-liability-shields.md) (pla-042) — a limited fund instead of a product jury.
 - [Church tax opacity](church-tax-opacity.md) (pla-052) — books that were never public before the filing.
+- [AG-only charitable standing](ag-only-charitable-standing.md) (pla-064) — the missing plaintiff before a filing even exists.
 
 ## Expansion notes
 

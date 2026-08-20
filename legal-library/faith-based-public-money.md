@@ -17,6 +17,7 @@ related:
   - funding-conditioned-mandates
   - designated-cost-plus-contractor
   - rluipa-property-tax-franchise
+  - operating-charity-capital-pool
 updated: 2026-08-20
 ---
 
@@ -86,6 +87,7 @@ religion, protected-complexes, speech
 - [Designated cost-plus contractor](designated-cost-plus-contractor.md) (pla-048) — designated desk for appropriated funds.
 - [RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md) (pla-059) — land beside the purse.
 - [Bayh-Dole exclusive license](bayh-dole-exclusive-license.md) (pla-019) — public funds, private residual.
+- [Operating charity as capital pool](operating-charity-capital-pool.md) (pla-070) — 501(c)(3) hospital capital beside the public-money franchise.
 
 ## Expansion notes
 

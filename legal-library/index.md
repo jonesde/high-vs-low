@@ -72,6 +72,18 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 | pla-058 | [RFRA commercial overlay](rfra-commercial-overlay.md) | RFRA heightens the test; closely held for-profits count as persons | civil, regulatory | civil (*Smith*-style general rule) | religion, protected-complexes, commercial |
 | pla-059 | [RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md) | Land-use and property-tax track for religious landowners | civil, administrative, regulatory | administrative (ordinary zoning and millage) | religion, protected-complexes, land-use |
 | pla-060 | [Faith-based public money](faith-based-public-money.md) | Designated religious providers take social-service and school money | administrative, contractual, civil | civil (no-aid / secular-only stream) | religion, protected-complexes, speech |
+| pla-061 | [Charitable deduction as first-receiver](charitable-deduction-first-receiver.md) | Itemizers deduct gifts to qualifying orgs; analog neighbor gift is not deductible | administrative, regulatory | civil (gift to a person as the charitable event) | charity, protected-complexes, financial |
+| pla-062 | [501(c)(3) franchise vs mutual aid](501c3-franchise-vs-mutual-aid.md) | Legal charity is an org that passes IRS tests; mutual aid is outside | administrative, regulatory | civil (informal aid as donee) | charity, protected-complexes, financial |
+| pla-063 | [Cy-pres institutional preservation](cypres-institutional-preservation.md) | Failed purpose keeps corpus in charitable title | civil, administrative | civil (resulting trust to settlor) | charity, protected-complexes, property |
+| pla-064 | [AG-only charitable standing](ag-only-charitable-standing.md) | Indefinite beneficiaries generally cannot sue; AG is the protector | civil, administrative, non-action | civil (beneficiary enforcement) | charity, protected-complexes |
+| pla-065 | [Federated workplace capture](federated-workplace-capture.md) | Exclusive payroll deduction steers gifts to a federation allocator | contractual, administrative | civil (named local shop on the card) | charity, protected-complexes, labor |
+| pla-066 | [Community foundation as bank trustee](community-foundation-bank-trustee.md) | Perpetual funds at a bank trustee; a committee allocates | contractual, administrative | civil (spent local gift) | charity, protected-complexes, financial |
+| pla-067 | [Private foundation perpetual control](private-foundation-perpetual-control.md) | 1969 rules lock in perpetual family-control vehicles with a 5% payout | regulatory, administrative | civil (spend-down or deduction at grant) | charity, protected-complexes, financial |
+| pla-068 | [Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md) | Complete deduction at contribution; no mandatory 5% payout | administrative, contractual, regulatory | civil (deduction timed to operating grant) | charity, protected-complexes, financial |
+| pla-069 | [UPMIFA endowment lock](upmifa-endowment-lock.md) | Prudent spending preserves endowment purchasing power as default | administrative, civil | civil (current-use restricted gift) | charity, protected-complexes, capital-access |
+| pla-070 | [Operating charity as capital pool](operating-charity-capital-pool.md) | Hospitals and universities hold exempt capital; charity-care tests are residual | regulatory, administrative | civil (taxable hospital or hard spend duty) | charity, protected-complexes, financial |
+| pla-071 | [Supporting-org control without ownership](supporting-org-control-without-ownership.md) | Supporting orgs let a principal steer capital without owning it | regulatory, contractual, administrative | civil (attribution to the founder) | charity, protected-complexes, commercial |
+| pla-072 | [Scientific charity means-test gate](scientific-charity-means-test-gate.md) | COS investigation and deserving-poor gate replace direct aid | administrative, contractual | civil (alms without a file) | charity, protected-complexes, regulatory-control |
 
 ---
 
@@ -85,6 +97,7 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 - [pla-043 Funding-conditioned health mandates](funding-conditioned-mandates.md)
 - [pla-044 Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md)
 - [pla-054 Ministerial exception](ministerial-exception.md)
+- [pla-065 Federated workplace capture](federated-workplace-capture.md)
 
 ### Property (including personal property and commercial)
 
@@ -100,6 +113,7 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 - [pla-032 Hardrock mining patent 1872](hardrock-mining-patent-1872.md)
 - [pla-034 Water prior appropriation](water-prior-appropriation-reclamation.md)
 - [pla-035 Eminent domain to consolidators](eminent-domain-to-consolidators.md)
+- [pla-063 Cy-pres institutional preservation](cypres-institutional-preservation.md)
 
 ### Intellectual property
 
@@ -151,6 +165,13 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-052 Church tax opacity](church-tax-opacity.md)
 - [pla-053 Clergy tax preferences](clergy-tax-preferences.md)
 - [pla-056 Religious mass-tort bankruptcy](religious-mass-tort-bankruptcy.md)
+- [pla-061 Charitable deduction as first-receiver](charitable-deduction-first-receiver.md)
+- [pla-062 501(c)(3) franchise vs mutual aid](501c3-franchise-vs-mutual-aid.md)
+- [pla-066 Community foundation as bank trustee](community-foundation-bank-trustee.md)
+- [pla-067 Private foundation perpetual control](private-foundation-perpetual-control.md)
+- [pla-068 Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md)
+- [pla-069 UPMIFA endowment lock](upmifa-endowment-lock.md)
+- [pla-070 Operating charity as capital pool](operating-charity-capital-pool.md)
 
 ### Land use and regulatory control
 
@@ -172,6 +193,7 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-038 Tax stamp and schedule as crime](tax-schedule-as-crime.md)
 - [pla-050 Disfavored-practice criminalization](disfavored-practice-criminalization.md)
 - [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
+- [pla-072 Scientific charity means-test gate](scientific-charity-means-test-gate.md)
 
 ### Platforms and speech
 
@@ -234,6 +256,35 @@ Belief, expression, and receipt were the original objects. The inversion protect
 - [pla-058 RFRA commercial overlay](rfra-commercial-overlay.md)
 - [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
 - [pla-060 Faith-based public money](faith-based-public-money.md)
+- [pla-061 Charitable deduction as first-receiver](charitable-deduction-first-receiver.md)
+- [pla-062 501(c)(3) franchise vs mutual aid](501c3-franchise-vs-mutual-aid.md)
+- [pla-063 Cy-pres institutional preservation](cypres-institutional-preservation.md)
+- [pla-064 AG-only charitable standing](ag-only-charitable-standing.md)
+- [pla-065 Federated workplace capture](federated-workplace-capture.md)
+- [pla-066 Community foundation as bank trustee](community-foundation-bank-trustee.md)
+- [pla-067 Private foundation perpetual control](private-foundation-perpetual-control.md)
+- [pla-068 Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md)
+- [pla-069 UPMIFA endowment lock](upmifa-endowment-lock.md)
+- [pla-070 Operating charity as capital pool](operating-charity-capital-pool.md)
+- [pla-071 Supporting-org control without ownership](supporting-org-control-without-ownership.md)
+- [pla-072 Scientific charity means-test gate](scientific-charity-means-test-gate.md)
+
+### Charity (institutional)
+
+Local aid is the analog. The inversion protects deducted capital, corpus, and gatekeeping; controllers act through the 501(c)(3).
+
+- [pla-061 Charitable deduction as first-receiver](charitable-deduction-first-receiver.md)
+- [pla-062 501(c)(3) franchise vs mutual aid](501c3-franchise-vs-mutual-aid.md)
+- [pla-063 Cy-pres institutional preservation](cypres-institutional-preservation.md)
+- [pla-064 AG-only charitable standing](ag-only-charitable-standing.md)
+- [pla-065 Federated workplace capture](federated-workplace-capture.md)
+- [pla-066 Community foundation as bank trustee](community-foundation-bank-trustee.md)
+- [pla-067 Private foundation perpetual control](private-foundation-perpetual-control.md)
+- [pla-068 Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md)
+- [pla-069 UPMIFA endowment lock](upmifa-endowment-lock.md)
+- [pla-070 Operating charity as capital pool](operating-charity-capital-pool.md)
+- [pla-071 Supporting-org control without ownership](supporting-org-control-without-ownership.md)
+- [pla-072 Scientific charity means-test gate](scientific-charity-means-test-gate.md)
 
 ### Monetary
 
@@ -334,6 +385,14 @@ Legal standing between people and land, minerals, and water.
 
 - [pla-052](church-tax-opacity.md), [pla-053](clergy-tax-preferences.md), [pla-059](rluipa-property-tax-franchise.md), [pla-060](faith-based-public-money.md)
 
+**Deducted capital that need not reach a person.** Immediate § 170; cy-près and AG standing; DAF/endowment/foundation corpus.
+
+- [pla-061](charitable-deduction-first-receiver.md), [pla-063](cypres-institutional-preservation.md), [pla-064](ag-only-charitable-standing.md), [pla-067](private-foundation-perpetual-control.md), [pla-068](donor-advised-funds-no-payout.md), [pla-069](upmifa-endowment-lock.md)
+
+**Federated capture and scientific gate.** Workplace card and deserving-poor file.
+
+- [pla-065](federated-workplace-capture.md), [pla-066](community-foundation-bank-trustee.md), [pla-072](scientific-charity-means-test-gate.md)
+
 ---
 
 ## Cross-cutting patterns
@@ -370,6 +429,8 @@ Legal standing between people and land, minerals, and water.
 
 **Belief and speech vs the entity franchise.** Original religious liberty protected belief, expression, and receipt. The inversion protects tax, land, labor, discovery, and public money for the institution. See [pla-049](church-autonomy-ecclesiastical-abstention.md) through [pla-060](faith-based-public-money.md), especially [pla-050](disfavored-practice-criminalization.md) vs [pla-058](rfra-commercial-overlay.md). Rules 1, 6, 18, 22, 36.
 
+**Local aid vs the asset-protecting franchise.** Deduction, corpus, standing, and allocation protect the institution and its controllers; the claimed beneficiary often cannot sue or cannot receive. See [pla-061](charitable-deduction-first-receiver.md) through [pla-072](scientific-charity-means-test-gate.md), especially [pla-068](donor-advised-funds-no-payout.md) vs [pla-067](private-foundation-perpetual-control.md). Rules 15, 22, 33, 36, 40.
+
 ---
 
 ## Growth domains
@@ -377,7 +438,7 @@ Legal standing between people and land, minerals, and water.
 Not yet written. Use the [inclusion rule](README.md#inclusion-rule) if adding them:
 
 - Housing (eviction process, source-of-income rules, habitability enforcement)
-- Healthcare billing as **price/resources** (distinct from [pla-022](gene-method-patents.md) technique-control; religious hospitals appear in [pla-060](faith-based-public-money.md) only as the public-money franchise)
+- Healthcare billing as **price/resources** (distinct from [pla-022](gene-method-patents.md) technique-control and from [pla-070](operating-charity-capital-pool.md) exemption-vs-duty; religious hospitals appear in [pla-060](faith-based-public-money.md) only as the public-money franchise)
 - Environmental permitting (incumbent plants vs. new facilities)
 - Education credentialing (accreditation and licensing as entry barriers; religious schools appear here only as [pla-054](ministerial-exception.md) and [pla-060](faith-based-public-money.md))
 

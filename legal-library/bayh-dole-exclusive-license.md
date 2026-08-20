@@ -18,6 +18,7 @@ related:
   - historical-technique-privilege
   - designated-cost-plus-contractor
   - faith-based-public-money
+  - upmifa-endowment-lock
 updated: 2026-08-20
 ---
 
@@ -83,6 +84,7 @@ intellectual-property, technology-access, regulatory-control
 - [Historical technique privilege](historical-technique-privilege.md) (pla-021) — sovereign grant of exclusive practice.
 - [Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md) (pla-048) — public funds, private residual on the award side rather than the patent side.
 - [Faith-based public money](faith-based-public-money.md) (pla-060) — public funds, private residual on the ministry side.
+- [UPMIFA endowment lock](upmifa-endowment-lock.md) (pla-069) — public and donated funds locked as university corpus.
 
 ## Expansion notes
 

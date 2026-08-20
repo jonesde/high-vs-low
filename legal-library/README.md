@@ -76,7 +76,7 @@ updated: 2026-08-20
 
 **`domains`** (one or more):
 
-`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `protected-complexes`, `religion`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
+`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `protected-complexes`, `religion`, `charity`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
 
 **`routing` values** (under `enabled` and `closed`):
 
@@ -243,6 +243,25 @@ Original religious liberty, with speech, protected **belief, expression, and rec
 | pla-059 | [rluipa-property-tax-franchise.md](rluipa-property-tax-franchise.md) | Land-use and property-tax track for religious landowners | RLUIPA; state worship exemptions | religion, protected-complexes, land-use |
 | pla-060 | [faith-based-public-money.md](faith-based-public-money.md) | Designated religious providers take social-service and school money | Charitable Choice; *Trinity Lutheran*; *Espinoza*; *Carson* | religion, protected-complexes, speech |
 
-Adjacent domains still open: housing, healthcare billing as price, environmental permitting, education credentialing (religious schools appear here only as ministerial-exception and public-money tracks).
+## Sixth wave: institutional charity
+
+Local, personal aid is the analog. The inversion: deduction, corpus, standing, and allocation protect **the institution and its controllers** (banks, employers, family offices, DAF sponsors, hospital systems) while the claimed beneficiary often cannot sue, cannot see the fund, and does not receive the money. Not a verdict that giving is harmful. See [index.md](index.md).
+
+| ID | File | Outcome | Primary instruments | Domains |
+| -- | ---- | ------- | ------------------- | ------- |
+| pla-061 | [charitable-deduction-first-receiver.md](charitable-deduction-first-receiver.md) | Itemizers deduct gifts to qualifying orgs; analog neighbor gift is not deductible | 26 U.S.C. § 170; §§ 2055, 2522 | charity, protected-complexes, financial |
+| pla-062 | [501c3-franchise-vs-mutual-aid.md](501c3-franchise-vs-mutual-aid.md) | Legal "charity" is an org that passes IRS tests; mutual aid is outside the franchise | 26 U.S.C. §§ 501(c)(3), 509 | charity, protected-complexes, financial |
+| pla-063 | [cypres-institutional-preservation.md](cypres-institutional-preservation.md) | Failed purpose keeps corpus in charitable title, rewritten as near as possible | Cy-près; UTC §§ 413–414; UPMIFA modification | charity, protected-complexes, property |
+| pla-064 | [ag-only-charitable-standing.md](ag-only-charitable-standing.md) | Indefinite beneficiaries generally cannot sue; AG is the protector | Parens patriae; Uniform Supervision of Trustees | charity, protected-complexes |
+| pla-065 | [federated-workplace-capture.md](federated-workplace-capture.md) | Exclusive payroll deduction steers gifts to a federation allocator | Employer deduction contracts; CFC 5 C.F.R. Part 950 | charity, protected-complexes, labor |
+| pla-066 | [community-foundation-bank-trustee.md](community-foundation-bank-trustee.md) | Perpetual funds at a bank trustee; a committee allocates | Cleveland Foundation 1914; UPMIFA | charity, protected-complexes, financial |
+| pla-067 | [private-foundation-perpetual-control.md](private-foundation-perpetual-control.md) | 1969 rules lock in perpetual family-control vehicles with a 5% payout | TRA 1969; 26 U.S.C. §§ 4940–4945 | charity, protected-complexes, financial |
+| pla-068 | [donor-advised-funds-no-payout.md](donor-advised-funds-no-payout.md) | Complete deduction at contribution; no mandatory 5% payout | 26 U.S.C. §§ 4966, 4967, 170(f)(18) | charity, protected-complexes, financial |
+| pla-069 | [upmifa-endowment-lock.md](upmifa-endowment-lock.md) | Prudent spending preserves endowment purchasing power as default | UMIFA 1972; UPMIFA 2006 | charity, protected-complexes, capital-access |
+| pla-070 | [operating-charity-capital-pool.md](operating-charity-capital-pool.md) | Hospitals and universities hold exempt capital; charity-care tests are residual | 26 U.S.C. § 501(r); Form 990 Sch. H | charity, protected-complexes, financial |
+| pla-071 | [supporting-org-control-without-ownership.md](supporting-org-control-without-ownership.md) | Supporting orgs let a principal steer capital without owning it | 26 U.S.C. §§ 509(a)(3), 4943(f) | charity, protected-complexes, commercial |
+| pla-072 | [scientific-charity-means-test-gate.md](scientific-charity-means-test-gate.md) | COS investigation and "deserving poor" gate replace direct aid | COS charters 1877–; associated-charity form | charity, protected-complexes, regulatory-control |
+
+Adjacent domains still open: housing, healthcare billing as price (hospital 501(r) here is exemption-vs-duty only), environmental permitting, education credentialing.
 
 To add an entry, follow the inclusion rule and this spec, then add it to [index.md](index.md).

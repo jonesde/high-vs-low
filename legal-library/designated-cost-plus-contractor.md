@@ -21,6 +21,7 @@ related:
   - white-collar-civil-routing
   - contracted-native-conversion
   - faith-based-public-money
+  - supporting-org-control-without-ownership
 updated: 2026-08-20
 ---
 
@@ -90,6 +91,7 @@ protected-complexes, capital-access
 - [White-collar civil routing](white-collar-civil-routing.md) (pla-010) — designation as the purse, civil routing as the residual.
 - [Contracted Native conversion](contracted-native-conversion.md) (pla-051) — churches as the designated shop for children's custody.
 - [Faith-based public money](faith-based-public-money.md) (pla-060) — another designated desk for appropriated funds.
+- [Supporting-org control without ownership](supporting-org-control-without-ownership.md) (pla-071) — another face that is not the principal.
 
 ## Expansion notes
 

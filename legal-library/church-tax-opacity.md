@@ -18,6 +18,8 @@ related:
   - rfra-commercial-overlay
   - white-collar-civil-routing
   - designated-cost-plus-contractor
+  - donor-advised-funds-no-payout
+  - 501c3-franchise-vs-mutual-aid
 updated: 2026-08-20
 ---
 
@@ -81,6 +83,8 @@ religion, protected-complexes, financial
 - [RFRA commercial overlay](rfra-commercial-overlay.md) (pla-058) — commercial "persons" using religious status.
 - [White-collar civil routing](white-collar-civil-routing.md) (pla-010) — another inside financial track that is not a public docket.
 - [Designated cost-plus contractor](designated-cost-plus-contractor.md) (pla-048) — designation without ordinary competition; this page is designation without ordinary disclosure.
+- [501(c)(3) franchise vs mutual aid](501c3-franchise-vs-mutual-aid.md) (pla-062) — non-church charities that must apply and file.
+- [Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md) (pla-068) — account-level darkness beside church no-990.
 
 ## Expansion notes
 

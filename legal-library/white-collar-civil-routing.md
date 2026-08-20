@@ -19,6 +19,7 @@ related:
   - covered-person-liability-shields
   - designated-cost-plus-contractor
   - religious-mass-tort-bankruptcy
+  - ag-only-charitable-standing
 updated: 2026-08-20
 ---
 
@@ -88,6 +89,7 @@ financial, regulatory-control
 - [Covered-person liability shields](covered-person-liability-shields.md) (pla-042) — another inside track that is not a jury.
 - [Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md) (pla-048) — designation as the purse, civil routing as the residual.
 - [Religious mass-tort bankruptcy](religious-mass-tort-bankruptcy.md) (pla-056) — Chapter 11 as the church's inside track.
+- [AG-only charitable standing](ag-only-charitable-standing.md) (pla-064) — another missing plaintiff when the analog person is the claimed beneficiary.
 
 ## Expansion notes
 

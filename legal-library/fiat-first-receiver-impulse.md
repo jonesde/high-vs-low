@@ -20,6 +20,7 @@ related:
   - genius-act-permitted-issuance
   - designated-cost-plus-contractor
   - land-grants-and-tariff-incidence
+  - charitable-deduction-first-receiver
 updated: 2026-08-20
 ---
 
@@ -89,6 +90,7 @@ monetary, capital-access, financial
 - [GENIUS Act permitted issuance](genius-act-permitted-issuance.md) (pla-031) — a new licensed ticket that must hold Treasuries.
 - [Land grants and tariff incidence](land-grants-and-tariff-incidence.md) (pla-036) — a non-money first-receiver wedge on real goods.
 - [Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md) (pla-048) — appropriated dollars at a named contractor desk.
+- [Charitable deduction as first-receiver](charitable-deduction-first-receiver.md) (pla-061) — forgone tax at the qualifying-org desk.
 
 ## Expansion notes
 
