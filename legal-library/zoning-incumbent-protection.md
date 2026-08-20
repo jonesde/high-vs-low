@@ -17,6 +17,7 @@ related:
   - secured-credit-foreclosure
   - noncompete-trade-secrets
   - platform-safe-harbors
+  - rluipa-property-tax-franchise
 updated: 2026-08-20
 ---
 
@@ -85,6 +86,7 @@ land-use, regulatory-control
 - [Water prior appropriation](water-prior-appropriation-reclamation.md) (pla-034) — seniority on water rather than on zoning maps.
 - [Eminent domain to consolidators](eminent-domain-to-consolidators.md) (pla-035) — forced deed, not only a permit ranking.
 - [Land grants and tariff incidence](land-grants-and-tariff-incidence.md) (pla-036) — federal franchise over land and trade.
+- [RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md) (pla-059) — a federal thumb on this local track when the landowner is religious.
 
 ## Expansion notes
 

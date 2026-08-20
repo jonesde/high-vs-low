@@ -19,6 +19,7 @@ related:
   - licensing-monopoly-on-the-analog
   - white-collar-civil-routing
   - qualified-immunity
+  - religious-mass-tort-bankruptcy
 updated: 2026-08-20
 ---
 
@@ -79,6 +80,7 @@ protected-complexes, financial
 - [Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md) (pla-044) — who may handle scheduled drugs vs. who is immune for countermeasures.
 - [White-collar civil routing](white-collar-civil-routing.md) (pla-010) — another inside track that is not a jury.
 - [Qualified immunity for officials](qualified-immunity.md) (pla-045) — judge-made official shield; this page is statutory product-maker immunity.
+- [Religious mass-tort bankruptcy](religious-mass-tort-bankruptcy.md) (pla-056) — another limited fund instead of an ordinary jury.
 
 ## Expansion notes
 

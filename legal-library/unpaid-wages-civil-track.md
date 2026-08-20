@@ -15,6 +15,7 @@ status: initial
 related:
   - employee-theft-criminal-track
   - white-collar-civil-routing
+  - ministerial-exception
 updated: 2026-08-20
 ---
 
@@ -83,6 +84,7 @@ labor, property
 
 - [Employee theft on the criminal track](employee-theft-criminal-track.md) (pla-007) — the inverted routing of the same labor/property pair.
 - [White-collar civil routing](white-collar-civil-routing.md) (pla-010) — the same civil-default pattern at larger financial scale.
+- [Ministerial exception](ministerial-exception.md) (pla-054) — religious employers close even the civil-rights overlay for tagged workers.
 
 ## Expansion notes
 

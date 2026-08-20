@@ -17,6 +17,7 @@ related:
   - funding-conditioned-mandates
   - covered-person-liability-shields
   - white-collar-civil-routing
+  - church-autonomy-ecclesiastical-abstention
 updated: 2026-08-20
 ---
 
@@ -81,6 +82,7 @@ protected-complexes
 - [Funding-conditioned mandates](funding-conditioned-mandates.md) (pla-043) — officials who enforce the condition.
 - [Covered-person liability shields](covered-person-liability-shields.md) (pla-042) — statutory immunity for designated makers; this page is judge-made immunity for officials.
 - [White-collar civil routing](white-collar-civil-routing.md) (pla-010) — another inside track that is not an ordinary jury.
+- [Church autonomy and ecclesiastical abstention](church-autonomy-ecclesiastical-abstention.md) (pla-049) — another inside track that is not a jury.
 
 ## Expansion notes
 

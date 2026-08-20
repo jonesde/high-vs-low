@@ -60,6 +60,18 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 | pla-046 | [Captured evidence and associations](captured-evidence-associations.md) | User-fee and association gates on what counts as official evidence | administrative, regulatory, civil | civil (independent evidence as the record) | protected-complexes |
 | pla-047 | [Government-platform speech routing](government-platform-speech.md) | Official pressure plus platform rules close dissent on the complex's product | contractual, civil, administrative | civil (merits First Amendment hearing) | protected-complexes, speech, platforms |
 | pla-048 | [Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md) | Designated contractors take cost-plus or OTA work with limited bid competition | contractual, administrative, regulatory | civil (sealed competed bid as of right) | protected-complexes, capital-access |
+| pla-049 | [Church autonomy and ecclesiastical abstention](church-autonomy-ecclesiastical-abstention.md) | Courts treat internal church discipline as nonjusticiable | civil, non-action | civil (ordinary tort merits) | religion, protected-complexes |
+| pla-050 | [Disfavored-practice criminalization](disfavored-practice-criminalization.md) | Unfavored sect's analog practice is a crime or costs a benefit | criminal, administrative | civil (accommodation of the analog ritual) | religion, protected-complexes, regulatory-control |
+| pla-051 | [Contracted Native conversion](contracted-native-conversion.md) | Federal money and custody to churches to interrupt Native belief and language | administrative, contractual, regulatory | civil (parent keeps child and language) | religion, protected-complexes, speech |
+| pla-052 | [Church tax opacity](church-tax-opacity.md) | Automatic 501(c)(3), no Form 990, special IRS inquiry wall | administrative, regulatory | administrative (1023 and 990 like analog charities) | religion, protected-complexes, financial |
+| pla-053 | [Clergy tax preferences](clergy-tax-preferences.md) | Minister housing excluded from income; analog worker is taxed | administrative, regulatory | civil (housing as wages) | religion, protected-complexes, financial |
+| pla-054 | [Ministerial exception](ministerial-exception.md) | "Minister" employees cannot maintain Title VII or ADA claims | civil | civil (Title VII/ADA merits) | religion, protected-complexes, labor |
+| pla-055 | [Clergy privilege and discovery walls](clergy-privilege-discovery-walls.md) | Privilege and autonomy keep personnel files out of discovery | civil, criminal, non-action | civil (ordinary personnel-file discovery) | religion, protected-complexes |
+| pla-056 | [Religious mass-tort bankruptcy](religious-mass-tort-bankruptcy.md) | Dioceses route mass torts into Chapter 11 | civil, administrative | civil (unstayed jury trial) | religion, protected-complexes, financial |
+| pla-057 | [Faith-healing child exemptions](faith-healing-child-exemptions.md) | Faith-based medical neglect exempt from ordinary child-protection crime | criminal, non-action | criminal (analog parent charged) | religion, protected-complexes |
+| pla-058 | [RFRA commercial overlay](rfra-commercial-overlay.md) | RFRA heightens the test; closely held for-profits count as persons | civil, regulatory | civil (*Smith*-style general rule) | religion, protected-complexes, commercial |
+| pla-059 | [RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md) | Land-use and property-tax track for religious landowners | civil, administrative, regulatory | administrative (ordinary zoning and millage) | religion, protected-complexes, land-use |
+| pla-060 | [Faith-based public money](faith-based-public-money.md) | Designated religious providers take social-service and school money | administrative, contractual, civil | civil (no-aid / secular-only stream) | religion, protected-complexes, speech |
 
 ---
 
@@ -72,6 +84,7 @@ Entries do not carry High Law / Low Law scores. Each page's **Framework notes** 
 - [pla-011 Non-competes and trade secrets](noncompete-trade-secrets.md)
 - [pla-043 Funding-conditioned health mandates](funding-conditioned-mandates.md)
 - [pla-044 Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md)
+- [pla-054 Ministerial exception](ministerial-exception.md)
 
 ### Property (including personal property and commercial)
 
@@ -135,6 +148,9 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-031 GENIUS Act permitted issuance](genius-act-permitted-issuance.md)
 - [pla-042 Covered-person liability shields](covered-person-liability-shields.md)
 - [pla-048 Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md)
+- [pla-052 Church tax opacity](church-tax-opacity.md)
+- [pla-053 Clergy tax preferences](clergy-tax-preferences.md)
+- [pla-056 Religious mass-tort bankruptcy](religious-mass-tort-bankruptcy.md)
 
 ### Land use and regulatory control
 
@@ -154,6 +170,8 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-036 Land grants and tariff incidence](land-grants-and-tariff-incidence.md)
 - [pla-037 Constitutional purity prohibition](constitutional-purity-prohibition.md)
 - [pla-038 Tax stamp and schedule as crime](tax-schedule-as-crime.md)
+- [pla-050 Disfavored-practice criminalization](disfavored-practice-criminalization.md)
+- [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
 
 ### Platforms and speech
 
@@ -162,6 +180,8 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-014 CFAA and terms of service](cfaa-tos-authorized-access.md)
 - [pla-017 AI corpus and evaluation enclosure](ai-corpus-and-evaluation-enclosure.md)
 - [pla-047 Government-platform speech routing](government-platform-speech.md)
+- [pla-051 Contracted Native conversion](contracted-native-conversion.md)
+- [pla-060 Faith-based public money](faith-based-public-money.md)
 
 ### Policing revenue
 
@@ -185,6 +205,35 @@ Compulsion for the outside, immunity and exemption for designated institutions. 
 - [pla-046 Captured evidence and associations](captured-evidence-associations.md)
 - [pla-047 Government-platform speech routing](government-platform-speech.md)
 - [pla-048 Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md)
+- [pla-049 Church autonomy and ecclesiastical abstention](church-autonomy-ecclesiastical-abstention.md)
+- [pla-050 Disfavored-practice criminalization](disfavored-practice-criminalization.md)
+- [pla-051 Contracted Native conversion](contracted-native-conversion.md)
+- [pla-052 Church tax opacity](church-tax-opacity.md)
+- [pla-053 Clergy tax preferences](clergy-tax-preferences.md)
+- [pla-054 Ministerial exception](ministerial-exception.md)
+- [pla-055 Clergy privilege and discovery walls](clergy-privilege-discovery-walls.md)
+- [pla-056 Religious mass-tort bankruptcy](religious-mass-tort-bankruptcy.md)
+- [pla-057 Faith-healing child exemptions](faith-healing-child-exemptions.md)
+- [pla-058 RFRA commercial overlay](rfra-commercial-overlay.md)
+- [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
+- [pla-060 Faith-based public money](faith-based-public-money.md)
+
+### Religion (institutional)
+
+Belief, expression, and receipt were the original objects. The inversion protects the franchise of being a favored religious institution.
+
+- [pla-049 Church autonomy and ecclesiastical abstention](church-autonomy-ecclesiastical-abstention.md)
+- [pla-050 Disfavored-practice criminalization](disfavored-practice-criminalization.md)
+- [pla-051 Contracted Native conversion](contracted-native-conversion.md)
+- [pla-052 Church tax opacity](church-tax-opacity.md)
+- [pla-053 Clergy tax preferences](clergy-tax-preferences.md)
+- [pla-054 Ministerial exception](ministerial-exception.md)
+- [pla-055 Clergy privilege and discovery walls](clergy-privilege-discovery-walls.md)
+- [pla-056 Religious mass-tort bankruptcy](religious-mass-tort-bankruptcy.md)
+- [pla-057 Faith-healing child exemptions](faith-healing-child-exemptions.md)
+- [pla-058 RFRA commercial overlay](rfra-commercial-overlay.md)
+- [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
+- [pla-060 Faith-based public money](faith-based-public-money.md)
 
 ### Monetary
 
@@ -273,6 +322,18 @@ Legal standing between people and land, minerals, and water.
 
 - [pla-019](bayh-dole-exclusive-license.md), [pla-046](captured-evidence-associations.md), [pla-048](designated-cost-plus-contractor.md)
 
+**Church autonomy and discovery walls.** Internal discipline is nonjusticiable; personnel files stay off the docket.
+
+- [pla-049](church-autonomy-ecclesiastical-abstention.md), [pla-054](ministerial-exception.md), [pla-055](clergy-privilege-discovery-walls.md), [pla-056](religious-mass-tort-bankruptcy.md)
+
+**Unfavored practice as crime; favored institution as franchise.**
+
+- [pla-050](disfavored-practice-criminalization.md), [pla-051](contracted-native-conversion.md), [pla-057](faith-healing-child-exemptions.md), [pla-058](rfra-commercial-overlay.md)
+
+**Church tax, land, and public-money franchise.**
+
+- [pla-052](church-tax-opacity.md), [pla-053](clergy-tax-preferences.md), [pla-059](rluipa-property-tax-franchise.md), [pla-060](faith-based-public-money.md)
+
 ---
 
 ## Cross-cutting patterns
@@ -305,7 +366,9 @@ Legal standing between people and land, minerals, and water.
 
 **Official overlay on a private gate.** Government pressure plus platform ToS and § 230 closes dissent without a merits First Amendment judgment. See [pla-012](platform-safe-harbors.md), [pla-047](government-platform-speech.md). Rules 8, 20, 40.
 
-**Designated purse.** Cost-plus, other-transaction, and exclusive public-to-private residuals put appropriated funds at a named desk. See [pla-019](bayh-dole-exclusive-license.md), [pla-029](fiat-first-receiver-impulse.md), [pla-048](designated-cost-plus-contractor.md). Rules 1, 33, 42.
+**Designated purse.** Cost-plus, other-transaction, and exclusive public-to-private residuals put appropriated funds at a named desk. See [pla-019](bayh-dole-exclusive-license.md), [pla-029](fiat-first-receiver-impulse.md), [pla-048](designated-cost-plus-contractor.md), [pla-060](faith-based-public-money.md). Rules 1, 33, 42.
+
+**Belief and speech vs the entity franchise.** Original religious liberty protected belief, expression, and receipt. The inversion protects tax, land, labor, discovery, and public money for the institution. See [pla-049](church-autonomy-ecclesiastical-abstention.md) through [pla-060](faith-based-public-money.md), especially [pla-050](disfavored-practice-criminalization.md) vs [pla-058](rfra-commercial-overlay.md). Rules 1, 6, 18, 22, 36.
 
 ---
 
@@ -314,9 +377,9 @@ Legal standing between people and land, minerals, and water.
 Not yet written. Use the [inclusion rule](README.md#inclusion-rule) if adding them:
 
 - Housing (eviction process, source-of-income rules, habitability enforcement)
-- Healthcare billing as **price/resources** (distinct from [pla-022](gene-method-patents.md) technique-control)
+- Healthcare billing as **price/resources** (distinct from [pla-022](gene-method-patents.md) technique-control; religious hospitals appear in [pla-060](faith-based-public-money.md) only as the public-money franchise)
 - Environmental permitting (incumbent plants vs. new facilities)
-- Education credentialing (accreditation and licensing as entry barriers)
+- Education credentialing (accreditation and licensing as entry barriers; religious schools appear here only as [pla-054](ministerial-exception.md) and [pla-060](faith-based-public-money.md))
 
 ---
 

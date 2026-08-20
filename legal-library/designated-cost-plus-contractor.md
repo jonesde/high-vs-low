@@ -19,6 +19,8 @@ related:
   - fiat-first-receiver-impulse
   - captured-evidence-associations
   - white-collar-civil-routing
+  - contracted-native-conversion
+  - faith-based-public-money
 updated: 2026-08-20
 ---
 
@@ -86,6 +88,8 @@ protected-complexes, capital-access
 - [Fiat first-receiver impulse](fiat-first-receiver-impulse.md) (pla-029) — another designated desk for new purchasing power.
 - [Captured evidence and professional associations](captured-evidence-associations.md) (pla-046) — who mints the record the designated product sits on.
 - [White-collar civil routing](white-collar-civil-routing.md) (pla-010) — designation as the purse, civil routing as the residual.
+- [Contracted Native conversion](contracted-native-conversion.md) (pla-051) — churches as the designated shop for children's custody.
+- [Faith-based public money](faith-based-public-money.md) (pla-060) — another designated desk for appropriated funds.
 
 ## Expansion notes
 

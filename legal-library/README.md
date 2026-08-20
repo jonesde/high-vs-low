@@ -76,7 +76,7 @@ updated: 2026-08-20
 
 **`domains`** (one or more):
 
-`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `protected-complexes`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
+`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `protected-complexes`, `religion`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
 
 **`routing` values** (under `enabled` and `closed`):
 
@@ -224,6 +224,25 @@ Compulsion for the outside, immunity and exemption for designated institutions. 
 | pla-047 | [government-platform-speech.md](government-platform-speech.md) | Official pressure plus platform rules close dissent on the complex's product | First Amendment jawboning; pla-012 stack | protected-complexes, speech, platforms |
 | pla-048 | [designated-cost-plus-contractor.md](designated-cost-plus-contractor.md) | Designated contractors take cost-plus or OTA work with limited bid competition | BARDA/OWS; 10 U.S.C. OTA; FAR cost-reimbursement | protected-complexes, capital-access |
 
-Adjacent domains still open: housing, healthcare billing as price, environmental permitting, education credentialing.
+## Fifth wave: institutional religion
+
+Original religious liberty, with speech, protected **belief, expression, and receipt**. A legal barrier to any of those is a closed analog. The inversion: those protections attach to **favored institutions** (tax, land, labor, discovery, bankruptcy, public money) while the analog person — member, employee, child, dissenting believer, unfavored sect, ordinary charity — loses the suit, the filing, or the practice. Not a verdict that religion is harmful. Named groups are case illustrations. See [index.md](index.md).
+
+| ID | File | Outcome | Primary instruments | Domains |
+| -- | ---- | ------- | ------------------- | ------- |
+| pla-049 | [church-autonomy-ecclesiastical-abstention.md](church-autonomy-ecclesiastical-abstention.md) | Courts treat internal church discipline as nonjusticiable | *Watson v. Jones*; *Kedroff*; *Serbian Eastern Orthodox* | religion, protected-complexes |
+| pla-050 | [disfavored-practice-criminalization.md](disfavored-practice-criminalization.md) | Unfavored sect's analog practice is a crime or costs a benefit | *Reynolds*; Edmunds-Tucker; *Smith* | religion, protected-complexes, regulatory-control |
+| pla-051 | [contracted-native-conversion.md](contracted-native-conversion.md) | Federal money and custody to churches to interrupt Native belief and language | Grant Peace Policy; BIA contract schools; Interior boarding-school reports | religion, protected-complexes, speech |
+| pla-052 | [church-tax-opacity.md](church-tax-opacity.md) | Automatic 501(c)(3), no Form 990, special IRS inquiry wall | 26 U.S.C. §§ 508(c)(1)(A), 6033(a)(3)(A), 7611 | religion, protected-complexes, financial |
+| pla-053 | [clergy-tax-preferences.md](clergy-tax-preferences.md) | Minister housing excluded from income; analog worker is taxed | 26 U.S.C. § 107 | religion, protected-complexes, financial |
+| pla-054 | [ministerial-exception.md](ministerial-exception.md) | "Minister" employees cannot maintain Title VII or ADA claims | *Hosanna-Tabor*; *Our Lady of Guadalupe* | religion, protected-complexes, labor |
+| pla-055 | [clergy-privilege-discovery-walls.md](clergy-privilege-discovery-walls.md) | Privilege and autonomy keep personnel files out of discovery | State clergy-penitent codes; First Amendment autonomy | religion, protected-complexes |
+| pla-056 | [religious-mass-tort-bankruptcy.md](religious-mass-tort-bankruptcy.md) | Dioceses and similar entities route mass torts into Chapter 11 | 11 U.S.C. ch. 11; charitable-immunity remnants | religion, protected-complexes, financial |
+| pla-057 | [faith-healing-child-exemptions.md](faith-healing-child-exemptions.md) | Faith-based medical neglect exempt from ordinary child-protection crime | State faith-healing exemptions; *Yoder* overlay | religion, protected-complexes |
+| pla-058 | [rfra-commercial-overlay.md](rfra-commercial-overlay.md) | RFRA heightens the test; closely held for-profits count as persons | RFRA; *Boerne*; *Hobby Lobby* | religion, protected-complexes, commercial |
+| pla-059 | [rluipa-property-tax-franchise.md](rluipa-property-tax-franchise.md) | Land-use and property-tax track for religious landowners | RLUIPA; state worship exemptions | religion, protected-complexes, land-use |
+| pla-060 | [faith-based-public-money.md](faith-based-public-money.md) | Designated religious providers take social-service and school money | Charitable Choice; *Trinity Lutheran*; *Espinoza*; *Carson* | religion, protected-complexes, speech |
+
+Adjacent domains still open: housing, healthcare billing as price, environmental permitting, education credentialing (religious schools appear here only as ministerial-exception and public-money tracks).
 
 To add an entry, follow the inclusion rule and this spec, then add it to [index.md](index.md).

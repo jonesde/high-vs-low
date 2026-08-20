@@ -18,6 +18,7 @@ related:
   - funding-conditioned-mandates
   - licensing-monopoly-on-the-analog
   - militarized-local-enforcement
+  - disfavored-practice-criminalization
 updated: 2026-08-20
 ---
 
@@ -74,6 +75,7 @@ protected-complexes, regulatory-control
 - [Funding-conditioned mandates](funding-conditioned-mandates.md) (pla-043) — 21-year drinking age as a later federal purity condition on highway money.
 - [Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md) (pla-044) — who may still handle the substance.
 - [Militarized local enforcement](militarized-local-enforcement.md) (pla-040) — the enforcement machine after repeal, rebuilt for drugs.
+- [Disfavored-practice criminalization](disfavored-practice-criminalization.md) (pla-050) — sacramental exceptions for the designated; crime for the unfavored analog.
 
 ## Expansion notes
 

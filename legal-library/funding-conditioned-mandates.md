@@ -17,6 +17,8 @@ related:
   - constitutional-purity-prohibition
   - government-platform-speech
   - qualified-immunity
+  - faith-based-public-money
+  - contracted-native-conversion
 updated: 2026-08-20
 ---
 
@@ -78,6 +80,8 @@ protected-complexes, labor
 - [Constitutional purity prohibition](constitutional-purity-prohibition.md) (pla-037) — direct criminal purity; this page is the purse.
 - [Government-platform speech](government-platform-speech.md) (pla-047) — the narrative that made "no" look unsayable.
 - [Qualified immunity](qualified-immunity.md) (pla-045) — officials who enforce the condition.
+- [Faith-based public money](faith-based-public-money.md) (pla-060) — the purse as a franchise of the provider rather than compulsion of the recipient.
+- [Contracted Native conversion](contracted-native-conversion.md) (pla-051) — federal money to churches as compulsion of children's belief.
 
 ## Expansion notes
 
