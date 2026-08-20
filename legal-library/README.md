@@ -25,6 +25,8 @@ Typical rule clusters for this library:
 | Legalism and punishment | 21, 22, 25, 28 | Compulsion beyond preservation; law as idol; punitive vs restorative justice; fairness as equal suffering for the lower-status party only |
 | Artificial process | 38, 40 | Man-made, status-dependent consequences; procedural safeguards that function as loopholes |
 | Enclosure and centralization | 6, 8, 33, 36, 42 | Restricted autonomy; "no" with cost; ownership over stewardship; sacrifice of the least; centralized proprietary control |
+| First-receiver and interposition | 15, 38, 42 | New purchasing power or a title wedge at a designated desk; street lag; man-made distribution |
+| Franchise inversion | 18, 22, 33 | Belief, aid, or technique recoded as an institution's owned license |
 
 The [relational analysis skill](../relational/SKILL.md) is a complementary diagnostic: it asks whether a mechanism keeps pairwise relations mutual and generative or converts them into extraction, exclusion, or hierarchy. These entries supply the legal mechanisms that skill would classify.
 
@@ -35,6 +37,23 @@ The [relational analysis skill](../relational/SKILL.md) is a complementary diagn
 This library is documentation of observed legal patterns. It is not legal advice, not a determination of liability in any dispute, and not a claim that every cited actor is guilty of a crime. Facts in entries can be incomplete or disputed. Read them as documented routing patterns, not as verdicts.
 
 The parent repository is released under [CC0 1.0](../LICENSE). These files inherit that dedication.
+
+---
+
+## Library map
+
+Six arcs, pla-001 through pla-072. Full catalog and domain browse: [index.md](index.md).
+
+| Arc | IDs | Inversion |
+| --- | --- | --------- |
+| Track-switching | pla-001–012 | Same taking; civil for the institution, crime for the analog person |
+| Technique enclosure | pla-013–024 | You have the tools; the license or secret is the wall |
+| Earth and money | pla-025–036 | First-receiver issue and title sit between people and land, minerals, and water |
+| Protected complexes | pla-037–048 | Compulsion outside, immunity inside (purity, Drug War, health/MIC) |
+| Institutional religion | pla-049–060 | Belief, expression, and receipt vs the church-as-franchise |
+| Institutional charity | pla-061–072 | Local aid vs deducted corpus; controllers act through the 501(c)(3) |
+
+Waves 4–6 share the `protected-complexes` domain token. Browse **Protected complexes** for pla-037–048 only; religion and charity have their own headings.
 
 ---
 
@@ -207,7 +226,7 @@ Legal standing between mortal people and the earth's means of staying alive — 
 
 ## Fourth wave: protected complexes
 
-Compulsion for the outside, immunity and exemption for designated institutions. The spine is legalistic purity control — alcohol prohibition, then the Drug War, then health-emergency product shields and mandates — applied as **enabler types** across overlapping US industrial complexes (health, carceral, military, intelligence, professional). COVID entries cite PREP, EUA, mandates, and speech routing. They do not decide virology.
+Compulsion for the outside, immunity and exemption for designated institutions. The spine is legalistic purity control — alcohol prohibition, then the Drug War, then health-emergency product shields and mandates — applied as **enabler types** across overlapping US industrial complexes (health, carceral, military, intelligence, professional). COVID entries cite PREP, EUA, mandates, and speech routing. They do not decide virology. Institutional religion and institutional charity (waves 5–6) reuse this token; they are listed separately.
 
 | ID | File | Outcome | Primary instruments | Domains |
 | -- | ---- | ------- | ------------------- | ------- |

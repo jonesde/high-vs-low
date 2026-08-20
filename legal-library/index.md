@@ -1,10 +1,23 @@
 # Preferential Legal Application — Wiki Index
 
-This directory is a knowledge base of **preferential legal application**: outcomes the formal legal system enables for some parties while closing or criminalizing analogous conduct for others.
+This directory is a knowledge base of **preferential legal application**: outcomes the formal legal system enables for some parties while closing or criminalizing analogous conduct for others. This page is for browsing. Entries do not carry High Law / Low Law scores.
 
-The spec, inclusion rule, and document template are in [README.md](README.md). Distinction-rule language is in [SKILL.md](../SKILL.md). This page is for browsing.
+## Library map
 
-Entries do not carry High Law / Low Law scores. Each page's **Framework notes** name relevant distinction rules. They do not run the evaluation protocol.
+Six arcs, pla-001 through pla-072. Each inversion is the same shape: an analog course of conduct is open for a designated party and closed for another.
+
+| Arc | IDs | Inversion |
+| --- | --- | --------- |
+| Track-switching | [001–012](#catalog) | Same taking; civil for the institution, crime for the analog person |
+| Technique enclosure | 013–024 | You have the tools; the license or secret is the wall |
+| Earth and money | 025–036 | First-receiver issue and title sit between people and land, minerals, and water |
+| Protected complexes | 037–048 | Compulsion outside, immunity inside (purity, Drug War, health/MIC) |
+| Institutional religion | 049–060 | Belief, expression, and receipt vs the church-as-franchise |
+| Institutional charity | 061–072 | Local aid vs deducted corpus; controllers act through the 501(c)(3) |
+
+Through-lines across arcs: first-receiver desks ([pla-029](fiat-first-receiver-impulse.md), [pla-036](land-grants-and-tariff-incidence.md), [pla-048](designated-cost-plus-contractor.md), [pla-061](charitable-deduction-first-receiver.md)); license as wall ([pla-016](technical-data-export-controls.md), [pla-044](licensing-monopoly-on-the-analog.md), [pla-062](501c3-franchise-vs-mutual-aid.md)); purse as compulsion ([pla-043](funding-conditioned-mandates.md), [pla-051](contracted-native-conversion.md), [pla-060](faith-based-public-money.md)); books in the dark ([pla-052](church-tax-opacity.md), [pla-068](donor-advised-funds-no-payout.md)). Cleveland's 1913 chest, 1914 community trust, and 1913 Fed sit in the same centralizing decade.
+
+Spec and inclusion rule: [README.md](README.md). Distinction rules: [SKILL.md](../SKILL.md).
 
 ---
 
@@ -213,7 +226,7 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 
 ### Protected complexes
 
-Compulsion for the outside, immunity and exemption for designated institutions. Health, carceral, military, intelligence, and professional complexes share enabler types.
+Compulsion for the outside, immunity and exemption for designated institutions. This heading is the **industrial-complex wave** (health, carceral, military, intelligence, professional): pla-037–048. Institutional religion and institutional charity also tag `protected-complexes`; browse them under those headings.
 
 - [pla-037 Constitutional purity prohibition](constitutional-purity-prohibition.md)
 - [pla-038 Tax stamp and schedule as crime](tax-schedule-as-crime.md)
@@ -227,18 +240,6 @@ Compulsion for the outside, immunity and exemption for designated institutions. 
 - [pla-046 Captured evidence and associations](captured-evidence-associations.md)
 - [pla-047 Government-platform speech routing](government-platform-speech.md)
 - [pla-048 Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md)
-- [pla-049 Church autonomy and ecclesiastical abstention](church-autonomy-ecclesiastical-abstention.md)
-- [pla-050 Disfavored-practice criminalization](disfavored-practice-criminalization.md)
-- [pla-051 Contracted Native conversion](contracted-native-conversion.md)
-- [pla-052 Church tax opacity](church-tax-opacity.md)
-- [pla-053 Clergy tax preferences](clergy-tax-preferences.md)
-- [pla-054 Ministerial exception](ministerial-exception.md)
-- [pla-055 Clergy privilege and discovery walls](clergy-privilege-discovery-walls.md)
-- [pla-056 Religious mass-tort bankruptcy](religious-mass-tort-bankruptcy.md)
-- [pla-057 Faith-healing child exemptions](faith-healing-child-exemptions.md)
-- [pla-058 RFRA commercial overlay](rfra-commercial-overlay.md)
-- [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
-- [pla-060 Faith-based public money](faith-based-public-money.md)
 
 ### Religion (institutional)
 
@@ -256,18 +257,6 @@ Belief, expression, and receipt were the original objects. The inversion protect
 - [pla-058 RFRA commercial overlay](rfra-commercial-overlay.md)
 - [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
 - [pla-060 Faith-based public money](faith-based-public-money.md)
-- [pla-061 Charitable deduction as first-receiver](charitable-deduction-first-receiver.md)
-- [pla-062 501(c)(3) franchise vs mutual aid](501c3-franchise-vs-mutual-aid.md)
-- [pla-063 Cy-pres institutional preservation](cypres-institutional-preservation.md)
-- [pla-064 AG-only charitable standing](ag-only-charitable-standing.md)
-- [pla-065 Federated workplace capture](federated-workplace-capture.md)
-- [pla-066 Community foundation as bank trustee](community-foundation-bank-trustee.md)
-- [pla-067 Private foundation perpetual control](private-foundation-perpetual-control.md)
-- [pla-068 Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md)
-- [pla-069 UPMIFA endowment lock](upmifa-endowment-lock.md)
-- [pla-070 Operating charity as capital pool](operating-charity-capital-pool.md)
-- [pla-071 Supporting-org control without ownership](supporting-org-control-without-ownership.md)
-- [pla-072 Scientific charity means-test gate](scientific-charity-means-test-gate.md)
 
 ### Charity (institutional)
 
@@ -349,9 +338,9 @@ Legal standing between people and land, minerals, and water.
 
 - [pla-004](patent-assertion-entities.md), [pla-008](secured-credit-foreclosure.md)
 
-**First-receiver money issue.** New balances or a licensed ticket enter at a designated counterparty; street prices and wages lag.
+**First-receiver money issue.** New balances, a licensed ticket, or a tax expenditure enter at a designated counterparty; street prices, wages, or the analog beneficiary lag.
 
-- [pla-025](national-banking-reserve-pyramid.md), [pla-026](federal-reserve-act-1913.md), [pla-027](legal-tender-forced-acceptance.md), [pla-029](fiat-first-receiver-impulse.md), [pla-030](deposit-insurance-emergency-liquidity.md), [pla-031](genius-act-permitted-issuance.md)
+- [pla-025](national-banking-reserve-pyramid.md), [pla-026](federal-reserve-act-1913.md), [pla-027](legal-tender-forced-acceptance.md), [pla-029](fiat-first-receiver-impulse.md), [pla-030](deposit-insurance-emergency-liquidity.md), [pla-031](genius-act-permitted-issuance.md), [pla-061](charitable-deduction-first-receiver.md)
 
 **Standing between people and the earth.** Title, lease, priority date, grant, condemnation, or a tariff wedge.
 
@@ -373,25 +362,11 @@ Legal standing between people and land, minerals, and water.
 
 - [pla-019](bayh-dole-exclusive-license.md), [pla-046](captured-evidence-associations.md), [pla-048](designated-cost-plus-contractor.md)
 
-**Church autonomy and discovery walls.** Internal discipline is nonjusticiable; personnel files stay off the docket.
+**Operating-charity capital and control without ownership.**
 
-- [pla-049](church-autonomy-ecclesiastical-abstention.md), [pla-054](ministerial-exception.md), [pla-055](clergy-privilege-discovery-walls.md), [pla-056](religious-mass-tort-bankruptcy.md)
+- [pla-070](operating-charity-capital-pool.md), [pla-071](supporting-org-control-without-ownership.md)
 
-**Unfavored practice as crime; favored institution as franchise.**
-
-- [pla-050](disfavored-practice-criminalization.md), [pla-051](contracted-native-conversion.md), [pla-057](faith-healing-child-exemptions.md), [pla-058](rfra-commercial-overlay.md)
-
-**Church tax, land, and public-money franchise.**
-
-- [pla-052](church-tax-opacity.md), [pla-053](clergy-tax-preferences.md), [pla-059](rluipa-property-tax-franchise.md), [pla-060](faith-based-public-money.md)
-
-**Deducted capital that need not reach a person.** Immediate § 170; cy-près and AG standing; DAF/endowment/foundation corpus.
-
-- [pla-061](charitable-deduction-first-receiver.md), [pla-063](cypres-institutional-preservation.md), [pla-064](ag-only-charitable-standing.md), [pla-067](private-foundation-perpetual-control.md), [pla-068](donor-advised-funds-no-payout.md), [pla-069](upmifa-endowment-lock.md)
-
-**Federated capture and scientific gate.** Workplace card and deserving-poor file.
-
-- [pla-065](federated-workplace-capture.md), [pla-066](community-foundation-bank-trustee.md), [pla-072](scientific-charity-means-test-gate.md)
+Religion and charity routing in full is under [Religion (institutional)](#religion-institutional) and [Charity (institutional)](#charity-institutional). Cross-cutting names the inversions.
 
 ---
 
@@ -409,7 +384,7 @@ Legal standing between people and land, minerals, and water.
 
 **Open-looking reservation.** Source or weights are visible; competing production is not granted. See [pla-024](constrained-open-licenses.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md). Rules 22, 33, 42.
 
-**First-receiver impulse vs. street lag.** New purchasing power (or a price wedge) hits a designated class before wages and consumer prices adjust. See [pla-029](fiat-first-receiver-impulse.md), [pla-026](federal-reserve-act-1913.md), [pla-031](genius-act-permitted-issuance.md), [pla-036](land-grants-and-tariff-incidence.md). Rules 1, 15, 38, 42.
+**First-receiver impulse vs. street lag.** New purchasing power (or a price wedge or a tax expenditure) hits a designated class before wages, consumer prices, or the analog beneficiary adjust. See [pla-029](fiat-first-receiver-impulse.md), [pla-026](federal-reserve-act-1913.md), [pla-031](genius-act-permitted-issuance.md), [pla-036](land-grants-and-tariff-incidence.md), [pla-061](charitable-deduction-first-receiver.md). Rules 1, 15, 38, 42.
 
 **Interposition between person and earth.** A statute, lease, priority, grant, or condemnation sits between a mortal need and the resource. See [pla-032](hardrock-mining-patent-1872.md), [pla-033](public-land-mineral-leasing.md), [pla-034](water-prior-appropriation-reclamation.md), [pla-035](eminent-domain-to-consolidators.md), [pla-008](secured-credit-foreclosure.md) (downstream collection). Rules 7, 8, 33.
 
