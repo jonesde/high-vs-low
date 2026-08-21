@@ -20,6 +20,7 @@ related:
   - digital-license-not-sale
   - security-research-knowledge-ban
   - historical-technique-privilege
+  - building-code-hud-manufactured-floor
 updated: 2026-08-20
 ---
 
@@ -97,6 +98,7 @@ intellectual-property, personal-property, technology-access
 - [Digital license-not-sale](digital-license-not-sale.md) (pla-013) — the same post-transfer control, aimed at the copy rather than the spare part.
 - [Security research knowledge ban](security-research-knowledge-ban.md) (pla-015) — § 1201 trafficking in how the lock works, not just using a spare part.
 - [Historical technique privilege](historical-technique-privilege.md) (pla-021) — Carterfone-era attachment bans as the analog network version of parts-pairing.
+- [Building code and HUD manufactured-housing floor](building-code-hud-manufactured-floor.md) (pla-075) — occupancy of a dwelling you have the skill to raise.
 
 ## Expansion notes
 

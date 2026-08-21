@@ -17,6 +17,8 @@ related:
   - clergy-privilege-discovery-walls
   - contracted-native-conversion
   - ministerial-exception
+  - homeschool-umbrella-capture
+  - compulsory-attendance
 updated: 2026-08-20
 ---
 
@@ -80,6 +82,8 @@ religion, protected-complexes
 - [Clergy privilege and discovery walls](clergy-privilege-discovery-walls.md) (pla-055) — child-harm paper kept off the docket.
 - [Contracted Native conversion](contracted-native-conversion.md) (pla-051) — the state compelling a child's belief; this page is the state declining to protect a child's body.
 - [Ministerial exception](ministerial-exception.md) (pla-054) — another status that closes a civil-rights statute.
+- [Homeschool umbrella capture](homeschool-umbrella-capture.md) (pla-082) — *Yoder* as educational overlay, not a duplicate.
+- [Compulsory attendance](compulsory-attendance.md) (pla-079) — the day-count *Yoder* cracks after eighth grade.
 
 ## Expansion notes
 

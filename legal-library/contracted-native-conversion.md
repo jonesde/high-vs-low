@@ -17,6 +17,8 @@ related:
   - funding-conditioned-mandates
   - disfavored-practice-criminalization
   - faith-based-public-money
+  - compulsory-attendance
+  - tax-funded-exclusive-school
 updated: 2026-08-20
 ---
 
@@ -75,6 +77,8 @@ religion, protected-complexes, speech
 - [Funding-conditioned mandates](funding-conditioned-mandates.md) (pla-043) — the purse as compulsion.
 - [Disfavored-practice criminalization](disfavored-practice-criminalization.md) (pla-050) — Native ritual as crime in the same era (*Lyng*, later *Smith*).
 - [Faith-based public money](faith-based-public-money.md) (pla-060) — the later "equal participation" purse.
+- [Compulsory attendance](compulsory-attendance.md) (pla-079) — general compulsory days; this page is the custody extreme.
+- [Tax-funded exclusive school](tax-funded-exclusive-school.md) (pla-080) — the default purse.
 
 ## Expansion notes
 

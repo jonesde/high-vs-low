@@ -17,6 +17,8 @@ related:
   - private-foundation-perpetual-control
   - donor-advised-funds-no-payout
   - designated-cost-plus-contractor
+  - church-tax-opacity
+  - operating-charity-capital-pool
 updated: 2026-08-20
 ---
 
@@ -55,7 +57,13 @@ Enabled: SO public-charity status; Type I–III relationships; charitable LLC be
 
 ## Application Evidence
 
-§ 509(a)(3)'s text is the mechanism. IRS Type III regulations after 2006 are the tightening — still a supporting org, not ownership. Syndicated conservation-easement listed-transaction treatment (IRS Notice 2017-10 and later litigation) is application of a deduction vehicle the Service later called abusive. Scope-label notices and cases; do not treat every easement as a syndicate.
+§ 509(a)(3)'s text is the mechanism. IRS Type III regulations after 2006 are the tightening — still a supporting org, not ownership.
+
+**Hospital-system parent (non-LDS).** Large nonprofit hospital systems commonly sit a **parent 501(c)(3)** — often a § 509(a)(3) supporting organization — over operating hospitals that file their own 990s and Schedule H. The analog founder of a taxable chain would be on a 10-K. Cite a named system's current 990 for the parent/support relationship rather than inventing a Type III census. That is control without the principal's name on a taxable balance sheet, using the statutory SO vehicle.
+
+**Church investment stack (same shape, different vehicle).** Ensign Peak Advisors is an investment manager for the Church of Jesus Christ of Latter-day Saints, not a claim that it is a Type III supporting organization. Thirteen shell LLCs filed 13Fs while Ensign Peak kept discretion (SEC 2023-35; [pla-052](church-tax-opacity.md)). Face versus principal: the church is the face; the LLC stack steered the corpus without a church 990. The analog family office in a private foundation files 990-PF ([pla-067](private-foundation-perpetual-control.md)).
+
+Syndicated conservation-easement listed-transaction treatment (IRS Notice 2017-10 and later litigation) is application of a deduction vehicle the Service later called abusive. Scope-label notices and cases; do not treat every easement as a syndicate.
 
 ## Domain Tags
 
@@ -67,6 +75,8 @@ charity, protected-complexes, commercial
 2. 26 U.S.C. § 4943(f). <https://www.law.cornell.edu/uscode/text/26/4943>
 3. Pension Protection Act of 2006, Pub. L. 109-280.
 4. 26 U.S.C. § 170(h) (qualified conservation contribution).
+5. IRS Notice 2017-10 (syndicated conservation easements as listed transactions).
+6. SEC Release No. 2023-35 (Ensign Peak LLC stack) — control-without-public-attribution using church opacity, not SO status; see [pla-052](church-tax-opacity.md).
 
 ## Related Entries
 
@@ -74,6 +84,8 @@ charity, protected-complexes, commercial
 - [Private foundation perpetual control](private-foundation-perpetual-control.md) (pla-067) — the stricter cousin.
 - [Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md) (pla-068) — PPA's other control vehicle.
 - [Designated cost-plus contractor](designated-cost-plus-contractor.md) (pla-048) — another face that is not the principal.
+- [Church tax opacity](church-tax-opacity.md) (pla-052) — church-status darkness as a different control vehicle.
+- [Operating charity as capital pool](operating-charity-capital-pool.md) (pla-070) — hospital systems that use SO parents.
 
 ## Expansion notes
 

@@ -60,6 +60,8 @@ Criminal prosecution of an officer remains theoretically open. It is a different
 
 *Harlow*'s holding is the mechanism. *Pearson* is Drug War application: Central Utah Narcotics Task Force entry, immunity first.
 
+**Academic through-line, not a holding.** Dallin H. Oaks, *Studying the Exclusionary Rule in Search and Seizure*, 37 U. Chi. L. Rev. 665 (1970) — then University of Chicago law professor (1961–1971; later BYU president; later Church of Jesus Christ of Latter-day Saints president as of October 2025) — argued abolishing the exclusionary rule in favor of a **tort substitute**. *United States v. Janis*, 428 U.S. 433, 450 n.22 (1976), called it the salient and most comprehensive study. The later qualified-immunity cases did a related job by a different door: even when the search is unconstitutional, damages often die unless a prior case is a near clone. *Pearson* is the holding; Oaks is the 1970 argument that narcotics-concentrated searches should not trigger exclusion. Do not claim the article founded qualified immunity or the Drug War. Raid logistics: [pla-040](militarized-local-enforcement.md).
+
 Joanna Schwartz, *Police Indemnification*, 89 N.Y.U. L. Rev. 885 (2014): in 2006–2011, officers in 44 of the 70 largest agencies paid **0.02%** of dollars awarded in police-misconduct suits; governments paid the rest. Scope: those agencies, those years, indemnification — not a national grant-rate. Reuters (2014–2018 excessive-force QI rulings in California and Texas district courts): Texas granted immunity in 59% of the sampled cases, California in 34%. Scope: two states, excessive force, those years.
 
 The Institute for Justice *Unaccountable* appellate dataset is the large circuit-court collection. Cite it for **who is a defendant** (not only police) rather than a single invented national win-rate.
@@ -75,6 +77,8 @@ protected-complexes
 3. *Pearson v. Callahan*, 555 U.S. 223 (2009).
 4. Joanna C. Schwartz, *Police Indemnification*, 89 N.Y.U. L. Rev. 885 (2014); *How Qualified Immunity Fails*, 127 Yale L.J. 2 (2017).
 5. Institute for Justice, *Unaccountable* (qualified-immunity appeals). <https://ij.org/report/unaccountable/>
+6. Dallin H. Oaks, *Studying the Exclusionary Rule in Search and Seizure*, 37 U. Chi. L. Rev. 665 (1970).
+7. *United States v. Janis*, 428 U.S. 433, 450 n.22 (1976).
 
 ## Related Entries
 

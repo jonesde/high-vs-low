@@ -21,6 +21,7 @@ related:
   - designated-cost-plus-contractor
   - land-grants-and-tariff-incidence
   - charitable-deduction-first-receiver
+  - housing-price-wage-wedge
 updated: 2026-08-20
 ---
 
@@ -90,6 +91,7 @@ monetary, capital-access, financial
 - [GENIUS Act permitted issuance](genius-act-permitted-issuance.md) (pla-031) — a new licensed ticket that must hold Treasuries.
 - [Land grants and tariff incidence](land-grants-and-tariff-incidence.md) (pla-036) — a non-money first-receiver wedge on real goods.
 - [Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md) (pla-048) — appropriated dollars at a named contractor desk.
+- [Housing price-to-wage wedge](housing-price-wage-wedge.md) (pla-073) — the household asset that re-prices after the issue.
 - [Charitable deduction as first-receiver](charitable-deduction-first-receiver.md) (pla-061) — forgone tax at the qualifying-org desk.
 
 ## Expansion notes

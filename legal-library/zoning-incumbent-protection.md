@@ -18,6 +18,8 @@ related:
   - noncompete-trade-secrets
   - platform-safe-harbors
   - rluipa-property-tax-franchise
+  - exclusionary-zoning-housing-wall
+  - building-code-hud-manufactured-floor
 updated: 2026-08-20
 ---
 
@@ -87,6 +89,8 @@ land-use, regulatory-control
 - [Eminent domain to consolidators](eminent-domain-to-consolidators.md) (pla-035) — forced deed, not only a permit ranking.
 - [Land grants and tariff incidence](land-grants-and-tariff-incidence.md) (pla-036) — federal franchise over land and trade.
 - [RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md) (pla-059) — a federal thumb on this local track when the landowner is religious.
+- [Exclusionary zoning as housing wall](exclusionary-zoning-housing-wall.md) (pla-074) — who may dwell, not who may operate a shop.
+- [Building code and HUD manufactured-housing floor](building-code-hud-manufactured-floor.md) (pla-075) — occupancy of a dwelling the analog person can already build.
 
 ## Expansion notes
 

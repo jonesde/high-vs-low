@@ -42,7 +42,7 @@ The parent repository is released under [CC0 1.0](../LICENSE). These files inher
 
 ## Library map
 
-Six arcs, pla-001 through pla-072. Full catalog and domain browse: [index.md](index.md).
+Eight arcs plus a healthcare pair, pla-001 through pla-086. Full catalog and domain browse: [index.md](index.md).
 
 | Arc | IDs | Inversion |
 | --- | --- | --------- |
@@ -52,8 +52,11 @@ Six arcs, pla-001 through pla-072. Full catalog and domain browse: [index.md](in
 | Protected complexes | pla-037–048 | Compulsion outside, immunity inside (purity, Drug War, health/MIC) |
 | Institutional religion | pla-049–060 | Belief, expression, and receipt vs the church-as-franchise |
 | Institutional charity | pla-061–072 | Local aid vs deducted corpus; controllers act through the 501(c)(3) |
+| Housing | pla-073–078 | The analog person and the roof; code, credit, and exclusion as the wall |
+| Education | pla-079–084 | Instruction vs the credential franchise |
+| Healthcare price (light) | pla-085–086 | Chargemaster and CON as price/entry walls (extends complexes; not a full arc) |
 
-Waves 4–6 share the `protected-complexes` domain token. Browse **Protected complexes** for pla-037–048 only; religion and charity have their own headings.
+Waves 4–6 share the `protected-complexes` domain token. Browse **Protected complexes** for pla-037–048 only; religion and charity have their own headings. Housing, education, and the healthcare pair have theirs. Receipts on church opacity, clergy tax, and supporting orgs were deepened in the same pass as this wave (Ensign Peak/SEC 2023, Treasury parsonage line, IRS SOI 990-PF).
 
 ---
 
@@ -95,7 +98,7 @@ updated: 2026-08-20
 
 **`domains`** (one or more):
 
-`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `protected-complexes`, `religion`, `charity`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
+`labor`, `property`, `personal-property`, `intellectual-property`, `technology-access`, `monetary`, `resources`, `protected-complexes`, `religion`, `charity`, `housing`, `education`, `healthcare`, `capital-access`, `debt`, `regulatory-control`, `land-use`, `policing-revenue`, `platforms`, `speech`, `financial`, `commercial`
 
 **`routing` values** (under `enabled` and `closed`):
 
@@ -281,6 +284,41 @@ Local, personal aid is the analog. The inversion: deduction, corpus, standing, a
 | pla-071 | [supporting-org-control-without-ownership.md](supporting-org-control-without-ownership.md) | Supporting orgs let a principal steer capital without owning it | 26 U.S.C. §§ 509(a)(3), 4943(f) | charity, protected-complexes, commercial |
 | pla-072 | [scientific-charity-means-test-gate.md](scientific-charity-means-test-gate.md) | COS investigation and "deserving poor" gate replace direct aid | COS charters 1877–; associated-charity form | charity, protected-complexes, regulatory-control |
 
-Adjacent domains still open: housing, healthcare billing as price (hospital 501(r) here is exemption-vs-duty only), environmental permitting, education credentialing.
+## Seventh wave: housing
+
+The analog person and the roof. Completes earth-and-money: first-receiver issue already sits between people and land; housing is where that hits wages. pla-009 stays general incumbent land-use (shop + house). These pages are dwelling.
+
+| ID | File | Outcome | Primary instruments | Domains |
+| -- | ---- | ------- | ------------------- | ------- |
+| pla-073 | [housing-price-wage-wedge.md](housing-price-wage-wedge.md) | Median house price pulls away from typical wages after the dollar-gold break | Nixon shock (cross 028/029); § 163(h); § 121; GSE charters | housing, monetary, capital-access |
+| pla-074 | [exclusionary-zoning-housing-wall.md](exclusionary-zoning-housing-wall.md) | Lot-size, density, and use rules keep lower-cost dwellings out | *Euclid*; *Arlington Heights*; Fischel 1970s account | housing, land-use |
+| pla-075 | [building-code-hud-manufactured-floor.md](building-code-hud-manufactured-floor.md) | Occupancy requires the designated code or HUD label | Manufactured Housing Act 1974; HUD Code 1976; IBC/IRC | housing, technology-access, regulatory-control |
+| pla-076 | [eviction-summary-process.md](eviction-summary-process.md) | Landlord recovers possession on a fast civil docket | State unlawful-detainer codes; PTFA; CARES (temporary) | housing, property |
+| pla-077 | [habitability-paper-nonenforcement.md](habitability-paper-nonenforcement.md) | Warranty on paper; enforcement discretionary against the landlord | *Javins*; state warranty statutes; local housing codes | housing, regulatory-control |
+| pla-078 | [environmental-review-housing-veto.md](environmental-review-housing-veto.md) | Review and process delay stall new dwellings; incumbents grandfathered | NEPA; CEQA; state NEPA-cousins | housing, land-use, regulatory-control |
+
+## Eighth wave: education
+
+Instruction vs the credential franchise. pla-051 remains the custody extreme.
+
+| ID | File | Outcome | Primary instruments | Domains |
+| -- | ---- | ------- | ------------------- | ------- |
+| pla-079 | [compulsory-attendance.md](compulsory-attendance.md) | The state counts the child's days; family instruction is a statutory exception | Mass. 1852; state truancy codes; *Meyer*; *Pierce* | education, labor, regulatory-control |
+| pla-080 | [tax-funded-exclusive-school.md](tax-funded-exclusive-school.md) | Millage and aid fund a designated LEA; analog parent still pays | State school-finance / millage; *Rodriguez* | education, financial |
+| pla-081 | [accreditation-title-iv-wall.md](accreditation-title-iv-wall.md) | Recognized accreditation gates aid and often occupational license | HEA Title IV; 34 C.F.R. Part 602 | education, labor, capital-access |
+| pla-082 | [homeschool-umbrella-capture.md](homeschool-umbrella-capture.md) | Homeschool legal through registration, hours, or a covering school | State homeschool statutes; church-school cover; *Yoder* overlay | education, religion, regulatory-control |
+| pla-083 | [designated-education-finance.md](designated-education-finance.md) | Education money gated by veteran, accredited-student, or membership status | GI Bill; Title IV; church revolving funds (PEF/Pathway as one illustration) | education, religion, charity, capital-access |
+| pla-084 | [land-grant-extension-overlay.md](land-grant-extension-overlay.md) | Public domain and federal money to designated colleges | Morrill 1862/1890; Hatch; Smith-Lever | education, land-use, resources |
+
+## Healthcare price (light)
+
+Not a full arc. Two price/entry walls that pla-070 (exemption vs duty) and pla-022 (gene methods) do not cover.
+
+| ID | File | Outcome | Primary instruments | Domains |
+| -- | ---- | ------- | ------------------- | ------- |
+| pla-085 | [chargemaster-billed-price.md](chargemaster-billed-price.md) | Same service bills at a status-dependent chargemaster price | Chargemaster custom; 45 C.F.R. Part 180; No Surprises Act | protected-complexes, healthcare, financial |
+| pla-086 | [certificate-of-need.md](certificate-of-need.md) | Incumbents contest new beds and machines; analog clinic cannot open as of right | State CON; NHPRDA 1974; 1986 repeal of the federal mandate | protected-complexes, healthcare, regulatory-control |
+
+Adjacent domain still open: environmental permitting (incumbent plants vs new facilities; pla-078 is housing-supply veto only).
 
 To add an entry, follow the inclusion rule and this spec, then add it to [index.md](index.md).

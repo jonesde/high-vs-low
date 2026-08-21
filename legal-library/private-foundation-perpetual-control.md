@@ -17,6 +17,7 @@ related:
   - charitable-deduction-first-receiver
   - supporting-org-control-without-ownership
   - fiat-first-receiver-impulse
+  - church-tax-opacity
 updated: 2026-08-20
 ---
 
@@ -55,9 +56,9 @@ Enabled: 501(c)(3) private foundation; 5% and excises as the compliance track. C
 
 ## Application Evidence
 
-§ 4942's 5% is the mechanism. FoundationMark / NPT comparisons: private-foundation assets on the order of **$1.48 trillion** with grants/expenditures about **$114 billion** (2023, as cited in NPT 2024 DAF report). Scope: that report's year and definitions — not a library audit of every 990-PF.
+§ 4942's 5% is the mechanism. IRS SOI Tax Stats, private foundations for **tax year 2022**: **over $1.3 trillion** in total assets (fair-market value), including over $1.2 trillion in investment assets; almost **$128 billion** in disbursements for exempt purposes; **1,612** foundations with $100 million or more in assets. Scope: that SOI release. Payout that includes overhead is structural. Do not invent a "true charitable" percentage. National Philanthropic Trust DAF reports remain useful as a comparison series, not as the primary asset total.
 
-Payout that includes overhead is structural. Do not invent a "true charitable" percentage.
+**Contrast, not a misclassification.** Church investment desks of similar scale (Ensign Peak Advisors managing Church of Jesus Christ of Latter-day Saints reserves; [pla-052](church-tax-opacity.md)) are **not** private foundations and do not file 990-PF. Chapter 42 is the analog family-office track: deducted capital, public paper, 5%. Church capital of similar size sits outside it because of §§ 508/6033. The SEC 13F order is a securities-disclosure event, not a foundation filing.
 
 ## Domain Tags
 
@@ -67,7 +68,9 @@ charity, protected-complexes, financial
 
 1. Tax Reform Act of 1969, Pub. L. 91-172.
 2. 26 U.S.C. §§ 4940–4945. <https://www.law.cornell.edu/uscode/text/26/4942>
-3. National Philanthropic Trust, *2024 DAF Report* (foundation asset/grant comparison figures as there stated).
+3. IRS Statistics of Income, domestic private-foundation statistics, tax year 2022 (assets, exempt-purpose disbursements, $100 million-plus count). <https://www.irs.gov/statistics/soi-tax-stats-domestic-private-foundation-and-charitable-trust-statistics>
+4. National Philanthropic Trust, *2024 DAF Report* (comparison series).
+5. SEC Release No. 2023-35 (Ensign Peak / Church of Jesus Christ of Latter-day Saints) — church investment is not a 990-PF vehicle; see [pla-052](church-tax-opacity.md).
 
 ## Related Entries
 
@@ -75,6 +78,7 @@ charity, protected-complexes, financial
 - [Charitable deduction as first-receiver](charitable-deduction-first-receiver.md) (pla-061) — deduction at funding, not at grant.
 - [Supporting-org control without ownership](supporting-org-control-without-ownership.md) (pla-071) — another control vehicle.
 - [Fiat first-receiver impulse](fiat-first-receiver-impulse.md) (pla-029) — the wealth that was parked.
+- [Church tax opacity](church-tax-opacity.md) (pla-052) — church-scale capital outside Chapter 42.
 
 ## Expansion notes
 

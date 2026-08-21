@@ -4,7 +4,7 @@ This directory is a knowledge base of **preferential legal application**: outcom
 
 ## Library map
 
-Six arcs, pla-001 through pla-072. Each inversion is the same shape: an analog course of conduct is open for a designated party and closed for another.
+Eight arcs plus a healthcare pair, pla-001 through pla-086. Each inversion is the same shape: an analog course of conduct is open for a designated party and closed for another.
 
 | Arc | IDs | Inversion |
 | --- | --- | --------- |
@@ -14,8 +14,11 @@ Six arcs, pla-001 through pla-072. Each inversion is the same shape: an analog c
 | Protected complexes | 037–048 | Compulsion outside, immunity inside (purity, Drug War, health/MIC) |
 | Institutional religion | 049–060 | Belief, expression, and receipt vs the church-as-franchise |
 | Institutional charity | 061–072 | Local aid vs deducted corpus; controllers act through the 501(c)(3) |
+| Housing | 073–078 | The analog person and the roof; code, credit, and exclusion as the wall |
+| Education | 079–084 | Instruction vs the credential franchise |
+| Healthcare price (light) | 085–086 | Chargemaster and CON as price/entry walls (extends complexes; not a full arc) |
 
-Through-lines across arcs: first-receiver desks ([pla-029](fiat-first-receiver-impulse.md), [pla-036](land-grants-and-tariff-incidence.md), [pla-048](designated-cost-plus-contractor.md), [pla-061](charitable-deduction-first-receiver.md)); license as wall ([pla-016](technical-data-export-controls.md), [pla-044](licensing-monopoly-on-the-analog.md), [pla-062](501c3-franchise-vs-mutual-aid.md)); purse as compulsion ([pla-043](funding-conditioned-mandates.md), [pla-051](contracted-native-conversion.md), [pla-060](faith-based-public-money.md)); books in the dark ([pla-052](church-tax-opacity.md), [pla-068](donor-advised-funds-no-payout.md)). Cleveland's 1913 chest, 1914 community trust, and 1913 Fed sit in the same centralizing decade.
+Through-lines across arcs: first-receiver desks ([pla-029](fiat-first-receiver-impulse.md), [pla-036](land-grants-and-tariff-incidence.md), [pla-048](designated-cost-plus-contractor.md), [pla-061](charitable-deduction-first-receiver.md), [pla-073](housing-price-wage-wedge.md)); license as wall ([pla-016](technical-data-export-controls.md), [pla-044](licensing-monopoly-on-the-analog.md), [pla-062](501c3-franchise-vs-mutual-aid.md), [pla-075](building-code-hud-manufactured-floor.md), [pla-086](certificate-of-need.md)); purse as compulsion ([pla-043](funding-conditioned-mandates.md), [pla-051](contracted-native-conversion.md), [pla-060](faith-based-public-money.md), [pla-079](compulsory-attendance.md), [pla-080](tax-funded-exclusive-school.md)); books in the dark ([pla-052](church-tax-opacity.md), [pla-068](donor-advised-funds-no-payout.md)). Cleveland's 1913 chest, 1914 community trust, and 1913 Fed sit in the same centralizing decade. HUD Code 1974–76 is technique enclosure in lumber.
 
 Spec and inclusion rule: [README.md](README.md). Distinction rules: [SKILL.md](../SKILL.md).
 
@@ -97,6 +100,20 @@ Spec and inclusion rule: [README.md](README.md). Distinction rules: [SKILL.md](.
 | pla-070 | [Operating charity as capital pool](operating-charity-capital-pool.md) | Hospitals and universities hold exempt capital; charity-care tests are residual | regulatory, administrative | civil (taxable hospital or hard spend duty) | charity, protected-complexes, financial |
 | pla-071 | [Supporting-org control without ownership](supporting-org-control-without-ownership.md) | Supporting orgs let a principal steer capital without owning it | regulatory, contractual, administrative | civil (attribution to the founder) | charity, protected-complexes, commercial |
 | pla-072 | [Scientific charity means-test gate](scientific-charity-means-test-gate.md) | COS investigation and deserving-poor gate replace direct aid | administrative, contractual | civil (alms without a file) | charity, protected-complexes, regulatory-control |
+| pla-073 | [Housing price-to-wage wedge after 1971](housing-price-wage-wedge.md) | Median house price pulls away from typical wages after the dollar-gold break | regulatory, civil, contractual | civil (same roof at early-1970s multiple) | housing, monetary, capital-access |
+| pla-074 | [Exclusionary zoning as housing wall](exclusionary-zoning-housing-wall.md) | Lot-size, density, and use rules keep lower-cost dwellings out | administrative, regulatory, civil | administrative (as-of-right extra dwelling) | housing, land-use |
+| pla-075 | [Building code and HUD manufactured-housing floor](building-code-hud-manufactured-floor.md) | Occupancy requires the designated code or HUD label | regulatory, administrative, civil | civil (occupy the analog unlabelled dwelling) | housing, technology-access, regulatory-control |
+| pla-076 | [Eviction summary process](eviction-summary-process.md) | Landlord recovers possession on a fast civil docket | civil, administrative | civil (ordinary trial timing) | housing, property |
+| pla-077 | [Habitability paper non-enforcement](habitability-paper-nonenforcement.md) | Warranty on paper; enforcement discretionary against the landlord | civil, administrative, non-action | civil (repair as condition of the writ) | housing, regulatory-control |
+| pla-078 | [Environmental-review housing veto](environmental-review-housing-veto.md) | Review and process delay stall new dwellings; incumbents grandfathered | administrative, civil, regulatory | administrative (ministerial infill) | housing, land-use, regulatory-control |
+| pla-079 | [Compulsory attendance](compulsory-attendance.md) | The state counts the child's days; family instruction is a statutory exception | administrative, criminal, civil | civil (instruct without a ledger) | education, labor, regulatory-control |
+| pla-080 | [Tax-funded exclusive school](tax-funded-exclusive-school.md) | Millage and aid fund a designated LEA; analog parent still pays | administrative, regulatory, civil | civil (redirect the tax share) | education, financial |
+| pla-081 | [Accreditation and Title IV wall](accreditation-title-iv-wall.md) | Recognized accreditation gates aid and often occupational license | administrative, regulatory, contractual | civil (equipped shop without the stamp) | education, labor, capital-access |
+| pla-082 | [Homeschool umbrella capture](homeschool-umbrella-capture.md) | Homeschool legal through registration, hours, or a covering school | administrative, regulatory, contractual | civil (instruct without a cover) | education, religion, regulatory-control |
+| pla-083 | [Designated education finance](designated-education-finance.md) | Education money gated by veteran, accredited-student, or membership status | administrative, contractual, regulatory | civil (ungated loan for instruction) | education, religion, charity, capital-access |
+| pla-084 | [Land-grant extension overlay](land-grant-extension-overlay.md) | Public domain and federal money to designated colleges | administrative, contractual, regulatory | civil (un-endowed local instruction) | education, land-use, resources |
+| pla-085 | [Chargemaster billed price](chargemaster-billed-price.md) | Same service bills at a status-dependent chargemaster price | contractual, administrative, civil | civil (posted cash price as the price) | protected-complexes, healthcare, financial |
+| pla-086 | [Certificate of need](certificate-of-need.md) | Incumbents contest new beds and machines; analog clinic cannot open as of right | administrative, regulatory, civil | administrative (equipped clinic as of right) | protected-complexes, healthcare, regulatory-control |
 
 ---
 
@@ -111,6 +128,8 @@ Spec and inclusion rule: [README.md](README.md). Distinction rules: [SKILL.md](.
 - [pla-044 Licensing monopoly on the analog](licensing-monopoly-on-the-analog.md)
 - [pla-054 Ministerial exception](ministerial-exception.md)
 - [pla-065 Federated workplace capture](federated-workplace-capture.md)
+- [pla-079 Compulsory attendance](compulsory-attendance.md) (child's days as allocated time)
+- [pla-081 Accreditation and Title IV wall](accreditation-title-iv-wall.md)
 
 ### Property (including personal property and commercial)
 
@@ -127,6 +146,7 @@ Spec and inclusion rule: [README.md](README.md). Distinction rules: [SKILL.md](.
 - [pla-034 Water prior appropriation](water-prior-appropriation-reclamation.md)
 - [pla-035 Eminent domain to consolidators](eminent-domain-to-consolidators.md)
 - [pla-063 Cy-pres institutional preservation](cypres-institutional-preservation.md)
+- [pla-076 Eviction summary process](eviction-summary-process.md)
 
 ### Intellectual property
 
@@ -161,6 +181,7 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-022 Gene and method patents](gene-method-patents.md)
 - [pla-023 Born-secret Restricted Data](born-secret-restricted-data.md)
 - [pla-024 Constrained open licenses](constrained-open-licenses.md)
+- [pla-075 Building code and HUD manufactured-housing floor](building-code-hud-manufactured-floor.md)
 
 ### Capital, debt, and financial
 
@@ -185,6 +206,11 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-068 Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md)
 - [pla-069 UPMIFA endowment lock](upmifa-endowment-lock.md)
 - [pla-070 Operating charity as capital pool](operating-charity-capital-pool.md)
+- [pla-073 Housing price-to-wage wedge after 1971](housing-price-wage-wedge.md)
+- [pla-080 Tax-funded exclusive school](tax-funded-exclusive-school.md)
+- [pla-081 Accreditation and Title IV wall](accreditation-title-iv-wall.md)
+- [pla-083 Designated education finance](designated-education-finance.md)
+- [pla-085 Chargemaster billed price](chargemaster-billed-price.md)
 
 ### Land use and regulatory control
 
@@ -207,6 +233,14 @@ Restriction of use or awareness of a technique despite sufficient machines, copi
 - [pla-050 Disfavored-practice criminalization](disfavored-practice-criminalization.md)
 - [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
 - [pla-072 Scientific charity means-test gate](scientific-charity-means-test-gate.md)
+- [pla-074 Exclusionary zoning as housing wall](exclusionary-zoning-housing-wall.md)
+- [pla-075 Building code and HUD manufactured-housing floor](building-code-hud-manufactured-floor.md)
+- [pla-077 Habitability paper non-enforcement](habitability-paper-nonenforcement.md)
+- [pla-078 Environmental-review housing veto](environmental-review-housing-veto.md)
+- [pla-079 Compulsory attendance](compulsory-attendance.md)
+- [pla-082 Homeschool umbrella capture](homeschool-umbrella-capture.md)
+- [pla-084 Land-grant extension overlay](land-grant-extension-overlay.md)
+- [pla-086 Certificate of need](certificate-of-need.md)
 
 ### Platforms and speech
 
@@ -240,6 +274,8 @@ Compulsion for the outside, immunity and exemption for designated institutions. 
 - [pla-046 Captured evidence and associations](captured-evidence-associations.md)
 - [pla-047 Government-platform speech routing](government-platform-speech.md)
 - [pla-048 Designated cost-plus and OTA contractors](designated-cost-plus-contractor.md)
+- [pla-085 Chargemaster billed price](chargemaster-billed-price.md)
+- [pla-086 Certificate of need](certificate-of-need.md)
 
 ### Religion (institutional)
 
@@ -257,6 +293,8 @@ Belief, expression, and receipt were the original objects. The inversion protect
 - [pla-058 RFRA commercial overlay](rfra-commercial-overlay.md)
 - [pla-059 RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md)
 - [pla-060 Faith-based public money](faith-based-public-money.md)
+- [pla-082 Homeschool umbrella capture](homeschool-umbrella-capture.md)
+- [pla-083 Designated education finance](designated-education-finance.md)
 
 ### Charity (institutional)
 
@@ -274,6 +312,7 @@ Local aid is the analog. The inversion protects deducted capital, corpus, and ga
 - [pla-070 Operating charity as capital pool](operating-charity-capital-pool.md)
 - [pla-071 Supporting-org control without ownership](supporting-org-control-without-ownership.md)
 - [pla-072 Scientific charity means-test gate](scientific-charity-means-test-gate.md)
+- [pla-083 Designated education finance](designated-education-finance.md)
 
 ### Monetary
 
@@ -287,6 +326,7 @@ First-receiver issue of the claim-ticket that now mediates access to resources. 
 - [pla-030 Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md)
 - [pla-031 GENIUS Act permitted issuance](genius-act-permitted-issuance.md)
 - [pla-036 Land grants and tariff incidence](land-grants-and-tariff-incidence.md) (tariff wedge)
+- [pla-073 Housing price-to-wage wedge after 1971](housing-price-wage-wedge.md)
 
 ### Resources
 
@@ -297,6 +337,36 @@ Legal standing between people and land, minerals, and water.
 - [pla-034 Water prior appropriation](water-prior-appropriation-reclamation.md)
 - [pla-035 Eminent domain to consolidators](eminent-domain-to-consolidators.md)
 - [pla-036 Land grants and tariff incidence](land-grants-and-tariff-incidence.md)
+- [pla-084 Land-grant extension overlay](land-grant-extension-overlay.md)
+
+### Housing
+
+The analog person and the roof. First-receiver issue, exclusionary maps, occupancy codes, and fast possession.
+
+- [pla-073 Housing price-to-wage wedge after 1971](housing-price-wage-wedge.md)
+- [pla-074 Exclusionary zoning as housing wall](exclusionary-zoning-housing-wall.md)
+- [pla-075 Building code and HUD manufactured-housing floor](building-code-hud-manufactured-floor.md)
+- [pla-076 Eviction summary process](eviction-summary-process.md)
+- [pla-077 Habitability paper non-enforcement](habitability-paper-nonenforcement.md)
+- [pla-078 Environmental-review housing veto](environmental-review-housing-veto.md)
+
+### Education
+
+Instruction vs the credential franchise. [pla-051](contracted-native-conversion.md) remains the custody extreme under Religion.
+
+- [pla-079 Compulsory attendance](compulsory-attendance.md)
+- [pla-080 Tax-funded exclusive school](tax-funded-exclusive-school.md)
+- [pla-081 Accreditation and Title IV wall](accreditation-title-iv-wall.md)
+- [pla-082 Homeschool umbrella capture](homeschool-umbrella-capture.md)
+- [pla-083 Designated education finance](designated-education-finance.md)
+- [pla-084 Land-grant extension overlay](land-grant-extension-overlay.md)
+
+### Healthcare (price/entry, light)
+
+Billing as price and CON as entry wall. Distinct from [pla-070](operating-charity-capital-pool.md) (exemption vs duty) and [pla-022](gene-method-patents.md) (technique). PREP/EUA stay on [pla-042](covered-person-liability-shields.md).
+
+- [pla-085 Chargemaster billed price](chargemaster-billed-price.md)
+- [pla-086 Certificate of need](certificate-of-need.md)
 
 ---
 
@@ -324,7 +394,7 @@ Legal standing between people and land, minerals, and water.
 
 **You have the resources; the license is the wall.**
 
-- [pla-013](digital-license-not-sale.md), [pla-014](cfaa-tos-authorized-access.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md), [pla-020](blocking-patents-nonuse.md), [pla-024](constrained-open-licenses.md), [pla-044](licensing-monopoly-on-the-analog.md)
+- [pla-013](digital-license-not-sale.md), [pla-014](cfaa-tos-authorized-access.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md), [pla-020](blocking-patents-nonuse.md), [pla-024](constrained-open-licenses.md), [pla-044](licensing-monopoly-on-the-analog.md), [pla-075](building-code-hud-manufactured-floor.md), [pla-081](accreditation-title-iv-wall.md), [pla-086](certificate-of-need.md)
 
 **Statutory safe harbor plus private contract.**
 
@@ -332,19 +402,19 @@ Legal standing between people and land, minerals, and water.
 
 **Incumbent protection via discretion.**
 
-- [pla-009](zoning-incumbent-protection.md), [pla-012](platform-safe-harbors.md)
+- [pla-009](zoning-incumbent-protection.md), [pla-012](platform-safe-harbors.md), [pla-074](exclusionary-zoning-housing-wall.md), [pla-078](environmental-review-housing-veto.md), [pla-086](certificate-of-need.md)
 
 **Priority recovery through filed paper.**
 
-- [pla-004](patent-assertion-entities.md), [pla-008](secured-credit-foreclosure.md)
+- [pla-004](patent-assertion-entities.md), [pla-008](secured-credit-foreclosure.md), [pla-076](eviction-summary-process.md)
 
 **First-receiver money issue.** New balances, a licensed ticket, or a tax expenditure enter at a designated counterparty; street prices, wages, or the analog beneficiary lag.
 
-- [pla-025](national-banking-reserve-pyramid.md), [pla-026](federal-reserve-act-1913.md), [pla-027](legal-tender-forced-acceptance.md), [pla-029](fiat-first-receiver-impulse.md), [pla-030](deposit-insurance-emergency-liquidity.md), [pla-031](genius-act-permitted-issuance.md), [pla-061](charitable-deduction-first-receiver.md)
+- [pla-025](national-banking-reserve-pyramid.md), [pla-026](federal-reserve-act-1913.md), [pla-027](legal-tender-forced-acceptance.md), [pla-029](fiat-first-receiver-impulse.md), [pla-030](deposit-insurance-emergency-liquidity.md), [pla-031](genius-act-permitted-issuance.md), [pla-061](charitable-deduction-first-receiver.md), [pla-073](housing-price-wage-wedge.md)
 
 **Standing between people and the earth.** Title, lease, priority date, grant, condemnation, or a tariff wedge.
 
-- [pla-032](hardrock-mining-patent-1872.md), [pla-033](public-land-mineral-leasing.md), [pla-034](water-prior-appropriation-reclamation.md), [pla-035](eminent-domain-to-consolidators.md), [pla-036](land-grants-and-tariff-incidence.md)
+- [pla-032](hardrock-mining-patent-1872.md), [pla-033](public-land-mineral-leasing.md), [pla-034](water-prior-appropriation-reclamation.md), [pla-035](eminent-domain-to-consolidators.md), [pla-036](land-grants-and-tariff-incidence.md), [pla-084](land-grant-extension-overlay.md)
 
 **Compulsion outside / immunity inside.** Mandate, schedule, or raid for the analog person; shield, fee-gate, or designation for the institution.
 
@@ -366,7 +436,19 @@ Legal standing between people and land, minerals, and water.
 
 - [pla-070](operating-charity-capital-pool.md), [pla-071](supporting-org-control-without-ownership.md)
 
-Religion and charity routing in full is under [Religion (institutional)](#religion-institutional) and [Charity (institutional)](#charity-institutional). Cross-cutting names the inversions.
+**Roof vs code, credit, and exclusion.**
+
+- [pla-073](housing-price-wage-wedge.md), [pla-074](exclusionary-zoning-housing-wall.md), [pla-075](building-code-hud-manufactured-floor.md), [pla-076](eviction-summary-process.md)
+
+**Compulsory school and credential wall.**
+
+- [pla-079](compulsory-attendance.md), [pla-080](tax-funded-exclusive-school.md), [pla-081](accreditation-title-iv-wall.md), [pla-082](homeschool-umbrella-capture.md)
+
+**Billed price and CON entry.**
+
+- [pla-085](chargemaster-billed-price.md), [pla-086](certificate-of-need.md)
+
+Religion and charity routing in full is under [Religion (institutional)](#religion-institutional) and [Charity (institutional)](#charity-institutional). Housing, education, and the healthcare pair have their own headings. Cross-cutting names the inversions.
 
 ---
 
@@ -384,13 +466,13 @@ Religion and charity routing in full is under [Religion (institutional)](#religi
 
 **Open-looking reservation.** Source or weights are visible; competing production is not granted. See [pla-024](constrained-open-licenses.md), [pla-017](ai-corpus-and-evaluation-enclosure.md), [pla-019](bayh-dole-exclusive-license.md). Rules 22, 33, 42.
 
-**First-receiver impulse vs. street lag.** New purchasing power (or a price wedge or a tax expenditure) hits a designated class before wages, consumer prices, or the analog beneficiary adjust. See [pla-029](fiat-first-receiver-impulse.md), [pla-026](federal-reserve-act-1913.md), [pla-031](genius-act-permitted-issuance.md), [pla-036](land-grants-and-tariff-incidence.md), [pla-061](charitable-deduction-first-receiver.md). Rules 1, 15, 38, 42.
+**First-receiver impulse vs. street lag.** New purchasing power (or a price wedge or a tax expenditure) hits a designated class before wages, consumer prices, or the analog beneficiary adjust. See [pla-029](fiat-first-receiver-impulse.md), [pla-026](federal-reserve-act-1913.md), [pla-031](genius-act-permitted-issuance.md), [pla-036](land-grants-and-tariff-incidence.md), [pla-061](charitable-deduction-first-receiver.md), [pla-073](housing-price-wage-wedge.md). Rules 1, 15, 38, 42.
 
-**Interposition between person and earth.** A statute, lease, priority, grant, or condemnation sits between a mortal need and the resource. See [pla-032](hardrock-mining-patent-1872.md), [pla-033](public-land-mineral-leasing.md), [pla-034](water-prior-appropriation-reclamation.md), [pla-035](eminent-domain-to-consolidators.md), [pla-008](secured-credit-foreclosure.md) (downstream collection). Rules 7, 8, 33.
+**Interposition between person and earth.** A statute, lease, priority, grant, or condemnation sits between a mortal need and the resource. See [pla-032](hardrock-mining-patent-1872.md), [pla-033](public-land-mineral-leasing.md), [pla-034](water-prior-appropriation-reclamation.md), [pla-035](eminent-domain-to-consolidators.md), [pla-008](secured-credit-foreclosure.md) (downstream collection), [pla-084](land-grant-extension-overlay.md). Rules 7, 8, 33.
 
 **Resource-asymmetric litigation.** The doctrine is symmetric. The TRO calendar, discovery, and choice-of-law clause are not. See [pla-004](patent-assertion-entities.md), [pla-008](secured-credit-foreclosure.md), [pla-011](noncompete-trade-secrets.md). Rules 4, 15, 40.
 
-**Incumbent administrative discretion.** The text is general. Variances, grandfathering, non-enforcement, and opaque appeals do the work. See [pla-009](zoning-incumbent-protection.md), [pla-012](platform-safe-harbors.md). Rules 2, 9, 34.
+**Incumbent administrative discretion.** The text is general. Variances, grandfathering, non-enforcement, and opaque appeals do the work. See [pla-009](zoning-incumbent-protection.md), [pla-012](platform-safe-harbors.md), [pla-074](exclusionary-zoning-housing-wall.md), [pla-086](certificate-of-need.md). Rules 2, 9, 34.
 
 **Revenue through process.** Forfeiture proceeds, patent settlements, and automated monetization claims turn legal process into a yield. See [pla-002](civil-asset-forfeiture.md), [pla-004](patent-assertion-entities.md), [pla-005](dmca-takedown-content-id.md), [pla-041](self-funding-forfeiture-enforcement.md). Rules 15, 33.
 
@@ -400,11 +482,15 @@ Religion and charity routing in full is under [Religion (institutional)](#religi
 
 **Official overlay on a private gate.** Government pressure plus platform ToS and § 230 closes dissent without a merits First Amendment judgment. See [pla-012](platform-safe-harbors.md), [pla-047](government-platform-speech.md). Rules 8, 20, 40.
 
-**Designated purse.** Cost-plus, other-transaction, and exclusive public-to-private residuals put appropriated funds at a named desk. See [pla-019](bayh-dole-exclusive-license.md), [pla-029](fiat-first-receiver-impulse.md), [pla-048](designated-cost-plus-contractor.md), [pla-060](faith-based-public-money.md). Rules 1, 33, 42.
+**Designated purse.** Cost-plus, other-transaction, and exclusive public-to-private residuals put appropriated funds at a named desk. See [pla-019](bayh-dole-exclusive-license.md), [pla-029](fiat-first-receiver-impulse.md), [pla-048](designated-cost-plus-contractor.md), [pla-060](faith-based-public-money.md), [pla-080](tax-funded-exclusive-school.md), [pla-083](designated-education-finance.md). Rules 1, 33, 42.
 
 **Belief and speech vs the entity franchise.** Original religious liberty protected belief, expression, and receipt. The inversion protects tax, land, labor, discovery, and public money for the institution. See [pla-049](church-autonomy-ecclesiastical-abstention.md) through [pla-060](faith-based-public-money.md), especially [pla-050](disfavored-practice-criminalization.md) vs [pla-058](rfra-commercial-overlay.md). Rules 1, 6, 18, 22, 36.
 
 **Local aid vs the asset-protecting franchise.** Deduction, corpus, standing, and allocation protect the institution and its controllers; the claimed beneficiary often cannot sue or cannot receive. See [pla-061](charitable-deduction-first-receiver.md) through [pla-072](scientific-charity-means-test-gate.md), especially [pla-068](donor-advised-funds-no-payout.md) vs [pla-067](private-foundation-perpetual-control.md). Rules 15, 22, 33, 36, 40.
+
+**Roof vs code, credit, and exclusion.** First-receiver issue re-prices the house; Euclidean maps, occupancy labels, summary process, and environmental review keep the analog person off the lot. See [pla-073](housing-price-wage-wedge.md) through [pla-078](environmental-review-housing-veto.md), especially [pla-073](housing-price-wage-wedge.md) vs [pla-029](fiat-first-receiver-impulse.md) and [pla-075](building-code-hud-manufactured-floor.md) vs [pla-021](historical-technique-privilege.md). Rules 15, 18, 22, 38, 42.
+
+**Instruction vs the credential franchise.** Compulsory days and a tax-funded exclusive desk, then accreditation and designated loans, recode instruction as a status. See [pla-079](compulsory-attendance.md) through [pla-084](land-grant-extension-overlay.md), especially [pla-051](contracted-native-conversion.md) as the custody extreme and [pla-082](homeschool-umbrella-capture.md) as the exception that can become another cluster. Rules 6, 18, 21, 22, 42.
 
 ---
 
@@ -412,10 +498,8 @@ Religion and charity routing in full is under [Religion (institutional)](#religi
 
 Not yet written. Use the [inclusion rule](README.md#inclusion-rule) if adding them:
 
-- Housing (eviction process, source-of-income rules, habitability enforcement)
-- Healthcare billing as **price/resources** (distinct from [pla-022](gene-method-patents.md) technique-control and from [pla-070](operating-charity-capital-pool.md) exemption-vs-duty; religious hospitals appear in [pla-060](faith-based-public-money.md) only as the public-money franchise)
-- Environmental permitting (incumbent plants vs. new facilities)
-- Education credentialing (accreditation and licensing as entry barriers; religious schools appear here only as [pla-054](ministerial-exception.md) and [pla-060](faith-based-public-money.md))
+- Environmental permitting (incumbent plants vs. new facilities; [pla-078](environmental-review-housing-veto.md) is housing-supply veto only)
+- Source-of-income / voucher as a housing-entry overlay (mentioned on [pla-076](eviction-summary-process.md), not a standalone page)
 
 ---
 

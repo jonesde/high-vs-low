@@ -20,6 +20,8 @@ related:
   - fiat-first-receiver-impulse
   - deposit-insurance-emergency-liquidity
   - eminent-domain-to-consolidators
+  - housing-price-wage-wedge
+  - eviction-summary-process
 updated: 2026-08-20
 ---
 
@@ -89,6 +91,8 @@ capital-access, debt
 - [Fiat first-receiver impulse](fiat-first-receiver-impulse.md) (pla-029) — how the claim-ticket is issued before this stack collects it.
 - [Deposit insurance and emergency liquidity](deposit-insurance-emergency-liquidity.md) (pla-030) — designated institutions through panics, then this priority in default.
 - [Eminent domain to consolidators](eminent-domain-to-consolidators.md) (pla-035) — another forced transfer at a legally set price.
+- [Housing price-to-wage wedge](housing-price-wage-wedge.md) (pla-073) — the inflated asset this note sits on.
+- [Eviction summary process](eviction-summary-process.md) (pla-076) — the lease's fast track beside this foreclosure track.
 
 ## Expansion notes
 

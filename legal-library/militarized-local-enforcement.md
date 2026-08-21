@@ -53,6 +53,8 @@ Enabled: administrative transfer of weapons and armor; grant conditions that mea
 
 10 U.S.C. § 2576a is the transfer authority. Byrne was created to assist states with drug enforcement (1988). ACLU and GAO reporting on 1033 (armored vehicles, rifles, aircraft to small departments) is application evidence of **who receives the gear**. Stop-and-frisk and raid studies (NYPD, others) show concentration in poorer, higher-minority precincts. Scope-label city studies; do not invent a national raid count.
 
+**Case illustration (exclusionary-rule study, not a biography).** Dallin H. Oaks, *Studying the Exclusionary Rule in Search and Seizure*, 37 U. Chi. L. Rev. 665 (1970), then a University of Chicago law professor (1961–1971; later BYU president, later Church of Jesus Christ of Latter-day Saints president as of October 2025), reported that a large share of the suppression motions in the samples involved **narcotics and weapons** searches and argued substituting a tort remedy for the exclusionary rule. *United States v. Janis*, 428 U.S. 433, 450 n.22 (1976) (Blackmun, J.), called it "the salient and most comprehensive study." Scope: the article's samples and later citation to narrow exclusion — **not** a claim that the author designed 1033, Byrne, or the Drug War. The logistics pipeline on this page is the statute. The study is evidence that the search factory feeding those raids was already concentrated on narcotics when the academic case against *Mapp* was being built. Liability overlay: [pla-045](qualified-immunity.md).
+
 Prohibition-era Volstead enforcement never had a 1033 pipeline. The Drug War does. That is the evolution from [pla-037](constitutional-purity-prohibition.md).
 
 ## Domain Tags
@@ -65,6 +67,8 @@ protected-complexes, policing-revenue
 2. Anti-Drug Abuse Act of 1988 (Byrne JAG origin).
 3. 34 U.S.C. § 10151 et seq. (JAG).
 4. DLA Disposition Services / LESO program descriptions of 1033.
+5. Dallin H. Oaks, *Studying the Exclusionary Rule in Search and Seizure*, 37 U. Chi. L. Rev. 665 (1970).
+6. *United States v. Janis*, 428 U.S. 433, 450 n.22 (1976).
 
 ## Related Entries
 

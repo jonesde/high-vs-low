@@ -18,6 +18,8 @@ related:
   - designated-cost-plus-contractor
   - rluipa-property-tax-franchise
   - operating-charity-capital-pool
+  - tax-funded-exclusive-school
+  - designated-education-finance
 updated: 2026-08-20
 ---
 
@@ -88,6 +90,8 @@ religion, protected-complexes, speech
 - [RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md) (pla-059) — land beside the purse.
 - [Bayh-Dole exclusive license](bayh-dole-exclusive-license.md) (pla-019) — public funds, private residual.
 - [Operating charity as capital pool](operating-charity-capital-pool.md) (pla-070) — 501(c)(3) hospital capital beside the public-money franchise.
+- [Tax-funded exclusive school](tax-funded-exclusive-school.md) (pla-080) — the compulsory default purse this overlay sometimes slices.
+- [Designated education finance](designated-education-finance.md) (pla-083) — GI Bill / Title IV / church revolving funds.
 
 ## Expansion notes
 

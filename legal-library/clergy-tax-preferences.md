@@ -56,9 +56,15 @@ IRS may challenge **amount** as unreasonable relative to housing. That is a valu
 
 ## Application Evidence
 
-The statute's text is the mechanism: "minister of the gospel" plus a furnished home or a rental allowance. Joint Committee on Taxation and IRS Publication 517 describe the exclusion as unique to clergy. Scope-label any dollar estimates of revenue cost by JCT year; do not invent a nationwide average allowance.
+The statute's text is the mechanism: "minister of the gospel" plus a furnished home or a rental allowance. IRS Publication 517 describes the exclusion as unique to clergy.
 
-Designation of allowances that cover large residences is the prosperity-gospel application. Without 990s, the public evidence is often property records and aircraft registrations, not a church return.
+**Scale.** Treasury's tax-expenditure tables line **"Exclusion of parsonage allowances"** at **$959 million** in the FY2025 workbook (receipts, millions). JCT *Estimates of Federal Tax Expenditures* has scored "Exclusion of housing allowances for ministers" in the **$0.7–$0.9 billion per year** range in late-2010s tables (five-year totals around $4 billion). Scope: those tables, those years — not an average allowance. Most of those dollars are ordinary paid Protestant and Catholic clergy, not a single denomination.
+
+**Constitutional holding.** *Gaylor v. Mnuchin*, 919 F.3d 420 (7th Cir. 2019), upheld § 107(2) against an Establishment Clause challenge. The cash-allowance prong remains.
+
+**Large designated allowance (non-LDS).** *Warren v. Commissioner*, 114 T.C. 343 (2000): Rick Warren of Saddleback received about **$80,000** a year as a cash housing allowance; the Tax Court held the exclusion is limited to amounts used to provide a home (Congress later wrote a fair-rental-value cap into § 107(2) in 2002). That is a published megachurch docket, not rumor. Without church 990s, large allowances are otherwise visible mainly in Tax Court, property records, or a related organization's return.
+
+**Status, not congregational poverty.** The Church of Jesus Christ of Latter-day Saints states that full-time General Authorities receive a **uniform living allowance** funded from investment proceeds, not tithing (church FAQ; Hinckley conference statement that the allowance is modest relative to executive pay). Local bishops are unpaid lay officers. The franchise is **minister status**, not a showing that the congregation is poor. Do not invent a parsonage split from unofficial pay-stub reconstructions; the church statement that a living allowance exists is the citable fact. Analog: a secular nonprofit director with a housing stipend taxed as wages.
 
 ## Domain Tags
 
@@ -70,6 +76,10 @@ religion, protected-complexes, financial
 2. 26 U.S.C. § 119. <https://www.law.cornell.edu/uscode/text/26/119>
 3. *Gaylor v. Mnuchin*, 919 F.3d 420 (7th Cir. 2019).
 4. IRS Publication 517 (Social Security and Other Information for Members of the Clergy and Religious Workers).
+5. U.S. Treasury, *Tax Expenditures FY2025* workbook, line "Exclusion of parsonage allowances" ($959 million). <https://home.treasury.gov/policy-issues/tax-policy/tax-expenditures>
+6. Joint Committee on Taxation, *Estimates of Federal Tax Expenditures* (housing-allowances-for-ministers line; late-2010s tables in the $0.7–$0.9 billion/year range).
+7. *Warren v. Commissioner*, 114 T.C. 343 (2000).
+8. The Church of Jesus Christ of Latter-day Saints, "Do General Authorities get paid?" (living allowance from investment proceeds). <https://faq.churchofjesuschrist.org/do-general-authorities-get-paid>
 
 ## Related Entries
 
@@ -80,7 +90,7 @@ religion, protected-complexes, financial
 
 ## Expansion notes
 
-JCT revenue-cost tables for § 107 by year; § 107(1) vs (2) split; clergy FICA exemption grants.
+Latest JCT table in place of the late-2010s range once a current JCX is pulled; § 107(1) vs (2) split; clergy FICA exemption grants.
 
 ## Framework notes
 

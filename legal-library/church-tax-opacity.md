@@ -20,6 +20,8 @@ related:
   - designated-cost-plus-contractor
   - donor-advised-funds-no-payout
   - 501c3-franchise-vs-mutual-aid
+  - supporting-org-control-without-ownership
+  - private-foundation-perpetual-control
 updated: 2026-08-20
 ---
 
@@ -63,7 +65,11 @@ Enabled: exist as a church; skip 1023 and 990; contest any IRS contact under § 
 
 The Code sections are the mechanism. IRS church tax inquiries are rare relative to 990-based exams of other exempts; GAO and TIGTA have described § 7611 as a constraint — cite those reports by year rather than inventing an inquiry count.
 
-Scientology–IRS closing agreement (October 1993) is the large classification event: exemption recognized after litigation. Scope: that agreement, that organization. Megachurch and broadcast ministries that do not file 990s are the commercial-adjacent application. Do not invent net-asset figures that do not appear on a public return — that absence **is** the evidence.
+Scientology–IRS closing agreement (October 1993) is the large classification event: exemption recognized after litigation. Scope: that agreement, that organization. Megachurch and broadcast ministries that do not file 990s are the commercial-adjacent application. A parachurch ministry that is not classified as a church still files Form 990; a church-status cousin of similar budget does not. That pair is the analog.
+
+**Ensign Peak Advisors (2023).** SEC Release No. 2023-35 / Admin. Proc. 3-21305 (Feb. 21, 2023): from 1997 through 2019, Ensign Peak, the Church of Jesus Christ of Latter-day Saints' investment manager, did not file Forms 13F in its own name. It created **thirteen shell LLCs** and filed 13Fs in those names; the order finds Ensign Peak kept investment and voting discretion. The SEC's 2018 concern was a portfolio around **$32 billion**. Civil penalties: Church $1 million, Ensign Peak $4 million; **no admit/deny**. The Church's same-day statement said the LLCs were used instead of a single aggregated filing, affirmed a commitment to comply, and described the reserves as invested for the religious mission; penalties were to be paid from investment returns. Scope: that order and that statement. The 13F is a securities filing, not a Form 990. The preferential fact remains that a church of this scale has **no public 990**; analog private foundations and public charities of similar capital do.
+
+**Widow's Mite Report** (thewidowsmite.org) reconstructs later Ensign Peak 13F totals and estimates of broader church assets. Label it **independent research, not an audit**. Use it only to show how outsiders approximate what analog 990-filers would have to print. Do not treat any unofficial AUM as an official church figure. The absence of the return **is** still the evidence.
 
 ## Domain Tags
 
@@ -76,6 +82,9 @@ religion, protected-complexes, financial
 3. 26 U.S.C. § 7611. <https://www.law.cornell.edu/uscode/text/26/7611>
 4. *Bob Jones University v. United States*, 461 U.S. 574 (1983).
 5. CRS IF12509, church tax inquiries (IRC § 7611).
+6. SEC, *In the Matter of Ensign Peak Advisors, Inc. and The Church of Jesus Christ of Latter-day Saints*, Release No. 2023-35 (Feb. 21, 2023). <https://www.sec.gov/newsroom/press-releases/2023-35>
+7. The Church of Jesus Christ of Latter-day Saints, "Church Issues Statement on SEC Settlement" (Feb. 21, 2023). <https://newsroom.churchofjesuschrist.org/article/church-issues-statement-on-sec-settlement>
+8. Widow's Mite Report, independent reconstructions of Ensign Peak 13F filings and church-asset estimates. <https://thewidowsmite.org/> — unofficial research, not an audited return.
 
 ## Related Entries
 
@@ -85,10 +94,12 @@ religion, protected-complexes, financial
 - [Designated cost-plus contractor](designated-cost-plus-contractor.md) (pla-048) — designation without ordinary competition; this page is designation without ordinary disclosure.
 - [501(c)(3) franchise vs mutual aid](501c3-franchise-vs-mutual-aid.md) (pla-062) — non-church charities that must apply and file.
 - [Donor-advised funds with no payout duty](donor-advised-funds-no-payout.md) (pla-068) — account-level darkness beside church no-990.
+- [Supporting-org control without ownership](supporting-org-control-without-ownership.md) (pla-071) — another face-versus-principal stack; church opacity is a different vehicle for the same shape.
+- [Private foundation perpetual control](private-foundation-perpetual-control.md) (pla-067) — analog deducted capital that **does** file a 990-PF.
 
 ## Expansion notes
 
-TIGTA church-inquiry counts by year; 990-T filing among large churches; corporation-sole state statutes; closing-agreement docket beyond 1993.
+TIGTA church-inquiry counts by year; 990-T filing among large churches; corporation-sole state statutes; closing-agreement docket beyond 1993; later Ensign Peak 13F totals as filed (not unofficial AUM).
 
 ## Framework notes
 

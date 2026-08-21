@@ -17,12 +17,15 @@ related:
   - faith-based-public-money
   - 501c3-franchise-vs-mutual-aid
   - rluipa-property-tax-franchise
+  - chargemaster-billed-price
+  - certificate-of-need
+  - supporting-org-control-without-ownership
 updated: 2026-08-20
 ---
 
 # Operating charity as capital pool
 
-A nonprofit hospital or university is a 501(c)(3). It holds endowment, land, and tax-exempt bonds. Patients still receive bills; students still pay tuition. ACA-added § 501(r) requires hospital community-health-needs assessments, financial-assistance policies, and limits on certain charges and collections. Form 990 Schedule H reports "community benefit" (charity care at cost, Medicaid shortfalls, education, research). The IRS has **not** set a required community-benefit percentage. Analog: a taxable hospital or school; analog patient/student who still pays. This page is **exemption versus duty**, not healthcare billing-as-price (that growth domain stays open).
+A nonprofit hospital or university is a 501(c)(3). It holds endowment, land, and tax-exempt bonds. Patients still receive bills; students still pay tuition. ACA-added § 501(r) requires hospital community-health-needs assessments, financial-assistance policies, and limits on certain charges and collections. Form 990 Schedule H reports "community benefit" (charity care at cost, Medicaid shortfalls, education, research). The IRS has **not** set a required community-benefit percentage. Analog: a taxable hospital or school; analog patient/student who still pays. This page is **exemption versus duty**, not healthcare billing-as-price ([pla-085](chargemaster-billed-price.md)) and not certificate-of-need entry walls ([pla-086](certificate-of-need.md)).
 
 Controllers: systems, boards, bondholders. Charity is the caption. Religious hospital systems overlap [pla-060](faith-based-public-money.md).
 
@@ -74,6 +77,9 @@ charity, protected-complexes, financial
 - [Faith-based public money](faith-based-public-money.md) (pla-060) — religious hospital purse and conscience overlay.
 - [501(c)(3) franchise vs mutual aid](501c3-franchise-vs-mutual-aid.md) (pla-062) — the wrapper.
 - [RLUIPA and property-tax franchise](rluipa-property-tax-franchise.md) (pla-059) — exempt land; hospitals fight the same roll.
+- [Chargemaster billed price](chargemaster-billed-price.md) (pla-085) — the price track this page is not.
+- [Certificate of need](certificate-of-need.md) (pla-086) — incumbent entry wall on new beds and machines.
+- [Supporting-org control without ownership](supporting-org-control-without-ownership.md) (pla-071) — hospital-system parents.
 
 ## Expansion notes
 
